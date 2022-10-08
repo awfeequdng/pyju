@@ -65,6 +65,7 @@ target_link_libraries(pyju_lib
     Poco::Net
     Poco::Foundation
     Poco::Util
+    boost::heap
 )
 
 if (OS_LINUX)

@@ -14,3 +14,6 @@
 [submodule "contrib/zlib-ng"]
 	path = contrib/zlib-ng
 	url = https://github.com/ClickHouse-Extras/zlib-ng.git
+[submodule "contrib/boost"]
+	path = contrib/boost
+	url = https://github.com/ClickHouse-Extras/boost.git
