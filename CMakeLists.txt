@@ -42,6 +42,9 @@ include (cmake/arch.cmake)
 include (cmake/target.cmake)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib)
+if (NOT ENABLE_JEMALLOC)
+    message (WARNING "jemalloc allocator is disabled. This is not recommended for production builds.")
+endif ()
 
 file(GLOB_RECURSE
         JUPY_SRC
