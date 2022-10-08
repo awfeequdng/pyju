@@ -1,0 +1,5 @@
+Checking whether the ASM compiler is GNU using "--version" did not match "(GNU assembler)|(GCC)|(Free Software Foundation)":
+clang version 8.0.1 (tags/RELEASE_801/final)
+Target: x86_64-apple-darwin19.6.0
+Thread model: posix
+InstalledDir: /usr/local/opt/llvm@8/bin

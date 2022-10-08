@@ -1,0 +1,8 @@
+/Users/pxcai/cpx/source/pyju/build/CMakeFiles/rebuild_cache.dir
+/Users/pxcai/cpx/source/pyju/build/CMakeFiles/edit_cache.dir
+/Users/pxcai/cpx/source/pyju/build/CMakeFiles/pyju.dir
+/Users/pxcai/cpx/source/pyju/build/CMakeFiles/pyju_lib.dir
+/Users/pxcai/cpx/source/pyju/build/contrib/CMakeFiles/rebuild_cache.dir
+/Users/pxcai/cpx/source/pyju/build/contrib/CMakeFiles/edit_cache.dir
+/Users/pxcai/cpx/source/pyju/build/contrib/jemalloc-cmake/CMakeFiles/rebuild_cache.dir
+/Users/pxcai/cpx/source/pyju/build/contrib/jemalloc-cmake/CMakeFiles/edit_cache.dir
