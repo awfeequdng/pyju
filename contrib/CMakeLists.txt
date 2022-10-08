@@ -34,4 +34,12 @@ endfunction()
 
 set_property(DIRECTORY PROPERTY EXCLUDE_FROM_ALL 1)
 
+# 解决错误: fatal error: 'Poco/Platform.h' file not found
+# 该错误为什么会发生还没定位
+include_directories(${PROJECT_SOURCE_DIR}/contrib/poco/Foundation/include)
+
 add_contrib (jemalloc-cmake jemalloc)
+add_contrib (poco-cmake poco)
+add_contrib (lz4-cmake lz4)
+add_contrib (zstd-cmake zstd)
+add_contrib (zlib-ng-cmake zlib-ng)

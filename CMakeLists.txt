@@ -60,6 +60,13 @@ message(STATUS "JUPY_SRC " ${JUPY_SRC})
 add_library(pyju_lib SHARED
     ${JUPY_SRC}
 )
+target_link_libraries(pyju_lib
+    PUBLIC
+    Poco::Net
+    Poco::Foundation
+    Poco::Util
+)
+
 if (OS_LINUX)
     target_link_libraries(pyju_lib
         PUBLIC

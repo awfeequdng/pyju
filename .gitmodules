@@ -1,3 +1,16 @@
 [submodule "contrib/jemalloc"]
 	path = contrib/jemalloc
 	url = https://github.com/ClickHouse-Extras/jemalloc.git
+[submodule "contrib/poco"]
+	path = contrib/poco
+	url = https://github.com/ClickHouse-Extras/poco.git
+	branch = clickhouse
+[submodule "contrib/lz4"]
+	path = contrib/lz4
+	url = https://github.com/lz4/lz4.git
+[submodule "contrib/zstd"]
+	path = contrib/zstd
+	url = https://github.com/facebook/zstd.git
+[submodule "contrib/zlib-ng"]
+	path = contrib/zlib-ng
+	url = https://github.com/ClickHouse-Extras/zlib-ng.git
