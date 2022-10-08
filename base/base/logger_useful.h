@@ -5,7 +5,6 @@
 #include <fmt/format.h>
 #include <Poco/Logger.h>
 #include <Poco/Message.h>
-#include <Common/CurrentThread.h>
 
 
 namespace
@@ -25,8 +24,7 @@ namespace
 
 #define LOG_IMPL(logger, priority, PRIORITY, ...) do                              \
 {                                                                                 \
-    const bool is_clients_log = (DB::CurrentThread::getGroup() != nullptr) &&     \
-        (DB::CurrentThread::getGroup()->client_logs_level >= (priority));         \
+    const bool is_clients_log = true;                                             \
     if ((logger)->is((PRIORITY)) || is_clients_log)                               \
     {                                                                             \
         std::string formatted_message = numArgs(__VA_ARGS__) > 1 ? fmt::format(__VA_ARGS__) : firstArg(__VA_ARGS__); \

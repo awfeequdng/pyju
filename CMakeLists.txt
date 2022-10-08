@@ -40,6 +40,7 @@ include (cmake/warnings.cmake)
 include (cmake/version.cmake)
 include (cmake/arch.cmake)
 include (cmake/target.cmake)
+include (cmake/embed_binary.cmake)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib)
 if (NOT ENABLE_JEMALLOC)
@@ -49,36 +50,57 @@ endif ()
 include_directories(
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/base
+    ${PROJECT_SOURCE_DIR}/base/loggers
 )
 file(GLOB_RECURSE
         JUPY_SRC
         CONFIGURE_DEPENDS  # Ask CMake to regenerate the build system if these files change.
         ${PROJECT_SOURCE_DIR}/src/*.cpp
         ${PROJECT_SOURCE_DIR}/src/*.h
-        ${PROJECT_SOURCE_DIR}/base/*.cpp
-        ${PROJECT_SOURCE_DIR}/base/*.h
+        ${PROJECT_SOURCE_DIR}/base/loggers/*.cpp
+        ${PROJECT_SOURCE_DIR}/base/loggers/*.h
         )
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/base)
 
 message(STATUS "JUPY_SRC " ${JUPY_SRC})
 
-add_library(pyju_lib SHARED
+add_library(pyju_core SHARED
     ${JUPY_SRC}
 )
-target_link_libraries(pyju_lib
+target_link_libraries(pyju_core
     PUBLIC
     Poco::Net
     Poco::Foundation
     Poco::Util
-    boost::heap
+    boost::headers_only
+    boost::program_options
     ch_contrib::magic_enum
     ch_contrib::replxx
     ch_contrib::cityhash
     ch_contrib::fmt
+    ch_contrib::cctz
+    base
+    # loggers
+    pcg_random
+    readpassphrase
+    widechar_width
+    ch_contrib::re2_st
+    ch_contrib::re2
+    ch_contrib::yaml_cpp
+    ch_contrib::double_conversion
+    ch_contrib::miniselect
+    ch_contrib::dragonbox_to_chars
+    ch_contrib::fast_float
+    ch_contrib::lz4
+    ch_contrib::zstd
+    ch_contrib::xz
+    ch_contrib::brotli
+    ch_contrib::bzip2
 )
 
 
 if (OS_LINUX)
-    target_link_libraries(pyju_lib
+    target_link_libraries(pyju_core
         PUBLIC
         ${CMAKE_DL_LIBS}
         ch_contrib::jemalloc
@@ -91,7 +113,7 @@ add_executable(pyju
 
 target_link_libraries(pyju
     PUBLIC
-    pyju_lib
+    pyju_core
 )
 
 include (configure_config.cmake)
@@ -103,3 +125,4 @@ configure_file (src/Core/config_core.h.in "${CMAKE_CURRENT_BINARY_DIR}/src/Core/
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/src/Core)

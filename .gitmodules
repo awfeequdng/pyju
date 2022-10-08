@@ -29,3 +29,30 @@
 [submodule "contrib/replxx"]
 	path = contrib/replxx
 	url = https://github.com/ClickHouse-Extras/replxx.git
+[submodule "contrib/cctz"]
+	path = contrib/cctz
+	url = https://github.com/ClickHouse-Extras/cctz.git
+[submodule "contrib/re2"]
+	path = contrib/re2
+	url = https://github.com/google/re2.git
+[submodule "contrib/yaml-cpp"]
+	path = contrib/yaml-cpp
+	url = https://github.com/ClickHouse-Extras/yaml-cpp.git
+[submodule "contrib/double-conversion"]
+	path = contrib/double-conversion
+	url = https://github.com/google/double-conversion.git
+[submodule "contrib/miniselect"]
+	path = contrib/miniselect
+	url = https://github.com/danlark1/miniselect
+[submodule "contrib/dragonbox"]
+	path = contrib/dragonbox
+	url = https://github.com/ClickHouse-Extras/dragonbox.git
+[submodule "contrib/fast_float"]
+	path = contrib/fast_float
+	url = https://github.com/fastfloat/fast_float
+[submodule "contrib/xz"]
+	path = contrib/xz
+	url = https://github.com/xz-mirror/xz
+[submodule "contrib/brotli"]
+	path = contrib/brotli
+	url = https://github.com/google/brotli.git
