@@ -63,6 +63,7 @@ add_library(pyju_lib SHARED
 if (OS_LINUX)
     target_link_libraries(pyju_lib
         PUBLIC
+        ${CMAKE_DL_LIBS}
         ch_contrib::jemalloc
     )
 endif ()
