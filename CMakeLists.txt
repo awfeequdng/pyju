@@ -46,6 +46,10 @@ if (NOT ENABLE_JEMALLOC)
     message (WARNING "jemalloc allocator is disabled. This is not recommended for production builds.")
 endif ()
 
+include_directories(
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/base
+)
 file(GLOB_RECURSE
         JUPY_SRC
         CONFIGURE_DEPENDS  # Ask CMake to regenerate the build system if these files change.
@@ -66,7 +70,12 @@ target_link_libraries(pyju_lib
     Poco::Foundation
     Poco::Util
     boost::heap
+    ch_contrib::magic_enum
+    ch_contrib::replxx
+    ch_contrib::cityhash
+    ch_contrib::fmt
 )
+
 
 if (OS_LINUX)
     target_link_libraries(pyju_lib
