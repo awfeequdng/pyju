@@ -57,10 +57,12 @@ message(STATUS "JUPY_SRC " ${JUPY_SRC})
 add_library(pyju_lib SHARED
     ${JUPY_SRC}
 )
-target_link_libraries(pyju_lib
-    PUBLIC
-    ch_contrib::jemalloc
-)
+if (OS_LINUX)
+    target_link_libraries(pyju_lib
+        PUBLIC
+        ch_contrib::jemalloc
+    )
+endif ()
 
 add_executable(pyju
     programs/main.cpp
