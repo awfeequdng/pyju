@@ -110,7 +110,9 @@ if (OS_LINUX)
 endif ()
 
 add_executable(pyju
-    programs/main.cpp
+    programs/pyju.cpp
+    programs/TestTags.cpp
+    programs/Client.cpp
 )
 
 target_link_libraries(pyju
