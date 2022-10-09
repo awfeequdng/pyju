@@ -77,7 +77,6 @@ target_link_libraries(pyju_core
     ch_contrib::magic_enum
     ch_contrib::replxx
     ch_contrib::cityhash
-    ch_contrib::fmt
     ch_contrib::cctz
     base
     # loggers
@@ -96,6 +95,7 @@ target_link_libraries(pyju_core
     ch_contrib::xz
     ch_contrib::brotli
     ch_contrib::bzip2
+    ch_contrib::fmt
     OpenSSL::SSL
     OpenSSL::Crypto
 )
