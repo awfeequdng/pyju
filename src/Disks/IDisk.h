@@ -3,12 +3,14 @@
 #include <Core/Defines.h>
 #include <base/types.h>
 #include <Common/CurrentMetrics.h>
+#include <Common/Exception.h>
 #include <Disks/Executor.h>
 #include <Disks/DiskType.h>
 #include <IO/ReadSettings.h>
 
 #include <memory>
 #include <mutex>
+#include <map>
 #include <utility>
 #include <boost/noncopyable.hpp>
 #include <Poco/Timestamp.h>
@@ -318,7 +320,7 @@ private:
 
 using DiskPtr = std::shared_ptr<IDisk>;
 using Disks = std::vector<DiskPtr>;
-
+using DisksMap = std::map<String, DiskPtr>;
 /**
  * Iterator of directory contents on particular disk.
  */
