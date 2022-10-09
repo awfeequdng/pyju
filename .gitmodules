@@ -56,3 +56,6 @@
 [submodule "contrib/brotli"]
 	path = contrib/brotli
 	url = https://github.com/google/brotli.git
+[submodule "contrib/boringssl"]
+	path = contrib/boringssl
+	url = https://github.com/ClickHouse-Extras/boringssl.git

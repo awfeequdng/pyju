@@ -96,6 +96,8 @@ target_link_libraries(pyju_core
     ch_contrib::xz
     ch_contrib::brotli
     ch_contrib::bzip2
+    OpenSSL::SSL
+    OpenSSL::Crypto
 )
 
 
