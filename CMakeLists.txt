@@ -90,7 +90,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/base/loggers
 )
 file(GLOB_RECURSE
-        JUPY_SRC
+        PYJU_SRC
         CONFIGURE_DEPENDS  # Ask CMake to regenerate the build system if these files change.
         ${PROJECT_SOURCE_DIR}/src/*.cpp
         ${PROJECT_SOURCE_DIR}/src/*.h
@@ -99,10 +99,10 @@ file(GLOB_RECURSE
         )
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/base)
 
-message(STATUS "JUPY_SRC " ${JUPY_SRC})
+message(STATUS "PYJU_SRC " ${PYJU_SRC})
 
 add_library(pyju_core SHARED
-    ${JUPY_SRC}
+    ${PYJU_SRC}
 )
 target_link_libraries(pyju_core
     PUBLIC
@@ -154,6 +154,7 @@ add_executable(pyju
     programs/pyju.cpp
     programs/TestTags.cpp
     programs/Client.cpp
+    programs/pyju_main.cpp
 )
 
 target_link_libraries(pyju

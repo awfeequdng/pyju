@@ -1,0 +1,694 @@
+// PEG grammar for Python
+
+// -----------------------------------------------------------------------------
+// Bison Configuration
+// -----------------------------------------------------------------------------
+
+%require "3.2"
+%language "c++"
+
+// We don't need a separate header for Bison locations.
+%define api.location.file none
+
+// Use a type-safe C++ variant for semantic values
+%define api.value.type variant
+
+// Have Bison generate the functions ‘make_TEXT’ and ‘make_NUMBER’, but also
+// ‘make_YYEOF’, for the end of input.
+%define api.token.constructor
+
+// Generate the parser as `::PYJU::Parser`.
+%define api.namespace { PYJU }
+%define api.parser.class { Parser }
+
+// Enable support for parser debugging
+%define parse.trace true
+
+// Generate location structs.
+%locations
+
+
+// Parameters to the parser and lexer.
+//
+// Parameters to the parser are stored therein as protected data members, and
+// thus available to its methods.
+
+// "inout" parameters passed to both the parser and the lexer.
+%param {PYJU::Nonnull<PYJU::Arena*> arena}
+%param {yyscan_t yyscanner}
+%param {ParseAndLexContext& context}
+
+// "out" parameter passed to the parser, where the AST is written.
+%parse-param {std::optional<PYJU::ASTPtr>* ast}
+
+%code top {
+  #include <algorithm>
+  #include <cstdarg>
+  #include <cstdio>
+  #include <cstdlib>
+  #include <vector>
+  #include <utility>
+
+  #include "base/check.h"
+  #include "Parser/flex_bison/parser.h"
+  #include "Parser/flex_bison/parse_and_lex_context.h"
+  #include "llvm/ADT/StringExtras.h"
+  #include "llvm/Support/raw_ostream.h"
+}  // %code top
+
+
+%code requires {
+  #include <optional>
+
+  #include "ast/ast.h"
+  #include "base/arena.h"
+  #include "base/nonnull.h"
+  #include "Parser/flex_bison/semantics.h"
+  #include "Parser/flex_bison/parser.h"
+
+  namespace PYJU {
+  class ParseAndLexContext;
+  }  // namespace PYJU
+
+  typedef void* yyscan_t;
+}  // %code requires
+
+
+%code {
+  void PYJU::Parser::error(const location_type&, const std::string& message) {
+    context.RecordSyntaxError(message);
+  }
+}  // %code
+
+%token <long long> integer_literal
+%token <double> real_literal
+%token <double> image_literal
+%token <std::string> identifier
+%token <std::string> sized_type_literal
+%token <std::string> string_literal
+
+%token
+  // Most tokens have their spelling defined in lexer.lpp.
+  // table-begin
+  FALSE
+  TRUE
+  NONE
+  AND             "and"
+  AS
+  ASSERT
+  ASYNC
+  AWAIT
+  BREAK
+  CLASS
+  CONTINUE
+  DEF
+  DEL
+  ELIF
+  ELSE
+  EXCEPT
+  FINALLY
+  FOR
+  FROM
+  GLOBAL
+  IF
+  IMPORT
+  IN              "in"
+  IS              "is"
+  IS_NOT          "is not"
+  NOT_IN          "not in"
+  LAMBDA
+  NONLOCAL
+  NOT             "not"
+  OR              "or"
+  PASS
+  RETURN
+  TRY
+  WHILE
+  WITH
+  YIELD
+
+  ARROW
+  AMPERSAND       "&"
+  CARET           "^"
+  COLON           ":"
+  COLON_BANG      ":!"
+  COMMA           ","
+  DOUBLE_ARROW    "=>"
+  EQUAL           "="
+  COLONEQUAL      ":="
+  EQUAL_EQUAL     "=="
+  LBRACE          "{"
+  LPARENT         "("
+  LBRACKET        "["
+  MINUS           "-"
+  PERIOD          "."
+  PLUS            "+"
+  STAR            "*"
+  POW             "**"
+  AT              "@"
+  FLOOR_DIV       "//"
+  MOD             "%"
+  TILDE           "~"
+  VBAR            "|"
+  LSHIFT          "<<"
+  RSHIFT          ">>"
+
+  LOWER_THEN      "<"
+  LOWER_EQUAL     "<="
+  GREATER_THEN    ">"
+  GREATER_EQUAL   ">="
+  ELLIPSIS        "..."
+  RBRACE          "}"
+  RPARENT         ")"
+  RBRACKET        "]"
+  SELF            "self"
+  SEMICOLON       ";"
+  SLASH           "/"
+  UNDERSCORE      "_"
+  RARROW          "->"
+
+  INDENT
+  DEDENT
+  NEWLINE
+  COMMENT
+  EOLCOMMENT
+  TYPE_COMMENT
+
+  // Used to track EOF.
+  END_OF_FILE 0
+;
+
+%type <Nonnull<Statement*>> script_unit
+%type <Nonnull<Statement*>> statement
+%type <Nonnull<Statement*>> expression_statment
+%type <Nonnull<Statement*>> single_line_statement
+%type <Nonnull<Statement*>> global_statement
+%type <Nonnull<Statement*>> nonlocal_statement
+
+%type <Nonnull<Statement*>> multi_line_statement
+%type <Nonnull<Statement*>> if_statement
+%type <Nonnull<Statement*>> function_def
+%type <std::vector<Nonnull<Statement*>>> body_stmts
+%type <std::vector<Nonnull<Statement*>>> statements1
+%type <std::vector<Nonnull<Statement*>>> statements
+%type <std::vector<Nonnull<Statement*>>> sep_statements
+%type <std::vector<Nonnull<Statement*>>> single_line_statements
+%type <std::vector<Nonnull<Statement*>>> single_line_multi_statements
+%type <std::vector<Nonnull<Statement*>>> single_line_multi_statements_opt
+%type <Nonnull<Expression*>> expr
+%type <Nonnull<Arg*>> parameter
+%type <Nonnull<FnArg*>> parameter_list
+%type <Nonnull<Arguments*>> parameter_list_opt
+%type <Nonnull<StarArg*>> parameter_list_starargs
+%type <std::vector<Nonnull<Arg*>>> defparameter_list
+%type <Nonnull<NoPosOnlyArg*>> parameter_list_no_posonly
+%type <std::vector<Nonnull<Expression*>>> decorators
+%type <std::vector<Nonnull<Expression*>>> decorators_opt
+%type <std::vector<Nonnull<Expression*>>> expr_list
+%type <std::vector<Nonnull<Expression*>>> expr_list_opt
+%type <Nonnull<Keyword*>> keyword_item
+%type <std::vector<Nonnull<Keyword*>>> keyword_items
+%type <std::vector<Nonnull<Expression*>>> call_arguement_list
+%type <std::vector<PairNonnullExpr>> dict_list
+%type <PairNonnullExpr> dict
+%type <Nonnull<Name*>> id
+%type <Nonnull<Expression*>> string
+%type <Nonnull<Expression*>> primary
+%type <Nonnull<Expression*>> function_call
+%type <Nonnull<Expression*>> ternary_if_statement
+%type <std::vector<Nonnull<Expression*>>> module
+%type <Nonnull<Alias*>> module_as_id
+%type <std::vector<Nonnull<Alias*>>> module_item_list
+%type <Nonnull<Statement*>> import_statement
+%type <Nonnull<Statement*>> pass_statement
+%type <Nonnull<Statement*>> break_statement
+%type <Nonnull<Statement*>> continue_statement
+
+%type <std::vector<std::string>> sep
+%type <std::string> sep_one
+
+// Precedence
+
+%left IF ELSE
+%precedence ":="
+%left "or"
+%left "and"
+%precedence "not"
+%left "==" "!=" ">=" ">" "<=" "<" "is not" "is" "not in" "in"
+
+%left "|"
+%left "^"
+%left "&"
+%left ">>" "<<"
+
+%left "-" "+"
+
+%left "%" "*" "/" "//" "@"
+%precedence UNARY
+
+%right "**"
+%precedence "."
+
+
+%start units
+
+%%
+// The order of rules does not matter in Bison (unlike in ANTLR). The
+// precedence is specified not by the order but by %left and %right directives
+// as well as with %dprec.
+
+// ----------------------------------------------------------------------------
+// Top level rules to be used for parsing.
+
+// Higher %dprec means higher precedence
+units
+    : units script_unit   { RESULT($2); }
+    | script_unit         { RESULT($1); }
+    | sep
+    ;
+
+script_unit
+    : statement
+    ;
+
+statements
+    : INDENT statements1 DEDENT { $$ = $2; }
+    ;
+
+sep_statements
+    : sep statements { $$ = $2; }
+    ;
+
+body_stmts
+    : single_line_statements { $$ = $1; }
+    | sep_statements { $$ = $1; }
+    ;
+
+statements1
+    : statements1 statement { $$ = $1; LIST_ADD($$, $2); }
+    | statement { LIST_NEW($$); LIST_ADD($$, $1); }
+    ;
+
+single_line_statements
+    : single_line_multi_statements NEWLINE { $$ = $1; }
+    | single_line_multi_statements COMMENT NEWLINE { $$ = $1; }
+    | single_line_statement NEWLINE { LIST_NEW($$); LIST_ADD($$, $1); }
+    | single_line_statement SEMICOLON NEWLINE {
+        LIST_NEW($$); LIST_ADD($$, $1);
+      }
+    | single_line_statement SEMICOLON COMMENT NEWLINE {
+        LIST_NEW($$); LIST_ADD($$, $1);
+      }
+    | single_line_statement COMMENT NEWLINE {
+        LIST_NEW($$); LIST_ADD($$, $1);
+      }
+    ;
+
+single_line_multi_statements
+    : single_line_multi_statements_opt single_line_statement {
+        $$ = $1; LIST_ADD($$, $2);
+      }
+    | single_line_multi_statements_opt single_line_statement SEMICOLON {
+        $$ = $1; LIST_ADD($$, $2);
+      }
+    ;
+
+single_line_multi_statements_opt
+    : single_line_multi_statements_opt single_line_statement SEMICOLON {
+        $$ = $1; LIST_ADD($$, $2);
+      }
+    | single_line_statement SEMICOLON {
+        LIST_NEW($$); LIST_ADD($$, $1);
+      }
+    ;
+
+statement
+    : single_line_statement sep { $$ = $1; }
+    | multi_line_statement
+    | multi_line_statement sep { $$ = $1; }
+    ;
+
+
+pass_statement
+    : PASS { $$ = PASS(context.source_loc()); }
+    ;
+
+break_statement
+    : BREAK { $$ = BREAK(context.source_loc()); }
+    ;
+
+continue_statement
+    : CONTINUE { $$ = CONTINUE(context.source_loc()); }
+    ;
+
+single_line_statement
+    : expression_statment
+//    | assert_statement
+//    | assignment_statement
+//    | augassign_statement
+//    | ann_assignment_statement
+    | pass_statement
+//    | delete_statement
+//    | return_statement
+//    | raise_statement
+    | break_statement
+    | continue_statement
+    | import_statement
+    | global_statement
+    | nonlocal_statement
+    ;
+
+
+module
+    : module "." id { $$ = $1; LIST_ADD($$, $3); }
+    | id { LIST_NEW($$); LIST_ADD($$, $1); }
+    ;
+
+module_as_id
+    : module { $$ = MOD_ID_01($1, context.source_loc()); }
+    | module AS id { $$ = MOD_ID_02($1, $3, context.source_loc()); }
+    | "*" { $$ = MOD_ID_03(context.source_loc()); }
+    ;
+
+module_item_list
+    : module_item_list "," module_as_id { $$ = $1; LIST_ADD($$, $3); }
+    | module_as_id { LIST_NEW($$); LIST_ADD($$, $1); }
+    ;
+
+dot_list
+    : dot_list "." { DOT_COUNT_01(); }
+    | "." { DOT_COUNT_01(); }
+ //   | dot_list "..." { DOT_COUNT_02(); }
+ //   | "..." { DOT_COUNT_02(); }
+    ;
+
+import_statement
+    : IMPORT module_item_list { $$ = IMPORT_01($2, context.source_loc()); }
+    | FROM module IMPORT module_item_list {
+        $$ = IMPORT_02($2, $4, context.source_loc()); }
+    | FROM module IMPORT "(" module_item_list comma_opt ")" {
+        $$ = IMPORT_02($2, $5, context.source_loc()); }
+    | FROM dot_list IMPORT module_item_list {
+        $$ = IMPORT_03($4, context.source_loc()); }
+    | FROM dot_list module IMPORT module_item_list {
+        $$ = IMPORT_04($3, $5, context.source_loc()); }
+    | FROM dot_list IMPORT "(" module_item_list comma_opt ")" {
+        $$ = IMPORT_03($5, context.source_loc()); }
+    | FROM dot_list module IMPORT "(" module_item_list comma_opt ")" {
+        $$ = IMPORT_04($3, $6, context.source_loc()); }
+    ;
+
+multi_line_statement
+    : if_statement
+//    | for_statement
+//    | try_statement
+//    | with_statement
+    | function_def
+//    | class_def
+//    | async_func_def
+//    | async_for_stmt
+//    | async_with_stmt
+//    | while_statement
+    ;
+
+decorators_opt
+    : decorators { $$ = $1; }
+    | %empty { LIST_NEW($$); }
+    ;
+
+decorators
+    : decorators "@" expr sep { $$ = $1; LIST_ADD($$, $3); }
+    | "@" expr sep { LIST_NEW($$); LIST_ADD($$, $2); }
+    ;
+
+parameter
+    : id { $$ = ARGS_01($1, context.source_loc()); }
+    | id ":" expr { $$ = ARGS_02($1, $3, context.source_loc()); }
+    | id "=" expr { $$ = ARGS_03($1, $3, context.source_loc()); }
+    | id ":" expr "=" expr { $$ = ARGS_04($1, $3, $5, context.source_loc()); }
+    ;
+
+parameter_list
+    : defparameter_list "," "/" comma_opt {
+        $$ = PARAMETER_LIST_01($1, std::nullopt); }
+    | defparameter_list "," "/" "," parameter_list_no_posonly {
+        $$ = PARAMETER_LIST_01($1, $5); }
+    | parameter_list_no_posonly { $$ = PARAMETER_LIST_02($1); }
+    ;
+
+parameter_list_no_posonly
+    : defparameter_list comma_opt { $$ = PARAMETER_LIST_03($1, std::nullopt); }
+    | defparameter_list "," parameter_list_starargs {
+        $$ = PARAMETER_LIST_03($1, $3); }
+    | parameter_list_starargs { $$ = PARAMETER_LIST_04($1); }
+    ;
+
+defparameter_list
+    : defparameter_list "," parameter { $$ = $1; LIST_ADD($$, $3); }
+    | parameter { LIST_NEW($$); LIST_ADD($$, $1); }
+//    | defparameter_list "," TK_TYPE_COMMENT parameter { $$ = $1;
+//        LIST_ADD($$, $4); ADD_TYPE_COMMENT($1, $3, context.source_loc()); }
+//    | defparameter_list "," TK_TYPE_COMMENT {
+//        $$ = $1; ADD_TYPE_COMMENT($1, $3, context.source_loc()); }
+    ;
+
+parameter_list_starargs
+    : "*" "," defparameter_list comma_opt { $$ = PARAMETER_LIST_05($3); }
+    | "*" "," "**" parameter comma_opt { $$ = PARAMETER_LIST_06($4); }
+    | "*" "," defparameter_list "," "**" parameter comma_opt {
+        $$ = PARAMETER_LIST_07($3, $6); }
+    | "*" parameter comma_opt { $$ = PARAMETER_LIST_08($2); }
+    | "*" parameter "," defparameter_list comma_opt {
+        $$ = PARAMETER_LIST_09($2, $4); }
+    | "*" parameter "," "**" parameter comma_opt {
+        $$ = PARAMETER_LIST_10($2, $5); }
+    | "*" parameter "," defparameter_list "," "**" parameter comma_opt {
+        $$ = PARAMETER_LIST_11($2, $4, $7); }
+    | "**" parameter comma_opt { $$ = PARAMETER_LIST_06($2); }
+    ;
+
+parameter_list_opt
+    : parameter_list { $$ = FUNC_ARGS_01(arena, context.source_loc(), $1); }
+    | %empty { $$ = PARAMETER_LIST_12(context.source_loc()); }
+    ;
+
+comma_opt
+    : ","
+    | %empty
+    ;
+
+function_def
+    : decorators_opt DEF id "(" parameter_list_opt ")" ":"
+        body_stmts { $$ = FUNCTION_01($1, $3, $5, $8, context.source_loc()); }
+    | decorators_opt DEF id "(" parameter_list_opt ")" "->" expr ":"
+        body_stmts { $$ = FUNCTION_02($1, $3, $5, $8, $10, context.source_loc()); }
+//    | decorators_opt DEF id "(" parameter_list_opt ")" ":"
+//        TYPE_COMMENT NEWLINE statements {
+//        $$ = FUNCTION_03($1, $3, $5, $10, $8, context.source_loc()); }
+//    | decorators_opt DEF id "(" parameter_list_opt ")" "->" expr ":"
+//        TYPE_COMMENT NEWLINE statements {
+//            $$ = FUNCTION_04($1, $3, $5, $8, $12, $10, context.source_loc()); }
+    ;
+
+global_statement
+    : GLOBAL expr_list { $$ = GLOBAL($2, context.source_loc()); }
+    ;
+
+ternary_if_statement
+    : expr IF expr ELSE expr { $$ = TERNARY($3, $1, $5, context.source_loc()); }
+    ;
+
+nonlocal_statement
+    : NONLOCAL expr_list { $$ = NON_LOCAL($2, context.source_loc()); }
+    ;
+
+if_statement
+    : IF expr ":" body_stmts {
+        $$ = IF_STMT_01($2, $4, context.source_loc());
+      }
+    | IF expr ":" body_stmts ELSE ":" body_stmts {
+        $$ = IF_STMT_02($2, $4, $7, context.source_loc());
+      }
+//    | KW_IF expr ":" body_stmts elif_statement {
+//        $$ = IF_STMT_03($2, $4, $5, context.source_loc()); }
+    ;
+
+expression_statment
+    : expr { $$ = EXPR_01($1, context.source_loc()); }
+    ;
+
+string
+    : string string_literal { $$ = STRING2($1, $2, context.source_loc()); }
+    | string_literal {
+        $$ = STRING1($1, context.source_loc());
+      }
+    | id string_literal {
+        $$ = STRING3($1, $2, context.source_loc());
+      }
+    | string id string_literal {
+        $$ = STRING4($1, $2, $3, context.source_loc());
+      }
+    ;
+
+expr_list_opt
+    : expr_list { $$ = $1; }
+    | %empty { LIST_NEW($$); }
+    ;
+
+expr_list
+    : expr_list "," expr { $$ = $1; LIST_ADD($$, $3); }
+    | expr { LIST_NEW($$); LIST_ADD($$, $1); }
+    ;
+
+// expr_list
+//    : expr_list "," expr %prec "not" { $$ = $1; LIST_ADD($$, $3); }
+//    | expr %prec "not" { LIST_NEW($$); LIST_ADD($$, $1); }
+//    ;
+
+
+dict
+    : expr ":" expr { $$ = DICT_EXPR($1, $3, context.source_loc()); }
+    ;
+
+dict_list
+    : dict_list "," dict { $$ = $1; LIST_ADD($$, $3); }
+    | dict { LIST_NEW($$); LIST_ADD($$, $1); }
+    ;
+
+call_arguement_list
+    : expr_list_opt { $$ = $1; }
+    | expr_list "," { $$ = $1; }
+//    | expr comp_for_items { $$ = A2LIST(p.m_a, GENERATOR_EXPR($1, $2, context.source_loc())); }
+    ;
+
+keyword_item
+    : id "=" expr { $$ = CALL_KEYWORD_01($1, $3, context.source_loc()); }
+    | "**" expr { $$ = CALL_KEYWORD_02($2, context.source_loc()); }
+    ;
+
+keyword_items
+    : keyword_items "," keyword_item { $$ = $1; LIST_ADD($$, $3); }
+    | keyword_item { LIST_NEW($$); LIST_ADD($$, $1); }
+    ;
+
+
+primary
+    : id { $$ = $1; }
+    | string { $$ = $1; }
+    | expr "." id { $$ = ATTRIBUTE_REF($1, $3, context.source_loc()); }
+    ;
+
+function_call
+    : primary "(" call_arguement_list ")" { $$ = CALL_01($1, $3, context.source_loc()); }
+    | primary "(" expr_list "," keyword_items comma_opt ")" {
+        $$ = CALL_02($1, $3, $5, context.source_loc()); }
+    | primary "(" keyword_items "," expr_list comma_opt ")" {
+        $$ = CALL_02($1, $5, $3, context.source_loc()); }
+    | primary "(" keyword_items comma_opt ")" { $$ = CALL_03($1, $3, context.source_loc()); }
+    | function_call "(" call_arguement_list ")" { $$ = CALL_01($1, $3, context.source_loc()); }
+    | function_call "(" expr_list "," keyword_items comma_opt ")" {
+        $$ = CALL_02($1, $3, $5, context.source_loc()); }
+    | function_call "(" keyword_items "," expr_list comma_opt ")" {
+        $$ = CALL_02($1, $5, $3, context.source_loc()); }
+    | function_call "(" keyword_items comma_opt ")" { $$ = CALL_03($1, $3, context.source_loc()); }
+//    | subscript "(" call_arguement_list ")" { $$ = CALL_01($1, $3, context.source_loc()); }
+//    | subscript "(" expr_list "," keyword_items comma_opt ")" {
+//        $$ = CALL_02($1, $3, $5, context.source_loc()); }
+//    | subscript "(" keyword_items "," expr_list comma_opt ")" {
+//        $$ = CALL_02($1, $5, $3, context.source_loc()); }
+//    | subscript "(" keyword_items comma_opt ")" { $$ = CALL_03($1, $3, context.source_loc()); }
+    | "(" expr ")" "(" call_arguement_list ")" { $$ = CALL_01($2, $5, context.source_loc()); }
+    ;
+
+expr
+    : id { $$ = $1; }
+    | integer_literal {
+        std::cout << "integer lit: " << $1 << std::endl;
+        $$ = INTEGER($1, context.source_loc());
+      }
+    | string { $$ = $1; }
+    | real_literal { $$ = FLOAT($1, context.source_loc()); }
+    | image_literal {
+        std::cout << "image_literal: " << $1 << std::endl;
+        $$ = COMPLEX($1, context.source_loc());
+      }
+    | TRUE { $$ = BOOL(true, context.source_loc()); }
+    | FALSE { $$ = BOOL(false, context.source_loc()); }
+    | NONE { $$ = NONE(context.source_loc()); }
+    | ELLIPSIS { $$ = ELLIPSIS(context.source_loc()); }
+    | "(" expr ")" { $$ = $2; }
+    | "(" ")" { $$ = TUPLE_EMPTY(context.source_loc()); }
+    | function_call { $$ = $1; }
+   // | subscription { $$ = $1; }
+    | "[" expr_list_opt "]" { $$ = LIST($2, context.source_loc()); }
+    | "[" expr_list "," "]" { $$ = LIST($2, context.source_loc()); }
+    | "{" expr_list "}" { $$ = SET($2, context.source_loc()); }
+    | "{" expr_list "," "}" { $$ = SET($2, context.source_loc()); }
+    | expr "." id { $$ = ATTRIBUTE_REF($1, $3, context.source_loc()); }
+
+    | "{" "}" { $$ = DICT_01(context.source_loc()); }
+    | "{" dict_list "}" { $$ = DICT_02($2, context.source_loc()); }
+   // | KW_AWAIT expr %prec AWAIT { $$ = AWAIT($2, context.source_loc()); }
+   // | KW_YIELD %prec YIELD { $$ = YIELD_01(context.source_loc()); }
+   // | KW_YIELD expr %prec YIELD { $$ = YIELD_02($2, context.source_loc()); }
+    | id ":=" expr { $$ = NAMEDEXPR($1, $3, context.source_loc()); }
+    | "*" expr { $$ = STARRED_ARG($2, context.source_loc()); }
+
+    | expr "+" expr { $$ = BINOP($1, Add, $3, context.source_loc()); }
+    | expr "-" expr { $$ = BINOP($1, Sub, $3, context.source_loc()); }
+    | expr "*" expr { $$ = BINOP($1, Mult, $3, context.source_loc()); }
+    | expr "/" expr { $$ = BINOP($1, Div, $3, context.source_loc()); }
+    | expr "%" expr { $$ = BINOP($1, Mod, $3, context.source_loc()); }
+    | "-" expr %prec UNARY { $$ = UNARY($2, USub, context.source_loc()); }
+    | "+" expr %prec UNARY { $$ = UNARY($2, UAdd, context.source_loc()); }
+    | "~" expr %prec UNARY { $$ = UNARY($2, Invert, context.source_loc()); }
+    | expr "**" expr { $$ = BINOP($1, Pow, $3, context.source_loc()); }
+    | expr "//" expr { $$ = BINOP($1, FloorDiv, $3, context.source_loc()); }
+    | expr "@" expr { $$ = BINOP($1, MatMult, $3, context.source_loc()); }
+
+    | expr "&" expr { $$ = BINOP($1, BitAnd, $3, context.source_loc()); }
+    | expr "|" expr { $$ = BINOP($1, BitOr, $3, context.source_loc()); }
+    | expr "^" expr { $$ = BINOP($1, BitXor, $3, context.source_loc()); }
+    | expr "<<" expr { $$ = BINOP($1, LShift, $3, context.source_loc()); }
+    | expr ">>" expr { $$ = BINOP($1, RShift, $3, context.source_loc()); }
+
+    | expr "==" expr { $$ = COMPARE($1, Eq, $3, context.source_loc()); }
+    | expr "!=" expr { $$ = COMPARE($1, NotEq, $3, context.source_loc()); }
+    | expr "<" expr { $$ = COMPARE($1, Lt, $3, context.source_loc()); }
+    | expr "<=" expr { $$ = COMPARE($1, LtE, $3, context.source_loc()); }
+    | expr ">" expr { $$ = COMPARE($1, Gt, $3, context.source_loc()); }
+    | expr ">=" expr { $$ = COMPARE($1, GtE, $3, context.source_loc()); }
+    | expr "is" expr { $$ = COMPARE($1, Is, $3, context.source_loc()); }
+    | expr "is not" expr { $$ = COMPARE($1, IsNot, $3, context.source_loc()); }
+    | expr "in" expr { $$ = COMPARE($1, In, $3, context.source_loc()); }
+    | expr "not in" expr { $$ = COMPARE($1, NotIn, $3, context.source_loc()); }
+
+    | expr "and" expr { $$ = BOOLOP($1, And, $3, context.source_loc()); }
+    | expr "or" expr { $$ = BOOLOP($1, Or, $3, context.source_loc()); }
+    | "not" expr { $$ = UNARY($2, Not, context.source_loc()); }
+
+   // // Comprehension
+   // | "[" expr comp_for_items "]" { $$ = LIST_COMP_1($2, $3, context.source_loc()); }
+   // | "{" expr comp_for_items "}" { $$ = SET_COMP_1($2, $3, context.source_loc()); }
+   // | "{" expr ":" expr comp_for_items "}" { $$ = DICT_COMP_1($2, $4, $5, context.source_loc()); }
+
+    | ternary_if_statement { $$ = $1; }
+   // | lambda_expression { $$ = $1; }
+    ;
+
+id
+    : identifier { $$ = SYMBOL($1, context.source_loc()); }
+    ;
+
+sep
+    : sep sep_one { $$ = $1; LIST_ADD($$, $2); }
+    | sep_one { LIST_NEW($$); LIST_ADD($$, $1); }
+    ;
+
+sep_one
+    : NEWLINE { $$ = std::string("newline"); }
+    | COMMENT { $$ = std::string("comment"); }
+    | SEMICOLON { $$ = std::string(";"); }
+    ;
+
+%%

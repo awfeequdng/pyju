@@ -18,6 +18,7 @@ set(SRCS
     "${LIBRARY_DIR}/utf8proc.h"
 )
 
+
 add_library (_utf8proc ${SRCS})
 target_include_directories(_utf8proc SYSTEM PUBLIC "${LIBRARY_DIR}")
 

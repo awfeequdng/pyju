@@ -1,0 +1,452 @@
+
+%{
+  #include <cstdlib>
+
+  #include "base/colorizer.h"
+  #include "base/check.h"
+  #include "base/error.h"
+  #include "Parser/flex_bison/lex_helper.h"
+  #include "Parser/flex_bison/lex_scan_helper.h"
+  #include "Parser/flex_bison/parse_and_lex_context.h"
+  #include "Parser/flex_bison/parser.h"
+  #include "llvm/ADT/StringExtras.h"
+  #include <fmt/format.h>
+%}
+
+/* Turn off legacy bits we don't need. */
+%option noyywrap nodefault
+
+%option reentrant
+
+%x NORMAL
+
+/* table-begin */
+FALSE                "False"
+TRUE                 "True"
+NONE                 "None"
+AND                  "and"
+AS                   "as"
+ASSERT               "assert"
+ASYNC                "async"
+AWAIT                "await"
+BREAK                "break"
+CLASS                "class"
+CONTINUE             "continue"
+DEF                  "def"
+DEL                  "del"
+ELIF                 "elif"
+ELSE                 "else"
+EXCEPT               "except"
+FINALLY              "finally"
+FOR                  "for"
+FROM                 "from"
+GLOBAL               "global"
+IF                   "if"
+IMPORT               "import"
+IN                   "in"
+IS                   "is"
+IS_NOT               "is not"
+NOT_IN               "not in"
+LAMBDA               "lambda"
+NONLOCAL             "nonlocal"
+NOT                  "not"
+OR                   "or"
+PASS                 "pass"
+RETURN               "return"
+TRY                  "try"
+WHILE                "while"
+WITH                 "with"
+YIELD                "yield"
+
+RARROW               "->"
+AMPERSAND            "&"
+CARET                "^"
+COLON                ":"
+COLON_BANG           ":!"
+COMMA                ","
+DOUBLE_ARROW         "=>"
+COLONEQUAL           ":="
+EQUAL                "="
+EQUAL_EQUAL          "=="
+NOT_EQUAL            "!="
+LOWER_THEN           "<"
+LOWER_EQUAL          "<="
+GREATER_THEN         ">"
+GREATER_EQUAL        ">="
+
+LBRACE               "{"
+LPARENT              "("
+LBRACKET             "["
+
+MINUS                "-"
+PERIOD               "."
+ELLIPSIS             "..."
+PLUS                 "+"
+STAR                 "*"
+POW                  "**"
+AT                   "@"
+FLOOR_DIV            "//"
+MOD                  "%"
+TILDE                "~"
+VBAR                 "|"
+LSHIFT               "<<"
+RSHIFT               ">>"
+
+RBRACE                "}"
+RPARENT               ")"
+RBRACKET              "]"
+
+SELF                 "self"
+SEMICOLON            ";"
+SLASH                "/"
+UNDERSCORE           "_"
+
+/* table-end */
+
+/* This should be kept table-like, but isn't automatic due to spaces. */
+identifier            [A-Za-z_][A-Za-z0-9_]*
+/* TODO: Remove Print special casing once we have variadics or overloads. */
+sized_type_literal    [iuf][1-9][0-9]*
+integer_literal       (\-)?[0-9]+
+real_literal          {integer_literal}\.([0-9]+)?((E|e){integer_literal})?
+image_literal         {integer_literal}(\.[0-9]+)?((E|e){integer_literal})?j
+horizontal_whitespace [ \t\r]
+whitespace            [ \t\r\n]
+one_line_comment      \#[^\n]*\n
+
+%%
+
+%{
+  // Code run each time yylex is called.
+  // Begin with an empty token span starting where its previous end was.
+  context.current_token_position.step();
+%}
+" " {
+    context.current_token_position.step();
+    context.current_line_indent++;
+  }
+"\t" {
+    // tab act as 4 space
+    context.current_token_position.step();
+    context.current_line_indent = (context.current_line_indent + 4) & ~3;
+  }
+"\n" {
+    auto tok = PXC_TOKEN(NEWLINE);
+    context.current_token_position.lines(1);
+    context.current_token_position.step();
+    context.current_line_indent = 0;
+    return tok;
+  }
+
+. {
+    unput(*yytext);
+    size_t indent_level = context.indent_stk.top();
+    if (context.current_line_indent > indent_level) {
+      context.indent_stk.push(context.current_line_indent);
+      BEGIN(NORMAL);
+      return PXC_TOKEN(INDENT);
+    } else if (context.current_line_indent < indent_level) {
+      context.indent_stk.pop();
+      indent_level = context.indent_stk.top();
+      if (context.current_line_indent > indent_level) {
+          return context.RecordSyntaxError(
+            PYJU::colorizer::colorize("Error:",
+                                            PYJU::term_colors_t::red) +
+            fmt::format("illegal indentation:{0}, level:{1}\n",
+                        context.current_line_indent,
+                        indent_level));
+      }
+      return PXC_TOKEN(DEDENT);
+    } else {
+      BEGIN(NORMAL);
+    }
+  }
+
+<<EOF>> {
+    size_t indent_level = context.indent_stk.top();
+    auto warn = fmt::format("eof at line %d: indentation %d %d\n",
+                  context.current_token_position.begin.line,
+                  context.current_line_indent, indent_level);
+    std::cout << "eof: " << warn << std::endl;
+    if (indent_level > 0) {
+        context.indent_stk.pop();
+        return PXC_TOKEN(DEDENT);
+    }
+    return PXC_TOKEN(END_OF_FILE);
+  }
+
+<NORMAL>{
+
+  /* table-begin */
+
+  {FALSE}                     { return PXC_TOKEN(FALSE);                }
+  {TRUE}                      { return PXC_TOKEN(TRUE);                 }
+  {NONE}                      { return PXC_TOKEN(NONE);                 }
+  {AND}                       { return PXC_TOKEN(AND);                  }
+  {AS}                        { return PXC_TOKEN(AS);                   }
+  {ASSERT}                    { return PXC_TOKEN(ASSERT);               }
+  {ASYNC}                     { return PXC_TOKEN(ASYNC);                }
+  {AWAIT}                     { return PXC_TOKEN(AWAIT);                }
+  {BREAK}                     { return PXC_TOKEN(BREAK);                }
+  {CLASS}                     { return PXC_TOKEN(CLASS);                }
+  {CONTINUE}                  { return PXC_TOKEN(CONTINUE);             }
+  {DEF}                       { return PXC_TOKEN(DEF);                  }
+  {DEL}                       { return PXC_TOKEN(DEL);                  }
+  {ELIF}                      { return PXC_TOKEN(ELIF);                 }
+  {ELSE}                      { return PXC_TOKEN(ELSE);                 }
+  {EXCEPT}                    { return PXC_TOKEN(EXCEPT);               }
+  {FINALLY}                   { return PXC_TOKEN(FINALLY);              }
+  {FOR}                       { return PXC_TOKEN(FOR);                  }
+  {FROM}                      { return PXC_TOKEN(FROM);                 }
+  {GLOBAL}                    { return PXC_TOKEN(GLOBAL);               }
+  {IF}                        { return PXC_TOKEN(IF);                   }
+  {IMPORT}                    { return PXC_TOKEN(IMPORT);               }
+  {IN}                        { return PXC_TOKEN(IN);                   }
+  {IS}                        { return PXC_TOKEN(IS);                   }
+  {IS_NOT}                    { return PXC_TOKEN(IS_NOT);               }
+  {NOT_IN}                    { return PXC_TOKEN(NOT_IN);               }
+  {LAMBDA}                    { return PXC_TOKEN(LAMBDA);               }
+  {NONLOCAL}                  { return PXC_TOKEN(NONLOCAL);             }
+  {NOT}                       { return PXC_TOKEN(NOT);                  }
+  {OR}                        { return PXC_TOKEN(OR);                   }
+  {PASS}                      { return PXC_TOKEN(PASS);                 }
+  {RETURN}                    { return PXC_TOKEN(RETURN);               }
+  {TRY}                       { return PXC_TOKEN(TRY);                  }
+  {WHILE}                     { return PXC_TOKEN(WHILE);                }
+  {WITH}                      { return PXC_TOKEN(WITH);                 }
+  {YIELD}                     { return PXC_TOKEN(YIELD);                }
+
+  {RARROW}                    { return PXC_TOKEN(RARROW);                }
+  {AMPERSAND}                 { return PXC_TOKEN(AMPERSAND);            }
+  {CARET}                     { return PXC_TOKEN(CARET);                }
+  {COLON}                     { return PXC_TOKEN(COLON);                }
+  {COLON_BANG}                { return PXC_TOKEN(COLON_BANG);           }
+  {COMMA}                     { return PXC_TOKEN(COMMA);                }
+  {DOUBLE_ARROW}              { return PXC_TOKEN(DOUBLE_ARROW);         }
+  {EQUAL}                     { return PXC_TOKEN(EQUAL);                }
+  {COLONEQUAL}                { return PXC_TOKEN(COLONEQUAL);           }
+  {EQUAL_EQUAL}               { return PXC_TOKEN(EQUAL_EQUAL);          }
+  {LOWER_THEN}                { return PXC_TOKEN(LOWER_THEN);           }
+  {LOWER_EQUAL}               { return PXC_TOKEN(LOWER_EQUAL);          }
+  {GREATER_THEN}              { return PXC_TOKEN(GREATER_THEN);         }
+  {GREATER_EQUAL}             { return PXC_TOKEN(GREATER_EQUAL);        }
+  {LBRACE}                    {
+      std::cout << "right )" << std::endl;
+      return PXC_TOKEN(LBRACE);
+   }
+  {LPARENT}                   {
+      std::cout << "left (" << std::endl;
+      return PXC_TOKEN(LPARENT);
+    }
+  {LBRACKET}                  { return PXC_TOKEN(LBRACKET);  }
+
+  {MINUS}                     { return PXC_TOKEN(MINUS);                }
+  {PERIOD}                    { return PXC_TOKEN(PERIOD);               }
+  {ELLIPSIS}                  { return PXC_TOKEN(ELLIPSIS);             }
+  {PLUS}                      { return PXC_TOKEN(PLUS);                 }
+  {STAR}                      { return PXC_TOKEN(STAR);                 }
+  {POW}                       { return PXC_TOKEN(POW);                  }
+  {AT}                        { return PXC_TOKEN(AT);                   }
+  {FLOOR_DIV}                 { return PXC_TOKEN(FLOOR_DIV);            }
+  {MOD}                       { return PXC_TOKEN(MOD);                  }
+  {TILDE}                     { return PXC_TOKEN(TILDE);                }
+  {VBAR}                      { return PXC_TOKEN(VBAR);                 }
+  {LSHIFT}                    { return PXC_TOKEN(LSHIFT);               }
+  {RSHIFT}                    { return PXC_TOKEN(RSHIFT);               }
+  {SELF}                      { return PXC_TOKEN(SELF);                 }
+  {SEMICOLON}                 { return PXC_TOKEN(SEMICOLON);            }
+  {SLASH}                     { return PXC_TOKEN(SLASH);                }
+  {UNDERSCORE}                { return PXC_TOKEN(UNDERSCORE);           }
+  /* table-end */
+
+  {RPARENT} {
+    return PXC_TOKEN(RPARENT);
+  }
+  {RBRACE} {
+    return PXC_TOKEN(RBRACE);
+  }
+  {RBRACKET} {
+    return PXC_TOKEN(RBRACKET);
+  }
+
+  /*
+    * For a `*` operator, we look at whitespace and local context to determine the
+    * arity and fixity. There are two ways to write a binary operator:
+    *
+    * 1) Whitespace on both sides.
+    * 2) Whitespace on neither side, and the previous token is considered to be
+    *    the end of an operand, and the next token is considered to be the start
+    *    of an operand.
+    *
+    * Otherwise, the operator is unary, but we also check for whitespace to help
+    * the parser enforce the rule that whitespace is not permitted between the
+    * operator and its operand, leading to three more cases:
+    *
+    * 3) Whitespace before (but implicitly not after, because that would give a
+    *    longer match and hit case 1): this can only be a prefix operator.
+    * 4) Whitespace after and not before: this can only be a postfix operator.
+    * 5) No whitespace on either side (otherwise the longest match would take us
+    *    to case 4): this is a unary operator and could be either prefix or
+    *    postfix.
+    */
+
+  {sized_type_literal} {
+    return PXC_ARG_TOKEN(sized_type_literal, yytext);
+  }
+
+  {identifier} {
+    return PXC_ARG_TOKEN(identifier, yytext);
+  }
+
+  {real_literal} {
+    double val = 0.0;
+    if (!llvm::to_float(yytext, val)) {
+      return context.RecordSyntaxError(
+        fmt::format("Invalid real literal: {0}", yytext)
+      );
+    }
+    return PXC_ARG_TOKEN(real_literal, val);
+  }
+
+  {image_literal} {
+    std::cout << "image_literal lexer: " << yytext << std::endl;
+    double val = 0.0;
+    std::string img(yytext);
+    img = img.substr(0, img.size() - 1);
+    if (!llvm::to_float(img, val)) {
+      return context.RecordSyntaxError(
+        fmt::format("Invalid real literal: {0}", yytext)
+      );
+    }
+    return PXC_ARG_TOKEN(image_literal, val);
+  }
+
+  {integer_literal} {
+    long long val = 0;
+    if (!llvm::to_integer(yytext, val)) {
+      return context.RecordSyntaxError(
+          fmt::format("Invalid integer literal: {0}", yytext));
+    }
+    return PXC_ARG_TOKEN(integer_literal, val);
+  }
+
+  #*(\"\"\"|\") {
+    // Raw string literal.
+    // yytext (the token that matches the above regex) and chars scanned by
+    // str_lex_helper hold the source text, not the string the source represents.
+    PYJU::StringLexHelper str_lex_helper(yytext, yyscanner, context);
+    const std::string& s = str_lex_helper.str();
+    const int hashtag_num = s.find_first_of('"');
+    const int leading_quotes = s.size() - hashtag_num;
+    if (leading_quotes == 3 && hashtag_num > 0) {
+      // Check if it's a single-line string, like #"""#.
+      // TODO: Extend with other single-line string cases, like #""""#, based on
+      // the definition of block string in the design doc.
+      if (PYJU::ReadHashTags(str_lex_helper, hashtag_num)) {
+        return PYJU::ProcessSingleLineString(str_lex_helper.str(), context,
+                                              hashtag_num);
+      } else if (str_lex_helper.is_eof()) {
+        return PXC_TOKEN(END_OF_FILE);
+      }
+    } else if (!str_lex_helper.Advance()) {
+      return PXC_TOKEN(END_OF_FILE);
+    }
+    // 3 quotes indicates multi-line, otherwise it'll be one.
+    const bool multi_line = leading_quotes == 3;
+
+    while (!str_lex_helper.is_eof()) {
+      switch (str_lex_helper.last_char()) {
+        case '\n':
+          context.current_token_position.lines(1);
+          [[fallthrough]];
+        case '\v':  [[fallthrough]];
+        case '\f':  [[fallthrough]];
+        case '\r':
+          if (!multi_line) {
+            return context.RecordSyntaxError(
+                fmt::format("missing closing quote in single-line string: {0}",
+                              str_lex_helper.str()));
+          }
+          str_lex_helper.Advance();
+          break;
+        case '"':
+          if (multi_line) {
+            // Check for 2 more '"'s on block string.
+            if (!(str_lex_helper.Advance() &&
+                  str_lex_helper.last_char() == '"')) {
+              continue;
+            }
+            if (!(str_lex_helper.Advance() &&
+                  str_lex_helper.last_char() == '"')) {
+              continue;
+            }
+            // Now we are at the last " of """.
+          }
+
+          if (PYJU::ReadHashTags(str_lex_helper, hashtag_num)) {
+            // Reach closing quotes, break out of the loop.
+            if (leading_quotes == 3) {
+              return PYJU::ProcessMultiLineString(str_lex_helper.str(),
+                                                        context,
+                                                        hashtag_num);
+            } else {
+              return PYJU::ProcessSingleLineString(str_lex_helper.str(),
+                                                    context, hashtag_num);
+            }
+          }
+          break;
+        case '\\':
+          if (PYJU::ReadHashTags(str_lex_helper, hashtag_num)) {
+            // Read the escaped char.
+            if (!str_lex_helper.Advance()) {
+              continue;
+            }
+            // Read the next char.
+            str_lex_helper.Advance();
+          }
+          break;
+        default:
+          str_lex_helper.Advance();
+      }
+    }
+    return PXC_TOKEN(END_OF_FILE);
+  }
+
+  {one_line_comment} {
+    auto tok = PXC_TOKEN(COMMENT);
+    // Advance end by 1 line, resetting the column to zero.
+    context.current_token_position.lines(1);
+    // Make the span empty by setting start to end.
+    context.current_token_position.step();
+    context.current_line_indent = 0;
+    BEGIN(INITIAL);
+    return tok;
+  }
+
+  {horizontal_whitespace} {
+    // Make the span empty by setting start to end.
+    context.current_token_position.step();
+  }
+
+  "\n" {
+    // Advance end by yyleng lines, resetting the column to zero.
+    auto tok = PXC_TOKEN(NEWLINE);
+    context.current_token_position.lines(yyleng);
+    // Make the span empty by setting start to end.
+    context.current_token_position.step();
+    context.current_line_indent = 0;
+    BEGIN(INITIAL);
+    return tok;
+  }
+
+  . {
+    return context.RecordSyntaxError(
+        fmt::format("invalid character '\\x{0}' in source file.",
+                      llvm::toHex(llvm::StringRef(yytext, 1))));
+  }
+
+}
+
+%%
+
+auto YyinputWrapper(yyscan_t yyscanner) -> int { return yyinput(yyscanner); }

@@ -1,29 +1,36 @@
-set (SRCS
-    argsToConfig.cpp
-    coverage.cpp
-    demangle.cpp
-    getFQDNOrHostName.cpp
-    getMemoryAmount.cpp
-    getPageSize.cpp
-    getThreadId.cpp
-    JSON.cpp
-    LineReader.cpp
-    mremap.cpp
-    phdr_cache.cpp
-    preciseExp10.cpp
-    setTerminalEcho.cpp
-    shift10.cpp
-    sleep.cpp
-    terminalColors.cpp
-    errnoToString.cpp
-    StringRef.cpp
-    hex_formatter.cpp
-    colorizer.cpp
-)
+file(GLOB_RECURSE
+        BASE_SRCS
+        CONFIGURE_DEPENDS  # Ask CMake to regenerate the build system if these files change.
+        ./*.cpp
+        )
 
-if (ENABLE_REPLXX)
-    list (APPEND SRCS ReplxxLineReader.cpp)
-endif ()
+# set (SRCS
+#     argsToConfig.cpp
+#     coverage.cpp
+#     demangle.cpp
+#     getFQDNOrHostName.cpp
+#     getMemoryAmount.cpp
+#     getPageSize.cpp
+#     getThreadId.cpp
+#     JSON.cpp
+#     LineReader.cpp
+#     mremap.cpp
+#     phdr_cache.cpp
+#     preciseExp10.cpp
+#     setTerminalEcho.cpp
+#     shift10.cpp
+#     sleep.cpp
+#     terminalColors.cpp
+#     errnoToString.cpp
+#     StringRef.cpp
+#     hex_formatter.cpp
+#     colorizer.cpp
+#     string_helpers.cpp
+# )
+
+# if (ENABLE_REPLXX)
+#     list (APPEND BASE_SRC ReplxxLineReader.cpp)
+# endif ()
 
 if (USE_DEBUG_HELPERS)
     get_target_property(MAGIC_ENUM_INCLUDE_DIR ch_contrib::magic_enum INTERFACE_INCLUDE_DIRECTORIES)
@@ -34,7 +41,7 @@ if (USE_DEBUG_HELPERS)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:${INCLUDE_DEBUG_HELPERS}>)
 endif ()
 
-add_library (base ${SRCS})
+add_library (base ${BASE_SRCS})
 
 if (WITH_COVERAGE)
     target_compile_definitions(base PUBLIC WITH_COVERAGE=1)
@@ -62,6 +69,8 @@ target_link_libraries (base
         ch_contrib::fmt
         ch_contrib::magic_enum
         ch_contrib::pdqsort
+        ch_contrib::llvm
+        ch_contrib::utf8proc
 )
 
 if (ENABLE_TESTS)

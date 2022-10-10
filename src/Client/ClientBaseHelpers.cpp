@@ -4,7 +4,7 @@
 #include <Common/DateLUT.h>
 #include <Common/LocalDate.h>
 #include <Common/UTF8Helpers.h>
-#include <Parsers/Lexer.h>
+#include <Parser/Lexer.h>
 
 namespace PYJU
 {

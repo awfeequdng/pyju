@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Core/Defines.h>
-#include <Parsers/Lexer.h>
+#include <Parser/Lexer.h>
 
 #include <vector>
 

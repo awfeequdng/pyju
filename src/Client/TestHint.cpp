@@ -4,7 +4,7 @@
 #include <Common/ErrorCodes.h>
 #include <IO/ReadBufferFromString.h>
 #include <IO/ReadHelpers.h>
-#include <Parsers/Lexer.h>
+#include <Parser/Lexer.h>
 
 namespace
 {
