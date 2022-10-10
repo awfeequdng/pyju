@@ -11,19 +11,19 @@ project(pyju)
 # if (COMPILER_GCC OR COMPILER_CLANG)
 #     # Enable C++14 sized global deallocation functions. It should be enabled by setting -std=c++14 but I'm not sure.
 # endif ()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsized-deallocation")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsized-deallocation")
 
 message("Compiler Version: ${CMAKE_CXX_COMPILER_VERSION}")
 message("Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 
 # use clang libabixx
-if (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I~/opt/llvm/include")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I~/opt/llvm/include/c++/v1")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isysroot ~/opt/llvm/include/c++/v1")
-    MESSAGE(STATUS "--------------------- CMAKE CXX FLAGS : ${CMAKE_CXX_FLAGS}")
-endif ()
+# if (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I~/opt/llvm/include")
+#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I~/opt/llvm/include/c++/v1")
+#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isysroot ~/opt/llvm/include/c++/v1")
+#     MESSAGE(STATUS "--------------------- CMAKE CXX FLAGS : ${CMAKE_CXX_FLAGS}")
+# endif ()
 
 option(BUILD_SHARED_LIBS "Build shared libraries (.dll/.so) instead of static ones (.lib/.a)" ON)
 
@@ -41,6 +41,43 @@ include (cmake/version.cmake)
 include (cmake/arch.cmake)
 include (cmake/target.cmake)
 include (cmake/embed_binary.cmake)
+
+# Ignore export() since we don't use it,
+# but it gets broken with a global targets via link_libraries()
+# 由于global-group为全局的链接库，为了避免这个库被llvm使用（在编译llvm时报找不到global-grou）,我们使用如下的宏来断开link_libraries链接的库
+# 如果不添加如下两行配置，LLVM编译报错
+macro (export)
+endmacro ()
+
+# Global libraries
+# See:
+# - default_libs.cmake
+add_library(global-libs INTERFACE)
+
+add_library(global-group INTERFACE)
+if (OS_LINUX OR OS_ANDROID)
+    include(cmake/linux/default_libs.cmake)
+elseif (OS_DARWIN)
+    include(cmake/darwin/default_libs.cmake)
+elseif (OS_FREEBSD)
+    include(cmake/freebsd/default_libs.cmake)
+endif ()
+link_libraries(global-group)
+
+if (WERROR)
+    # Don't pollute CMAKE_CXX_FLAGS with -Werror as it will break some CMake checks.
+    # Instead, adopt modern cmake usage requirement.
+    target_compile_options(global-group INTERFACE "-Werror")
+endif ()
+
+# Make this extra-checks for correct library dependencies.
+if (OS_LINUX AND NOT SANITIZE)
+    target_link_options(global-group INTERFACE "-Wl,--no-undefined")
+endif ()
+
+if (TARGET global-group)
+    install (EXPORT global DESTINATION cmake)
+endif ()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib)
 if (NOT ENABLE_JEMALLOC)
@@ -96,11 +133,13 @@ target_link_libraries(pyju_core
     ch_contrib::xz
     ch_contrib::brotli
     ch_contrib::bzip2
+    ch_contrib::zlib
     ch_contrib::fmt
     OpenSSL::SSL
     OpenSSL::Crypto
+    ch_contrib::cpuid
+    ch_contrib::llvm
 )
-
 
 if (OS_LINUX)
     target_link_libraries(pyju_core
@@ -131,3 +170,4 @@ configure_file (src/Core/config_core.h.in "${CMAKE_CURRENT_BINARY_DIR}/src/Core/
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src/Core)
+

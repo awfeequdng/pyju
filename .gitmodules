@@ -59,3 +59,21 @@
 [submodule "contrib/boringssl"]
 	path = contrib/boringssl
 	url = https://github.com/ClickHouse-Extras/boringssl.git
+[submodule "contrib/llvm"]
+	path = contrib/llvm
+	url = https://github.com/ClickHouse-Extras/llvm
+[submodule "contrib/libcxxabi"]
+	path = contrib/libcxxabi
+	url = https://github.com/ClickHouse-Extras/libcxxabi.git
+[submodule "contrib/libcxx"]
+	path = contrib/libcxx
+	url = https://github.com/ClickHouse-Extras/libcxx.git
+[submodule "contrib/sysroot"]
+	path = contrib/sysroot
+	url = https://github.com/ClickHouse-Extras/sysroot.git
+[submodule "contrib/libcpuid"]
+	path = contrib/libcpuid
+	url = https://github.com/ClickHouse-Extras/libcpuid.git
+[submodule "contrib/libunwind"]
+	path = contrib/libunwind
+	url = https://github.com/ClickHouse-Extras/libunwind.git

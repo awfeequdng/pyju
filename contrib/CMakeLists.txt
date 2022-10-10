@@ -60,3 +60,6 @@ add_contrib (fast_float-cmake fast_float)
 add_contrib (xz-cmake xz)
 add_contrib (brotli-cmake brotli)
 add_contrib (boringssl-cmake boringssl)
+add_contrib (libcpuid-cmake libcpuid)
+add_contrib (llvm-cmake llvm)
+

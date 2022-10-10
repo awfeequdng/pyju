@@ -15,6 +15,7 @@
 #include <boost/noncopyable.hpp>
 #include <Poco/Timestamp.h>
 #include <filesystem>
+#include <unordered_map>
 
 
 namespace fs = std::filesystem;

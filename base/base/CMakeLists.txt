@@ -17,6 +17,8 @@ set (SRCS
     terminalColors.cpp
     errnoToString.cpp
     StringRef.cpp
+    hex_formatter.cpp
+    colorizer.cpp
 )
 
 if (ENABLE_REPLXX)
