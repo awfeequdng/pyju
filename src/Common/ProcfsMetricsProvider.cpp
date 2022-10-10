@@ -16,7 +16,7 @@
 #include <linux/taskstats.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes
@@ -51,7 +51,7 @@ inline void emitErrorMsgWithFailedToCloseFile(const std::string & filename)
     }
     catch (const ErrnoException &)
     {
-        DB::tryLogCurrentException(__PRETTY_FUNCTION__);
+        PYJU::tryLogCurrentException(__PRETTY_FUNCTION__);
     }
 }
 

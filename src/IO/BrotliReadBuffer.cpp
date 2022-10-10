@@ -4,7 +4,7 @@
 #    include <brotli/decode.h>
 #    include "BrotliReadBuffer.h"
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

@@ -7,7 +7,7 @@
 #include <IO/WriteBufferFromString.h>
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

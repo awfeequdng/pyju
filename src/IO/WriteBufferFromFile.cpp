@@ -13,7 +13,7 @@ namespace ProfileEvents
     extern const Event FileOpen;
 }
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

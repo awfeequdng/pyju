@@ -10,7 +10,7 @@ namespace ProfileEvents
     extern const Event ThrottlerSleepMicroseconds;
 }
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

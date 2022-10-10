@@ -10,7 +10,7 @@
 #include <queue>
 #include <utility>
 
-namespace DB
+namespace PYJU
 {
 template <size_t MaxNumHints>
 class NamePrompter

@@ -4,7 +4,7 @@
 
 #include <Common/config.h>
 
-namespace DB
+namespace PYJU
 {
 
 void registerDiskLocal(DiskFactory & factory);

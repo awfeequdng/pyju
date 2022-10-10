@@ -2,7 +2,7 @@
 #include <memory>
 #include <IO/ReadBuffer.h>
 
-namespace DB
+namespace PYJU
 {
 
 struct IReadableWriteBuffer

@@ -12,7 +12,7 @@ namespace Poco
     }
 }
 
-namespace DB
+namespace PYJU
 {
     /** Lets you check if the address is similar to `localhost`.
      * The purpose of this check is usually to make an assumption,

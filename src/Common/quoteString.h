@@ -5,7 +5,7 @@
 #include <concepts>
 
 
-namespace DB
+namespace PYJU
 {
 [[nodiscard]] String quoteString(std::string_view x);
 

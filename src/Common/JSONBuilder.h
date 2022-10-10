@@ -5,12 +5,12 @@
 #include <Formats/FormatSettings.h>
 #include <IO/WriteHelpers.h>
 
-namespace DB::JSONBuilder
+namespace PYJU::JSONBuilder
 {
 
 struct FormatSettings
 {
-    const DB::FormatSettings & settings;
+    const PYJU::FormatSettings & settings;
     size_t indent = 2;
     bool print_simple_arrays_in_single_row = true;
 };

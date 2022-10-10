@@ -11,7 +11,7 @@
 
 #if USE_YAML_CPP
 
-namespace DB
+namespace PYJU
 {
 
 /// Real YAML parser: loads yaml file into a YAML::Node
@@ -27,7 +27,7 @@ using YAMLParser = YAMLParserImpl;
 
 #else
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

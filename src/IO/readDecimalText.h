@@ -6,7 +6,7 @@
 #include <base/wide_integer_to_string.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

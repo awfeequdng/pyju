@@ -4,7 +4,7 @@
 #    include <IO/BrotliWriteBuffer.h>
 #    include <brotli/encode.h>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

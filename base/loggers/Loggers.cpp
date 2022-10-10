@@ -13,7 +13,7 @@
 
 namespace fs = std::filesystem;
 
-namespace DB
+namespace PYJU
 {
     class SensitiveDataMasker;
 }
@@ -46,7 +46,7 @@ void Loggers::buildLoggers(Poco::Util::AbstractConfiguration & config, Poco::Log
 
     /// Split logs to ordinary log, error log, syslog and console.
     /// Use extended interface of Channel for more comprehensive logging.
-    split = new DB::OwnSplitChannel();
+    split = new PYJU::OwnSplitChannel();
 
     auto log_level_string = config.getString("logger.level", "trace");
 
@@ -85,7 +85,7 @@ void Loggers::buildLoggers(Poco::Util::AbstractConfiguration & config, Poco::Log
 
         Poco::AutoPtr<OwnPatternFormatter> pf = new OwnPatternFormatter;
 
-        Poco::AutoPtr<DB::OwnFormattingChannel> log = new DB::OwnFormattingChannel(pf, log_file);
+        Poco::AutoPtr<PYJU::OwnFormattingChannel> log = new PYJU::OwnFormattingChannel(pf, log_file);
         log->setLevel(log_level);
         split->addChannel(log, "log");
     }
@@ -121,7 +121,7 @@ void Loggers::buildLoggers(Poco::Util::AbstractConfiguration & config, Poco::Log
 
         Poco::AutoPtr<OwnPatternFormatter> pf = new OwnPatternFormatter;
 
-        Poco::AutoPtr<DB::OwnFormattingChannel> errorlog = new DB::OwnFormattingChannel(pf, error_log_file);
+        Poco::AutoPtr<PYJU::OwnFormattingChannel> errorlog = new PYJU::OwnFormattingChannel(pf, error_log_file);
         errorlog->setLevel(errorlog_level);
         errorlog->open();
         split->addChannel(errorlog, "errorlog");
@@ -160,7 +160,7 @@ void Loggers::buildLoggers(Poco::Util::AbstractConfiguration & config, Poco::Log
 
         Poco::AutoPtr<OwnPatternFormatter> pf = new OwnPatternFormatter;
 
-        Poco::AutoPtr<DB::OwnFormattingChannel> log = new DB::OwnFormattingChannel(pf, syslog_channel);
+        Poco::AutoPtr<PYJU::OwnFormattingChannel> log = new PYJU::OwnFormattingChannel(pf, syslog_channel);
         log->setLevel(syslog_level);
 
         split->addChannel(log, "syslog");
@@ -182,7 +182,7 @@ void Loggers::buildLoggers(Poco::Util::AbstractConfiguration & config, Poco::Log
         }
 
         Poco::AutoPtr<OwnPatternFormatter> pf = new OwnPatternFormatter(color_enabled);
-        Poco::AutoPtr<DB::OwnFormattingChannel> log = new DB::OwnFormattingChannel(pf, new Poco::ConsoleChannel);
+        Poco::AutoPtr<PYJU::OwnFormattingChannel> log = new PYJU::OwnFormattingChannel(pf, new Poco::ConsoleChannel);
         logger.warning("Logging " + console_log_level_string + " to console");
         log->setLevel(console_log_level);
         split->addChannel(log, "console");

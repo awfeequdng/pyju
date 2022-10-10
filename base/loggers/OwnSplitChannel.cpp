@@ -11,7 +11,7 @@
 #include <Common/SensitiveDataMasker.h>
 #include <Common/IO.h>
 
-namespace DB
+namespace PYJU
 {
 void OwnSplitChannel::log(const Poco::Message & msg)
 {
@@ -86,7 +86,7 @@ void OwnSplitChannel::addChannel(Poco::AutoPtr<Poco::Channel> channel, const std
     channels.emplace(name, ExtendedChannelPtrPair(std::move(channel), dynamic_cast<ExtendedLogChannel *>(channel.get())));
 }
 
-void OwnSplitChannel::addTextLog(std::shared_ptr<DB::TextLog> log, int max_priority)
+void OwnSplitChannel::addTextLog(std::shared_ptr<PYJU::TextLog> log, int max_priority)
 {
     std::lock_guard<std::mutex> lock(text_log_mutex);
     text_log = log;
@@ -98,7 +98,7 @@ void OwnSplitChannel::setLevel(const std::string & name, int level)
      auto it = channels.find(name);
      if (it != channels.end())
      {
-         if (auto * channel = dynamic_cast<DB::OwnFormattingChannel *>(it->second.first.get()))
+         if (auto * channel = dynamic_cast<PYJU::OwnFormattingChannel *>(it->second.first.get()))
             channel->setLevel(level);
      }
 }

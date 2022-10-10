@@ -6,7 +6,7 @@
 
 struct taskstats;
 
-namespace DB
+namespace PYJU
 {
 
 /// Get taskstat info from OS kernel via Netlink protocol.

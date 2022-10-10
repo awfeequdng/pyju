@@ -5,7 +5,7 @@
 #include <thread>
 #include <boost/noncopyable.hpp>
 
-namespace DB
+namespace PYJU
 {
 
 class Suggest : public LineReader::Suggest, boost::noncopyable

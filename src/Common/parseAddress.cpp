@@ -4,7 +4,7 @@
 #include <base/find_symbols.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

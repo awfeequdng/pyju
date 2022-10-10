@@ -18,7 +18,7 @@
 #include <limits>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** NOTE DoubleDelta is surprisingly bad name. The only excuse is that it comes from an academic paper.

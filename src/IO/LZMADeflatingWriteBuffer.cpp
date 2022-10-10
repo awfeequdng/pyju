@@ -1,6 +1,6 @@
 #include <IO/LZMADeflatingWriteBuffer.h>
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

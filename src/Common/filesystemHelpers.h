@@ -10,7 +10,7 @@
 #include <Poco/TemporaryFile.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 using TemporaryFile = Poco::TemporaryFile;

@@ -9,7 +9,7 @@
 #include <zlib.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Performs compression using zlib library and writes compressed data to out_ WriteBuffer.

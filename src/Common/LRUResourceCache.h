@@ -9,7 +9,7 @@
 #include <unordered_set>
 #include <base/logger_useful.h>
 
-namespace DB
+namespace PYJU
 {
 template <typename T>
 struct TrivialLRUResourceCacheWeightFunction

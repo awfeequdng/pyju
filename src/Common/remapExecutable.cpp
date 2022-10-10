@@ -14,7 +14,7 @@
 #include <fmt/format.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes
@@ -147,7 +147,7 @@ size_t remapExecutable()
 
 #else
 
-namespace DB
+namespace PYJU
 {
 
 size_t remapExecutable() { return 0; }

@@ -7,7 +7,7 @@
 #endif
 
 
-namespace DB
+namespace PYJU
 {
 
 const size_t WriteBufferValidUTF8::DEFAULT_SIZE = 4096;

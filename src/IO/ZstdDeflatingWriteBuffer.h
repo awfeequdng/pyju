@@ -7,7 +7,7 @@
 
 #include <zstd.h>
 
-namespace DB
+namespace PYJU
 {
 
 /// Performs compression using zstd library and writes compressed data to out_ WriteBuffer.

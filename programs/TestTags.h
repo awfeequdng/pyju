@@ -2,7 +2,7 @@
 
 #include <Core/Types.h>
 
-namespace DB
+namespace PYJU
 {
 
 /// Returns the length of a text looking like

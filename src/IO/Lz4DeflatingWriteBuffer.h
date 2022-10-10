@@ -8,7 +8,7 @@
 #include <lz4.h>
 #include <lz4frame.h>
 
-namespace DB
+namespace PYJU
 {
 /// Performs compression using lz4 library and writes compressed data to out_ WriteBuffer.
 class Lz4DeflatingWriteBuffer : public WriteBufferWithOwnMemoryDecorator

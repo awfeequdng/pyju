@@ -4,7 +4,7 @@
 #include <IO/BufferWithOwnMemory.h>
 #include <IO/WriteBufferDecorator.h>
 
-namespace DB
+namespace PYJU
 {
 
 class BrotliWriteBuffer : public WriteBufferWithOwnMemoryDecorator

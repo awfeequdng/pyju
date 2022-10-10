@@ -3,7 +3,7 @@
 #include <Core/Types.h>
 #include <memory>
 
-namespace DB
+namespace PYJU
 {
 class IDisk;
 using DiskPtr = std::shared_ptr<IDisk>;

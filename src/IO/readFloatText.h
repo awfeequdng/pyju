@@ -99,7 +99,7 @@ LIMIT 100
   */
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

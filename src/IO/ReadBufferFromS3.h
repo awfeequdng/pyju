@@ -18,7 +18,7 @@ namespace Aws::S3
 class S3Client;
 }
 
-namespace DB
+namespace PYJU
 {
 /**
  * Perform S3 HTTP GET request and provide response to read.

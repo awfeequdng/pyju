@@ -15,7 +15,7 @@
     #include <emmintrin.h>
 #endif
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes
@@ -1069,7 +1069,7 @@ Exception readException(ReadBuffer & buf, const String & additional_message, boo
     if (!additional_message.empty())
         out << additional_message << ". ";
 
-    if (name != "DB::Exception")
+    if (name != "PYJU::Exception")
         out << name << ". ";
 
     out << message << ".";

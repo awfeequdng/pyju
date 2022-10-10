@@ -3,7 +3,7 @@
 #include <IO/WriteBufferFromString.h>
 
 
-namespace DB
+namespace PYJU
 {
 String quoteString(std::string_view x)
 {

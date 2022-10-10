@@ -2,7 +2,7 @@
 
 #include <IO/ReadBuffer.h>
 
-namespace DB
+namespace PYJU
 {
 
 class MySQLBinlogEventReadBuffer : public ReadBuffer

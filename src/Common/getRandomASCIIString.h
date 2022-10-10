@@ -1,7 +1,7 @@
 #pragma once
 #include <Core/Types.h>
 
-namespace DB
+namespace PYJU
 {
 /// Slow random string. Useful for random names and things like this. Not for
 /// generating data.

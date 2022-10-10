@@ -1,7 +1,7 @@
 #include <IO/ZstdDeflatingWriteBuffer.h>
 #include <Common/Exception.h>
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

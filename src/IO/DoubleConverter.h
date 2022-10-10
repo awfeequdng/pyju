@@ -13,7 +13,7 @@
 #endif
 
 
-namespace DB
+namespace PYJU
 {
 
 template <bool emit_decimal_point> struct DoubleToStringConverterFlags

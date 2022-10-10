@@ -2,7 +2,7 @@
 
 #include <IO/ReadBuffer.h>
 
-namespace DB
+namespace PYJU
 {
 
 /// Just a stub - reads nothing from nowhere.

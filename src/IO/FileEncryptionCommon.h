@@ -6,7 +6,7 @@
 #include <Core/Types.h>
 #include <openssl/evp.h>
 
-namespace DB
+namespace PYJU
 {
 class ReadBuffer;
 class WriteBuffer;

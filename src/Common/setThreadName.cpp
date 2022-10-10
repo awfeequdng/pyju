@@ -15,7 +15,7 @@
 #define THREAD_NAME_SIZE 16
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {
@@ -32,7 +32,7 @@ void setThreadName(const char * name)
 {
 #ifndef NDEBUG
     if (strlen(name) > THREAD_NAME_SIZE - 1)
-        throw DB::Exception("Thread name cannot be longer than 15 bytes", DB::ErrorCodes::PTHREAD_ERROR);
+        throw PYJU::Exception("Thread name cannot be longer than 15 bytes", PYJU::ErrorCodes::PTHREAD_ERROR);
 #endif
 
 #if defined(OS_FREEBSD)
@@ -45,7 +45,7 @@ void setThreadName(const char * name)
 #else
     if (0 != prctl(PR_SET_NAME, name, 0, 0, 0))
 #endif
-        DB::throwFromErrno("Cannot set thread name with prctl(PR_SET_NAME, ...)", DB::ErrorCodes::PTHREAD_ERROR);
+        PYJU::throwFromErrno("Cannot set thread name with prctl(PR_SET_NAME, ...)", PYJU::ErrorCodes::PTHREAD_ERROR);
 
     memcpy(thread_name, name, 1 + strlen(name));
 }
@@ -57,14 +57,14 @@ const char * getThreadName()
 
 #if defined(__APPLE__) || defined(OS_SUNOS)
     if (pthread_getname_np(pthread_self(), thread_name, THREAD_NAME_SIZE))
-        throw DB::Exception("Cannot get thread name with pthread_getname_np()", DB::ErrorCodes::PTHREAD_ERROR);
+        throw PYJU::Exception("Cannot get thread name with pthread_getname_np()", PYJU::ErrorCodes::PTHREAD_ERROR);
 #elif defined(__FreeBSD__)
 // TODO: make test. freebsd will have this function soon https://freshbsd.org/commit/freebsd/r337983
 //    if (pthread_get_name_np(pthread_self(), thread_name, THREAD_NAME_SIZE))
-//        throw DB::Exception("Cannot get thread name with pthread_get_name_np()", DB::ErrorCodes::PTHREAD_ERROR);
+//        throw PYJU::Exception("Cannot get thread name with pthread_get_name_np()", PYJU::ErrorCodes::PTHREAD_ERROR);
 #else
     if (0 != prctl(PR_GET_NAME, thread_name, 0, 0, 0))
-        DB::throwFromErrno("Cannot get thread name with prctl(PR_GET_NAME)", DB::ErrorCodes::PTHREAD_ERROR);
+        PYJU::throwFromErrno("Cannot get thread name with prctl(PR_GET_NAME)", PYJU::ErrorCodes::PTHREAD_ERROR);
 #endif
 
     return thread_name;

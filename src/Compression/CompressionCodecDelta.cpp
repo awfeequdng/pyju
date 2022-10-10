@@ -5,7 +5,7 @@
 #include <IO/WriteHelpers.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 class CompressionCodecDelta : public ICompressionCodec

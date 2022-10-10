@@ -9,7 +9,7 @@
 #include <Poco/Util/AbstractConfiguration.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 class DiskLocalReservation;

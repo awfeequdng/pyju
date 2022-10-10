@@ -7,7 +7,7 @@
 #include <base/logger_useful.h>
 #include <set>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

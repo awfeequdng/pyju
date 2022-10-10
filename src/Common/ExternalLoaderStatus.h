@@ -4,7 +4,7 @@
 #include <base/EnumReflection.h>
 #include <base/types.h>
 
-namespace DB
+namespace PYJU
 {
     enum class ExternalLoaderStatus : Int8
     {

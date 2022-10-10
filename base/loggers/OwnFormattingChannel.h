@@ -7,7 +7,7 @@
 #include "OwnPatternFormatter.h"
 
 
-namespace DB
+namespace PYJU
 {
 // Like Poco::FormattingChannel but supports the extended logging interface and log level filter
 class OwnFormattingChannel : public Poco::Channel, public ExtendedLogChannel

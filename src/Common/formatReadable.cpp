@@ -5,7 +5,7 @@
 #include <IO/WriteBufferFromString.h>
 #include <IO/WriteHelpers.h>
 
-namespace DB
+namespace PYJU
 {
     namespace ErrorCodes
     {
@@ -15,27 +15,27 @@ namespace DB
 
 // I wanted to make this ALWAYS_INLINE to prevent flappy performance tests,
 // but GCC complains it may not be inlined.
-static void formatReadable(double size, DB::WriteBuffer & out,
+static void formatReadable(double size, PYJU::WriteBuffer & out,
     int precision, const char ** units, size_t units_size, double delimiter)
 {
     size_t i = 0;
     for (; i + 1 < units_size && fabs(size) >= delimiter; ++i)
         size /= delimiter;
 
-    DB::DoubleConverter<false>::BufferType buffer;
+    PYJU::DoubleConverter<false>::BufferType buffer;
     double_conversion::StringBuilder builder{buffer, sizeof(buffer)};
 
-    const auto result = DB::DoubleConverter<false>::instance().ToFixed(size, precision, &builder);
+    const auto result = PYJU::DoubleConverter<false>::instance().ToFixed(size, precision, &builder);
 
     if (!result)
-        throw DB::Exception("Cannot print float or double number", DB::ErrorCodes::CANNOT_PRINT_FLOAT_OR_DOUBLE_NUMBER);
+        throw PYJU::Exception("Cannot print float or double number", PYJU::ErrorCodes::CANNOT_PRINT_FLOAT_OR_DOUBLE_NUMBER);
 
     out.write(buffer, builder.position());
     writeCString(units[i], out);
 }
 
 
-void formatReadableSizeWithBinarySuffix(double value, DB::WriteBuffer & out, int precision)
+void formatReadableSizeWithBinarySuffix(double value, PYJU::WriteBuffer & out, int precision)
 {
     const char * units[] = {" B", " KiB", " MiB", " GiB", " TiB", " PiB", " EiB", " ZiB", " YiB"};
     formatReadable(value, out, precision, units, sizeof(units) / sizeof(units[0]), 1024);
@@ -43,13 +43,13 @@ void formatReadableSizeWithBinarySuffix(double value, DB::WriteBuffer & out, int
 
 std::string formatReadableSizeWithBinarySuffix(double value, int precision)
 {
-    DB::WriteBufferFromOwnString out;
+    PYJU::WriteBufferFromOwnString out;
     formatReadableSizeWithBinarySuffix(value, out, precision);
     return out.str();
 }
 
 
-void formatReadableSizeWithDecimalSuffix(double value, DB::WriteBuffer & out, int precision)
+void formatReadableSizeWithDecimalSuffix(double value, PYJU::WriteBuffer & out, int precision)
 {
     const char * units[] = {" B", " KB", " MB", " GB", " TB", " PB", " EB", " ZB", " YB"};
     formatReadable(value, out, precision, units, sizeof(units) / sizeof(units[0]), 1000);
@@ -57,13 +57,13 @@ void formatReadableSizeWithDecimalSuffix(double value, DB::WriteBuffer & out, in
 
 std::string formatReadableSizeWithDecimalSuffix(double value, int precision)
 {
-    DB::WriteBufferFromOwnString out;
+    PYJU::WriteBufferFromOwnString out;
     formatReadableSizeWithDecimalSuffix(value, out, precision);
     return out.str();
 }
 
 
-void formatReadableQuantity(double value, DB::WriteBuffer & out, int precision)
+void formatReadableQuantity(double value, PYJU::WriteBuffer & out, int precision)
 {
     const char * units[] = {"", " thousand", " million", " billion", " trillion", " quadrillion"};
     formatReadable(value, out, precision, units, sizeof(units) / sizeof(units[0]), 1000);
@@ -71,7 +71,7 @@ void formatReadableQuantity(double value, DB::WriteBuffer & out, int precision)
 
 std::string formatReadableQuantity(double value, int precision)
 {
-    DB::WriteBufferFromOwnString out;
+    PYJU::WriteBufferFromOwnString out;
     formatReadableQuantity(value, out, precision);
     return out.str();
 }

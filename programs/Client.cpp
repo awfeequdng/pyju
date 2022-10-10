@@ -36,7 +36,7 @@
 namespace fs = std::filesystem;
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {
@@ -264,23 +264,23 @@ int mainPyJu(int argc, char ** argv)
 {
     try
     {
-        DB::Client client;
+        PYJU::Client client;
         client.init(argc, argv);
         return client.run();
     }
-    catch (const DB::Exception & e)
+    catch (const PYJU::Exception & e)
     {
-        std::cerr << DB::getExceptionMessage(e, false) << std::endl;
+        std::cerr << PYJU::getExceptionMessage(e, false) << std::endl;
         return 1;
     }
     catch (const boost::program_options::error & e)
     {
         std::cerr << "Bad arguments: " << e.what() << std::endl;
-        return DB::ErrorCodes::BAD_ARGUMENTS;
+        return PYJU::ErrorCodes::BAD_ARGUMENTS;
     }
     catch (...)
     {
-        std::cerr << DB::getCurrentExceptionMessage(true) << std::endl;
+        std::cerr << PYJU::getCurrentExceptionMessage(true) << std::endl;
         return 1;
     }
 }

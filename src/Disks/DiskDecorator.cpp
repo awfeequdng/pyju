@@ -2,7 +2,7 @@
 #include <IO/ReadBufferFromFileBase.h>
 #include <IO/WriteBufferFromFileBase.h>
 
-namespace DB
+namespace PYJU
 {
 DiskDecorator::DiskDecorator(const DiskPtr & delegate_) : delegate(delegate_)
 {

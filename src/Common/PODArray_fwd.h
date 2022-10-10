@@ -7,7 +7,7 @@
 #include <base/types.h>
 #include <Common/Allocator_fwd.h>
 
-namespace DB
+namespace PYJU
 {
 
 inline constexpr size_t integerRoundUp(size_t value, size_t dividend)

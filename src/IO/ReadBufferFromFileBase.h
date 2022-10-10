@@ -17,7 +17,7 @@
 #endif
 
 
-namespace DB
+namespace PYJU
 {
 class ReadBufferFromFileBase : public BufferWithOwnMemory<SeekableReadBuffer>
 {

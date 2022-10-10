@@ -4,7 +4,7 @@
 #include <Common/ActionLock.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// An atomic variable that is used to block and interrupt certain actions.

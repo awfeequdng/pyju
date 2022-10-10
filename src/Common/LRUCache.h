@@ -10,7 +10,7 @@
 #include <base/logger_useful.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 template <typename T>

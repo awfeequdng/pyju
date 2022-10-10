@@ -18,7 +18,7 @@
 namespace Poco { class Logger; }
 
 
-namespace DB
+namespace PYJU
 {
 
 class Exception : public Poco::Exception
@@ -48,7 +48,7 @@ public:
 
     Exception * clone() const override { return new Exception(*this); }
     void rethrow() const override { throw *this; }
-    const char * name() const throw() override { return "DB::Exception"; }
+    const char * name() const throw() override { return "PYJU::Exception"; }
     const char * what() const throw() override { return message().data(); }
 
     /// Add something to the existing message.
@@ -77,7 +77,7 @@ private:
 #endif
     bool remote = false;
 
-    const char * className() const throw() override { return "DB::Exception"; }
+    const char * className() const throw() override { return "PYJU::Exception"; }
 };
 
 
@@ -102,8 +102,8 @@ private:
     int saved_errno;
     std::optional<std::string> path;
 
-    const char * name() const throw() override { return "DB::ErrnoException"; }
-    const char * className() const throw() override { return "DB::ErrnoException"; }
+    const char * name() const throw() override { return "PYJU::ErrnoException"; }
+    const char * className() const throw() override { return "PYJU::ErrnoException"; }
 };
 
 
@@ -136,8 +136,8 @@ private:
     ssize_t line_number_{-1};
     mutable std::string formatted_message_;
 
-    const char * name() const throw() override { return "DB::ParsingException"; }
-    const char * className() const throw() override { return "DB::ParsingException"; }
+    const char * name() const throw() override { return "PYJU::ParsingException"; }
+    const char * className() const throw() override { return "PYJU::ParsingException"; }
 };
 
 
@@ -158,8 +158,8 @@ void tryLogCurrentException(Poco::Logger * logger, const std::string & start_of_
 
 
 /** Prints current exception in canonical format.
-  * with_stacktrace - prints stack trace for DB::Exception.
-  * check_embedded_stacktrace - if DB::Exception has embedded stacktrace then
+  * with_stacktrace - prints stack trace for PYJU::Exception.
+  * check_embedded_stacktrace - if PYJU::Exception has embedded stacktrace then
   *  only this stack trace will be printed.
   * with_extra_info - add information about the filesystem in case of "No space left on device" and similar.
   */

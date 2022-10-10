@@ -4,7 +4,7 @@
 #include <IO/BufferWithOwnMemory.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 class BrotliReadBuffer : public BufferWithOwnMemory<ReadBuffer>

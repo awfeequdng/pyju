@@ -2,7 +2,7 @@
 #include <Common/thread_local_rng.h>
 #include <random>
 
-namespace DB
+namespace PYJU
 {
 
 String getRandomASCIIString(size_t len, char first, char last)

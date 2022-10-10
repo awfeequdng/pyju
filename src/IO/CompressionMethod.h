@@ -6,7 +6,7 @@
 #include <Core/Defines.h>
 
 
-namespace DB
+namespace PYJU
 {
 class ReadBuffer;
 class WriteBuffer;

@@ -35,7 +35,7 @@
   */
 
 
-namespace DB
+namespace PYJU
 {
 namespace VolnitskyTraits
 {

@@ -1,7 +1,7 @@
 #include <IO/ZstdInflatingReadBuffer.h>
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

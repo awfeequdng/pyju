@@ -23,7 +23,7 @@ namespace
 }
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace detail

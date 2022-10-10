@@ -2,7 +2,7 @@
 
 #include <Common/typeid_cast.h>
 
-namespace DB
+namespace PYJU
 {
 
 /* This base class adds public methods:

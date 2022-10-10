@@ -3,7 +3,7 @@
 #include <IO/ReadBufferFromFileBase.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Delegates all reads to underlying buffer. Doesn't have own memory.

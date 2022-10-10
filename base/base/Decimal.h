@@ -9,7 +9,7 @@
 #endif
 #endif
 
-namespace DB
+namespace PYJU
 {
 template <class> struct Decimal;
 class DateTime64;
@@ -115,43 +115,43 @@ public:
 };
 }
 
-constexpr DB::UInt64 max_uint_mask = std::numeric_limits<DB::UInt64>::max();
+constexpr PYJU::UInt64 max_uint_mask = std::numeric_limits<PYJU::UInt64>::max();
 
 namespace std
 {
     template <typename T>
-    struct hash<DB::Decimal<T>>
+    struct hash<PYJU::Decimal<T>>
     {
-        size_t operator()(const DB::Decimal<T> & x) const { return hash<T>()(x.value); }
+        size_t operator()(const PYJU::Decimal<T> & x) const { return hash<T>()(x.value); }
     };
 
     template <>
-    struct hash<DB::Decimal128>
+    struct hash<PYJU::Decimal128>
     {
-        size_t operator()(const DB::Decimal128 & x) const
+        size_t operator()(const PYJU::Decimal128 & x) const
         {
-            return std::hash<DB::Int64>()(x.value >> 64)
-                ^ std::hash<DB::Int64>()(x.value & max_uint_mask);
+            return std::hash<PYJU::Int64>()(x.value >> 64)
+                ^ std::hash<PYJU::Int64>()(x.value & max_uint_mask);
         }
     };
 
     template <>
-    struct hash<DB::DateTime64>
+    struct hash<PYJU::DateTime64>
     {
-        size_t operator()(const DB::DateTime64 & x) const
+        size_t operator()(const PYJU::DateTime64 & x) const
         {
-            return std::hash<DB::DateTime64::NativeType>()(x);
+            return std::hash<PYJU::DateTime64::NativeType>()(x);
         }
     };
 
     template <>
-    struct hash<DB::Decimal256>
+    struct hash<PYJU::Decimal256>
     {
-        size_t operator()(const DB::Decimal256 & x) const
+        size_t operator()(const PYJU::Decimal256 & x) const
         {
             // FIXME temp solution
-            return std::hash<DB::Int64>()(static_cast<DB::Int64>(x.value >> 64 & max_uint_mask))
-                ^ std::hash<DB::Int64>()(static_cast<DB::Int64>(x.value & max_uint_mask));
+            return std::hash<PYJU::Int64>()(static_cast<PYJU::Int64>(x.value >> 64 & max_uint_mask))
+                ^ std::hash<PYJU::Int64>()(static_cast<PYJU::Int64>(x.value & max_uint_mask));
         }
     };
 }

@@ -6,7 +6,7 @@
 #    include <Poco/Net/SSLManager.h>
 #endif
 
-namespace DB
+namespace PYJU
 {
 UseSSL::UseSSL()
 {

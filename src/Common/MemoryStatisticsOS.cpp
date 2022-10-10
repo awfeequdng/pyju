@@ -15,7 +15,7 @@
 #include <IO/ReadHelpers.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes
@@ -48,7 +48,7 @@ MemoryStatisticsOS::~MemoryStatisticsOS()
         }
         catch (const ErrnoException &)
         {
-            DB::tryLogCurrentException(__PRETTY_FUNCTION__);
+            PYJU::tryLogCurrentException(__PRETTY_FUNCTION__);
         }
     }
 }

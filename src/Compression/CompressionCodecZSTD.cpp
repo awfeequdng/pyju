@@ -9,7 +9,7 @@
 #include <IO/BufferWithOwnMemory.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 class CompressionCodecZSTD : public ICompressionCodec

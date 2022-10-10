@@ -17,7 +17,7 @@
 #endif
 
 // Common part for both parts (with SSL and without)
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes
@@ -64,10 +64,10 @@ uint8_t getMethodCode(EncryptionMethod Method)
 
 } // end of namespace
 
-} // end of namespace DB
+} // end of namespace PYJU
 
 #if USE_SSL
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes
@@ -515,7 +515,7 @@ void CompressionCodecEncrypted::doDecompressData(const char * source, UInt32 sou
 
 #else /* USE_SSL */
 
-namespace DB
+namespace PYJU
 {
 
 namespace
@@ -553,7 +553,7 @@ void CompressionCodecEncrypted::Configuration::load(const Poco::Util::AbstractCo
 
 #endif /* USE_SSL */
 
-namespace DB
+namespace PYJU
 {
 /// Register codecs for all algorithms
 void registerCodecEncrypted(CompressionCodecFactory & factory)

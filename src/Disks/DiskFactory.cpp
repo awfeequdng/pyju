@@ -1,6 +1,6 @@
 #include "DiskFactory.h"
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {
@@ -14,7 +14,7 @@ DiskFactory & DiskFactory::instance()
     return factory;
 }
 
-void DiskFactory::registerDiskType(const String & disk_type, DB::DiskFactory::Creator creator)
+void DiskFactory::registerDiskType(const String & disk_type, PYJU::DiskFactory::Creator creator)
 {
     if (!registry.emplace(disk_type, creator).second)
         throw Exception("DiskFactory: the disk type '" + disk_type + "' is not unique", ErrorCodes::LOGICAL_ERROR);

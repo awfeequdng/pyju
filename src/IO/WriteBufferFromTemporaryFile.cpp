@@ -4,7 +4,7 @@
 #include <fcntl.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

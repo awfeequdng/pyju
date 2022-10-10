@@ -21,7 +21,7 @@ namespace ProfileEvents
 }
 
 
-namespace DB
+namespace PYJU
 {
 // S3 protocol does not allow to have multipart upload with more than 10000 parts.
 // In case server does not return an error on exceeding that number, we print a warning

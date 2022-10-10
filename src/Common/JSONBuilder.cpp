@@ -2,7 +2,7 @@
 #include <IO/WriteHelpers.h>
 #include <Common/typeid_cast.h>
 
-namespace DB::JSONBuilder
+namespace PYJU::JSONBuilder
 {
 
 static bool isArrayOrMap(const IItem & item)

@@ -6,7 +6,7 @@
 #include <utility>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

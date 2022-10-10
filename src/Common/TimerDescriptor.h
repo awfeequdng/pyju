@@ -2,7 +2,7 @@
 #if defined(OS_LINUX)
 #include <Poco/Timespan.h>
 
-namespace DB
+namespace PYJU
 {
 
 /// Wrapper over timerfd.

@@ -4,7 +4,7 @@
 #include <IO/ReadBuffer.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** Allows to read from another ReadBuffer no more than the specified number of bytes.

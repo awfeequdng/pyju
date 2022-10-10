@@ -14,7 +14,7 @@
 #include <azure/core/io/body_stream.hpp>
 
 
-namespace DB
+namespace PYJU
 {
 
 class WriteBufferFromAzureBlobStorage : public BufferWithOwnMemory<WriteBuffer>

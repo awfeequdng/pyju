@@ -27,7 +27,7 @@ namespace Poco
     }
 }
 
-namespace DB
+namespace PYJU
 {
 class IDiskDirectoryIterator;
 using DiskDirectoryIteratorPtr = std::unique_ptr<IDiskDirectoryIterator>;

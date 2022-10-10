@@ -1,6 +1,6 @@
 #include <IO/ReadBufferFromFileBase.h>
 
-namespace DB
+namespace PYJU
 {
 
 ReadBufferFromFileBase::ReadBufferFromFileBase() : BufferWithOwnMemory<SeekableReadBuffer>(0)

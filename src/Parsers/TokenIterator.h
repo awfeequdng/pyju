@@ -6,7 +6,7 @@
 #include <vector>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** Parser operates on lazy stream of tokens.

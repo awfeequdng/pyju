@@ -10,7 +10,7 @@
 
 #include <Common/MultiVersion.h>
 
-namespace DB
+namespace PYJU
 {
 
 /** Allow to quickly find symbol name from address.

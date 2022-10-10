@@ -8,7 +8,7 @@
 #include <IO/SeekableReadBuffer.h>
 #include <IO/BufferWithOwnMemory.h>
 
-namespace DB
+namespace PYJU
 {
 class SnappyReadBuffer : public BufferWithOwnMemory<SeekableReadBuffer>
 {

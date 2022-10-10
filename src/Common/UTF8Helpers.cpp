@@ -4,7 +4,7 @@
 #include <widechar_width.h>
 
 
-namespace DB
+namespace PYJU
 {
 namespace UTF8
 {

@@ -18,7 +18,7 @@
 #include <base/types.h>
 
 
-namespace DB
+namespace PYJU
 {
     namespace ErrorCodes
     {
@@ -67,26 +67,26 @@ public:
 
         int fd = ::open(path.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, 0666);
         if (-1 == fd)
-            DB::throwFromErrnoWithPath("Cannot open file " + path, path, DB::ErrorCodes::CANNOT_OPEN_FILE);
+            PYJU::throwFromErrnoWithPath("Cannot open file " + path, path, PYJU::ErrorCodes::CANNOT_OPEN_FILE);
 
         try
         {
             int flock_ret = flock(fd, LOCK_EX);
             if (-1 == flock_ret)
-                DB::throwFromErrnoWithPath("Cannot lock file " + path, path, DB::ErrorCodes::CANNOT_OPEN_FILE);
+                PYJU::throwFromErrnoWithPath("Cannot lock file " + path, path, PYJU::ErrorCodes::CANNOT_OPEN_FILE);
 
             if (!file_doesnt_exists)
             {
-                DB::ReadBufferFromFileDescriptor rb(fd, SMALL_READ_WRITE_BUFFER_SIZE);
+                PYJU::ReadBufferFromFileDescriptor rb(fd, SMALL_READ_WRITE_BUFFER_SIZE);
                 try
                 {
-                    DB::readIntText(res, rb);
+                    PYJU::readIntText(res, rb);
                 }
-                catch (const DB::Exception & e)
+                catch (const PYJU::Exception & e)
                 {
                     /// A more understandable error message.
-                    if (e.code() == DB::ErrorCodes::CANNOT_READ_ALL_DATA || e.code() == DB::ErrorCodes::ATTEMPT_TO_READ_AFTER_EOF)
-                        throw DB::ParsingException("File " + path + " is empty. You must fill it manually with appropriate value.", e.code());
+                    if (e.code() == PYJU::ErrorCodes::CANNOT_READ_ALL_DATA || e.code() == PYJU::ErrorCodes::ATTEMPT_TO_READ_AFTER_EOF)
+                        throw PYJU::ParsingException("File " + path + " is empty. You must fill it manually with appropriate value.", e.code());
                     else
                         throw;
                 }
@@ -98,11 +98,11 @@ public:
             {
                 res += delta;
 
-                DB::WriteBufferFromFileDescriptor wb(fd, SMALL_READ_WRITE_BUFFER_SIZE);
+                PYJU::WriteBufferFromFileDescriptor wb(fd, SMALL_READ_WRITE_BUFFER_SIZE);
                 wb.seek(0, SEEK_SET);
                 wb.truncate(0);
-                DB::writeIntText(res, wb);
-                DB::writeChar('\n', wb);
+                PYJU::writeIntText(res, wb);
+                PYJU::writeChar('\n', wb);
                 wb.sync();
             }
 
@@ -141,7 +141,7 @@ public:
 
         int fd = ::open(path.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, 0666);
         if (-1 == fd)
-            DB::throwFromErrnoWithPath("Cannot open file " + path, path, DB::ErrorCodes::CANNOT_OPEN_FILE);
+            PYJU::throwFromErrnoWithPath("Cannot open file " + path, path, PYJU::ErrorCodes::CANNOT_OPEN_FILE);
 
         try
         {
@@ -149,30 +149,30 @@ public:
 
             if (file_exists)
             {
-                DB::ReadBufferFromFileDescriptor rb(fd, SMALL_READ_WRITE_BUFFER_SIZE);
+                PYJU::ReadBufferFromFileDescriptor rb(fd, SMALL_READ_WRITE_BUFFER_SIZE);
                 try
                 {
                     UInt64 current_value;
-                    DB::readIntText(current_value, rb);
+                    PYJU::readIntText(current_value, rb);
                     char c;
-                    DB::readChar(c, rb);
+                    PYJU::readChar(c, rb);
                     if (rb.count() > 0 && c == '\n' && rb.eof())
                         broken = false;
                 }
-                catch (const DB::Exception & e)
+                catch (const PYJU::Exception & e)
                 {
-                    if (e.code() != DB::ErrorCodes::CANNOT_READ_ALL_DATA && e.code() != DB::ErrorCodes::ATTEMPT_TO_READ_AFTER_EOF)
+                    if (e.code() != PYJU::ErrorCodes::CANNOT_READ_ALL_DATA && e.code() != PYJU::ErrorCodes::ATTEMPT_TO_READ_AFTER_EOF)
                         throw;
                 }
             }
 
             if (broken)
             {
-                DB::WriteBufferFromFileDescriptor wb(fd, SMALL_READ_WRITE_BUFFER_SIZE);
+                PYJU::WriteBufferFromFileDescriptor wb(fd, SMALL_READ_WRITE_BUFFER_SIZE);
                 wb.seek(0, SEEK_SET);
                 wb.truncate(0);
-                DB::writeIntText(value, wb);
-                DB::writeChar('\n', wb);
+                PYJU::writeIntText(value, wb);
+                PYJU::writeChar('\n', wb);
                 wb.sync();
             }
         }

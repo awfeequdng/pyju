@@ -5,7 +5,7 @@
 #include <IO/MMapReadBufferFromFileDescriptor.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 class MMapReadBufferFromFileWithCache : public ReadBufferFromFileBase

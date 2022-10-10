@@ -8,7 +8,7 @@
 #include <functional>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** Implements the ability to write and read data in/from WriteBuffer/ReadBuffer
@@ -19,8 +19,8 @@ namespace DB
   *
   * Example usage:
   *
-  *     DB::WriteBufferFromFileDescriptor buf(STDOUT_FILENO);
-  *     buf << DB::double_quote << "Hello, world!" << '\n' << DB::flush;
+  *     PYJU::WriteBufferFromFileDescriptor buf(STDOUT_FILENO);
+  *     buf << PYJU::double_quote << "Hello, world!" << '\n' << PYJU::flush;
   *
   * Outputs `char` type (usually it's Int8) as a symbol, not as a number.
   */

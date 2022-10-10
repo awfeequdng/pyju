@@ -4,7 +4,7 @@
 #include <base/unaligned.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** Can allocate memory objects of fixed size with deletion support.

@@ -10,7 +10,7 @@
 #include <base/sleep.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

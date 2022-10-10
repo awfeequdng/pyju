@@ -17,7 +17,7 @@
 
 namespace fs = std::filesystem;
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

@@ -10,7 +10,7 @@
 #endif
 
 
-namespace DB
+namespace PYJU
 {
     namespace ErrorCodes
     {
@@ -29,7 +29,7 @@ static thread_local size_t max_stack_size = 0;
  */
 size_t getStackSize(void ** out_address)
 {
-    using namespace DB;
+    using namespace PYJU;
 
     size_t size;
     void * address;
@@ -78,7 +78,7 @@ size_t getStackSize(void ** out_address)
   */
 __attribute__((__weak__)) void checkStackSize()
 {
-    using namespace DB;
+    using namespace PYJU;
 
     if (!stack_address)
         max_stack_size = getStackSize(&stack_address);

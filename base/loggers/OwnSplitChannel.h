@@ -7,12 +7,12 @@
 #include <Poco/Channel.h>
 #include "ExtendedLogChannel.h"
 
-namespace DB
+namespace PYJU
 {
     class TextLog;
 }
 
-namespace DB
+namespace PYJU
 {
 /// Works as Poco::SplitterChannel, but performs additional work:
 ///  passes logs to Client via TCP interface
@@ -25,7 +25,7 @@ public:
     /// Adds a child channel
     void addChannel(Poco::AutoPtr<Poco::Channel> channel, const std::string & name);
 
-    void addTextLog(std::shared_ptr<DB::TextLog> log, int max_priority);
+    void addTextLog(std::shared_ptr<PYJU::TextLog> log, int max_priority);
 
     void setLevel(const std::string & name, int level);
 
@@ -40,7 +40,7 @@ private:
 
     std::mutex text_log_mutex;
 
-    std::weak_ptr<DB::TextLog> text_log;
+    std::weak_ptr<PYJU::TextLog> text_log;
     std::atomic<int> text_log_max_priority = -1;
 };
 

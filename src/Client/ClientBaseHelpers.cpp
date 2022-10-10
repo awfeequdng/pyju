@@ -6,7 +6,7 @@
 #include <Common/UTF8Helpers.h>
 #include <Parsers/Lexer.h>
 
-namespace DB
+namespace PYJU
 {
 
 /// Should we celebrate a bit?

@@ -12,7 +12,7 @@
 #include "HadoopSnappyReadBuffer.h"
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

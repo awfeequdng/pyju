@@ -12,7 +12,7 @@
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 
 
-namespace DB
+namespace PYJU
 {
 
 class CompressionCodecLZ4 : public ICompressionCodec

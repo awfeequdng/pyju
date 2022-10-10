@@ -27,7 +27,7 @@ namespace Aws::S3::Model
     class PutObjectRequest;
 }
 
-namespace DB
+namespace PYJU
 {
 
 using ScheduleFunc = std::function<void(std::function<void()>)>;

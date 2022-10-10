@@ -25,7 +25,7 @@
 #endif
 
 
-namespace DB
+namespace PYJU
 {
     namespace ErrorCodes
     {
@@ -179,13 +179,13 @@ private:
         {
             ptr = mmap(address_hint, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
             if (MAP_FAILED == ptr)
-                DB::throwFromErrno(fmt::format("Allocator: Cannot mmap {}.", ReadableSize(size)), DB::ErrorCodes::CANNOT_ALLOCATE_MEMORY);
+                PYJU::throwFromErrno(fmt::format("Allocator: Cannot mmap {}.", ReadableSize(size)), PYJU::ErrorCodes::CANNOT_ALLOCATE_MEMORY);
         }
 
         ~Chunk()
         {
             if (ptr && 0 != munmap(ptr, size))
-                DB::throwFromErrno(fmt::format("Allocator: Cannot munmap {}.", ReadableSize(size)), DB::ErrorCodes::CANNOT_MUNMAP);
+                PYJU::throwFromErrno(fmt::format("Allocator: Cannot munmap {}.", ReadableSize(size)), PYJU::ErrorCodes::CANNOT_MUNMAP);
         }
 
         Chunk(Chunk && other) : ptr(other.ptr), size(other.size)

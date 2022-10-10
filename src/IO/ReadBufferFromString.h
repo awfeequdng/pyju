@@ -2,7 +2,7 @@
 
 #include <IO/ReadBufferFromMemory.h>
 
-namespace DB
+namespace PYJU
 {
 
 /// Allows to read from std::string-like object.

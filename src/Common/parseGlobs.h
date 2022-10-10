@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-namespace DB
+namespace PYJU
 {
 /* Parse globs in string and make a regexp for it.
  */

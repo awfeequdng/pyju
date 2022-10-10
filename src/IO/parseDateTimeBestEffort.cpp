@@ -8,7 +8,7 @@
 
 #include <limits>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

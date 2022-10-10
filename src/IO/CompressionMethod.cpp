@@ -21,7 +21,7 @@
 #include <boost/algorithm/string/case_conv.hpp>
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {
@@ -127,11 +127,11 @@ std::unique_ptr<ReadBuffer> wrapReadBufferWithCompressionMethod(
 std::unique_ptr<WriteBuffer> wrapWriteBufferWithCompressionMethod(
     std::unique_ptr<WriteBuffer> nested, CompressionMethod method, int level, size_t buf_size, char * existing_memory, size_t alignment)
 {
-    if (method == DB::CompressionMethod::Gzip || method == CompressionMethod::Zlib)
+    if (method == PYJU::CompressionMethod::Gzip || method == CompressionMethod::Zlib)
         return std::make_unique<ZlibDeflatingWriteBuffer>(std::move(nested), method, level, buf_size, existing_memory, alignment);
 
 #if USE_BROTLI
-    if (method == DB::CompressionMethod::Brotli)
+    if (method == PYJU::CompressionMethod::Brotli)
         return std::make_unique<BrotliWriteBuffer>(std::move(nested), level, buf_size, existing_memory, alignment);
 #endif
     if (method == CompressionMethod::Xz)

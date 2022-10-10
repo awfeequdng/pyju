@@ -15,7 +15,7 @@
 #include <cstring>
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {
@@ -284,7 +284,7 @@ private:
     static constexpr UInt8 rank_width = details::RankWidth<HashValueType>::get();
 
     using Value = UInt64;
-    using RankStore = DB::CompactArray<HashValueType, rank_width, bucket_count>;
+    using RankStore = PYJU::CompactArray<HashValueType, rank_width, bucket_count>;
 
 public:
     using value_type = Value;
@@ -331,12 +331,12 @@ public:
             update(bucket, rhs_rank_store[bucket]);
     }
 
-    void read(DB::ReadBuffer & in)
+    void read(PYJU::ReadBuffer & in)
     {
         in.readStrict(reinterpret_cast<char *>(this), sizeof(*this));
     }
 
-    void readAndMerge(DB::ReadBuffer & in)
+    void readAndMerge(PYJU::ReadBuffer & in)
     {
         typename RankStore::Reader reader(in);
         while (reader.next())
@@ -348,18 +348,18 @@ public:
         in.ignore(sizeof(DenominatorCalculatorType) + sizeof(ZerosCounterType));
     }
 
-    static void skip(DB::ReadBuffer & in)
+    static void skip(PYJU::ReadBuffer & in)
     {
         in.ignore(sizeof(RankStore) + sizeof(DenominatorCalculatorType) + sizeof(ZerosCounterType));
     }
 
-    void write(DB::WriteBuffer & out) const
+    void write(PYJU::WriteBuffer & out) const
     {
         out.write(reinterpret_cast<const char *>(this), sizeof(*this));
     }
 
     /// Read and write in text mode is suboptimal (but compatible with OLAPServer and Metrage).
-    void readText(DB::ReadBuffer & in)
+    void readText(PYJU::ReadBuffer & in)
     {
         rank_store.readText(in);
 
@@ -374,18 +374,18 @@ public:
         }
     }
 
-    static void skipText(DB::ReadBuffer & in)
+    static void skipText(PYJU::ReadBuffer & in)
     {
         UInt8 dummy;
         for (size_t i = 0; i < RankStore::size(); ++i)
         {
             if (i != 0)
-                DB::assertChar(',', in);
-            DB::readIntText(dummy, in);
+                PYJU::assertChar(',', in);
+            PYJU::readIntText(dummy, in);
         }
     }
 
-    void writeText(DB::WriteBuffer & out) const
+    void writeText(PYJU::WriteBuffer & out) const
     {
         rank_store.writeText(out);
     }
@@ -454,7 +454,7 @@ private:
             return fixed_estimate;
         }
         else
-            throw Poco::Exception("Internal error", DB::ErrorCodes::LOGICAL_ERROR);
+            throw Poco::Exception("Internal error", PYJU::ErrorCodes::LOGICAL_ERROR);
     }
 
     inline double applyCorrection(double raw_estimate) const

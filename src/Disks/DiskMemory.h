@@ -6,7 +6,7 @@
 #include <utility>
 #include <Disks/IDisk.h>
 
-namespace DB
+namespace PYJU
 {
 class DiskMemory;
 class ReadBufferFromFileBase;

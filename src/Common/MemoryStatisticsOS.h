@@ -3,7 +3,7 @@
 #include <cstdint>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** Opens a file /proc/self/statm. Keeps it open and reads memory statistics via 'pread'.

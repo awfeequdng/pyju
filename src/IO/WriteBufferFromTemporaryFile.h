@@ -5,7 +5,7 @@
 #include <Common/filesystemHelpers.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Rereadable WriteBuffer, could be used as disk buffer

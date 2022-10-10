@@ -1,7 +1,7 @@
 #include <IO/ReadBufferFromFileDecorator.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 ReadBufferFromFileDecorator::ReadBufferFromFileDecorator(std::unique_ptr<SeekableReadBuffer> impl_)

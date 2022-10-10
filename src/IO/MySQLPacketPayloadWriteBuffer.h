@@ -2,7 +2,7 @@
 
 #include <IO/WriteBuffer.h>
 
-namespace DB
+namespace PYJU
 {
 
 /** Writing packets.

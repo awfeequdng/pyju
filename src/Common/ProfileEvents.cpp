@@ -365,7 +365,7 @@ Event end() { return END; }
 
 void increment(Event event, Count amount)
 {
-    // DB::CurrentThread::getProfileEvents().increment(event, amount);
+    // PYJU::CurrentThread::getProfileEvents().increment(event, amount);
     global_counters.increment(event, amount);
 }
 

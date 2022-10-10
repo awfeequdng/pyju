@@ -6,7 +6,7 @@
 #include <IO/BufferBase.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 class ReadBuffer;

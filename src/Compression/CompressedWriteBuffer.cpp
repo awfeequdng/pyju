@@ -8,7 +8,7 @@
 #include <Compression/CompressionFactory.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

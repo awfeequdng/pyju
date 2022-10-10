@@ -9,7 +9,7 @@
 #include <Poco/Net/SocketAddress.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

@@ -1,6 +1,6 @@
 #include <IO/LZMAInflatingReadBuffer.h>
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

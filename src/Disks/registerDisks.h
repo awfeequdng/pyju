@@ -1,6 +1,6 @@
 #pragma once
 
-namespace DB
+namespace PYJU
 {
 void registerDisks();
 }

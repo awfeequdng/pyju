@@ -4,7 +4,7 @@
 #include <limits>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** https://en.wikipedia.org/wiki/Exponential_smoothing

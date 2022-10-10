@@ -196,7 +196,7 @@ elseif (COMPILER_GCC)
         add_cxx_compile_options(-Wno-sequence-point)
         # XXX: gcc10 false positive with this warning in MergeTreePartition.cpp
         #     inlined from 'void writeHexByteLowercase(UInt8, void*)' at ../src/Common/hex.h:39:11,
-        #     inlined from 'DB::String DB::MergeTreePartition::getID(const DB::Block&) const' at ../src/Storages/MergeTree/MergeTreePartition.cpp:85:30:
+        #     inlined from 'PYJU::String PYJU::MergeTreePartition::getID(const PYJU::Block&) const' at ../src/Storages/MergeTree/MergeTreePartition.cpp:85:30:
         #     ../contrib/libc-headers/x86_64-linux-gnu/bits/string_fortified.h:34:33: error: writing 2 bytes into a region of size 0 [-Werror=stringop-overflow=]
         #     34 |   return __builtin___memcpy_chk (__dest, __src, __len, __bos0 (__dest));
         # For some reason (bug in gcc?) macro 'GCC diagnostic ignored "-Wstringop-overflow"' doesn't help.
@@ -205,8 +205,8 @@ elseif (COMPILER_GCC)
 
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 11)
         # reinterpretAs.cpp:182:31: error: ‘void* memcpy(void*, const void*, size_t)’ copying an object of non-trivial type
-        # ‘using ToFieldType = using FieldType = using UUID = struct StrongTypedef<wide::integer<128, unsigned int>, DB::UUIDTag>’
-        # {aka ‘struct StrongTypedef<wide::integer<128, unsigned int>, DB::UUIDTag>’} from an array of ‘const char8_t’
+        # ‘using ToFieldType = using FieldType = using UUID = struct StrongTypedef<wide::integer<128, unsigned int>, PYJU::UUIDTag>’
+        # {aka ‘struct StrongTypedef<wide::integer<128, unsigned int>, PYJU::UUIDTag>’} from an array of ‘const char8_t’
         add_cxx_compile_options(-Wno-error=class-memaccess)
 
         # Maybe false positive...
@@ -218,9 +218,9 @@ elseif (COMPILER_GCC)
         # inlined from ‘static constexpr void std::__1::allocator_traits<_Alloc>::deallocate(std::__1::allocator_traits<_Alloc>::allocator_type&, std::__1::allocator_traits<_Alloc>::pointer, std::__1::allocator_traits<_Alloc>::size_type) [with _Alloc = std::__1::allocator<char>]’ at /home/jakalletti/ClickHouse/ClickHouse/contrib/libcxx/include/__memory/allocator_traits.h:476:24,
         # inlined from ‘std::__1::basic_string<_CharT, _Traits, _Allocator>::~basic_string() [with _CharT = char; _Traits = std::__1::char_traits<char>; _Allocator = std::__1::allocator<char>]’ at /home/jakalletti/ClickHouse/ClickHouse/contrib/libcxx/include/string:2219:35,
         # inlined from ‘std::__1::basic_string<_CharT, _Traits, _Allocator>::~basic_string() [with _CharT = char; _Traits = std::__1::char_traits<char>; _Allocator = std::__1::allocator<char>]’ at /home/jakalletti/ClickHouse/ClickHouse/contrib/libcxx/include/string:2213:1,
-        # inlined from ‘DB::JSONBuilder::JSONMap::Pair::~Pair()’ at /home/jakalletti/ClickHouse/ClickHouse/src/Common/JSONBuilder.h:90:12,
-        # inlined from ‘void DB::JSONBuilder::JSONMap::add(std::__1::string, DB::JSONBuilder::ItemPtr)’ at /home/jakalletti/ClickHouse/ClickHouse/src/Common/JSONBuilder.h:97:68,
-        # inlined from ‘virtual void DB::ExpressionStep::describeActions(DB::JSONBuilder::JSONMap&) const’ at /home/jakalletti/ClickHouse/ClickHouse/src/Processors/QueryPlan/ExpressionStep.cpp:102:12:
+        # inlined from ‘PYJU::JSONBuilder::JSONMap::Pair::~Pair()’ at /home/jakalletti/ClickHouse/ClickHouse/src/Common/JSONBuilder.h:90:12,
+        # inlined from ‘void PYJU::JSONBuilder::JSONMap::add(std::__1::string, PYJU::JSONBuilder::ItemPtr)’ at /home/jakalletti/ClickHouse/ClickHouse/src/Common/JSONBuilder.h:97:68,
+        # inlined from ‘virtual void PYJU::ExpressionStep::describeActions(PYJU::JSONBuilder::JSONMap&) const’ at /home/jakalletti/ClickHouse/ClickHouse/src/Processors/QueryPlan/ExpressionStep.cpp:102:12:
         # /home/jakalletti/ClickHouse/ClickHouse/contrib/libcxx/include/new:247:20: error: ‘void operator delete(void*, size_t)’ called on a pointer to an unallocated object ‘7598543875853023301’ [-Werror=free-nonheap-object]
         add_cxx_compile_options(-Wno-error=free-nonheap-object)
 

@@ -1,7 +1,7 @@
 #include <Common/Config/ConfigHelper.h>
 #include <Poco/Util/AbstractConfiguration.h>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ConfigHelper

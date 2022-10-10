@@ -3,7 +3,7 @@
 #include <future>
 #include <functional>
 
-namespace DB
+namespace PYJU
 {
 
 /// Interface to run task asynchronously with possibility to wait for execution.

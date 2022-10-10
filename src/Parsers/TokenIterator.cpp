@@ -1,7 +1,7 @@
 #include <Parsers/TokenIterator.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 UnmatchedParentheses checkUnmatchedParentheses(TokenIterator begin)

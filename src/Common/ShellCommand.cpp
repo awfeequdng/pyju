@@ -29,7 +29,7 @@ namespace
     };
 }
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

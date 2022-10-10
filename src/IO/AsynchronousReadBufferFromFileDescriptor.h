@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** Use ready file descriptor. Does not open or close a file.

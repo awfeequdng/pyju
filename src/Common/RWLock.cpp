@@ -23,7 +23,7 @@ namespace CurrentMetrics
 }
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

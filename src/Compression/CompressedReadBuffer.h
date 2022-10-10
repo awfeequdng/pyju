@@ -5,7 +5,7 @@
 #include <IO/ReadBuffer.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 class CompressedReadBuffer : public CompressedReadBufferBase, public BufferWithOwnMemory<ReadBuffer>

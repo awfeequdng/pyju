@@ -2,7 +2,7 @@
 #include <Common/StringUtils/StringUtils.h>
 #include <base/find_symbols.h>
 
-namespace DB
+namespace PYJU
 {
 
 namespace

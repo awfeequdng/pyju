@@ -7,7 +7,7 @@
 #include <lzma.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Performs compression using lzma library and writes compressed data to out_ WriteBuffer.

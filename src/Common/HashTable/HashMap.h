@@ -10,7 +10,7 @@
   * Also, key in hash table must be of type, that zero bytes is compared equals to zero key.
   */
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {
@@ -96,31 +96,31 @@ struct HashMapCell
     void setMapped(const value_type & value_) { value.second = value_.second; }
 
     /// Serialization, in binary and text form.
-    void write(DB::WriteBuffer & wb) const
+    void write(PYJU::WriteBuffer & wb) const
     {
-        DB::writeBinary(value.first, wb);
-        DB::writeBinary(value.second, wb);
+        PYJU::writeBinary(value.first, wb);
+        PYJU::writeBinary(value.second, wb);
     }
 
-    void writeText(DB::WriteBuffer & wb) const
+    void writeText(PYJU::WriteBuffer & wb) const
     {
-        DB::writeDoubleQuoted(value.first, wb);
-        DB::writeChar(',', wb);
-        DB::writeDoubleQuoted(value.second, wb);
+        PYJU::writeDoubleQuoted(value.first, wb);
+        PYJU::writeChar(',', wb);
+        PYJU::writeDoubleQuoted(value.second, wb);
     }
 
     /// Deserialization, in binary and text form.
-    void read(DB::ReadBuffer & rb)
+    void read(PYJU::ReadBuffer & rb)
     {
-        DB::readBinary(value.first, rb);
-        DB::readBinary(value.second, rb);
+        PYJU::readBinary(value.first, rb);
+        PYJU::readBinary(value.second, rb);
     }
 
-    void readText(DB::ReadBuffer & rb)
+    void readText(PYJU::ReadBuffer & rb)
     {
-        DB::readDoubleQuoted(value.first, rb);
-        DB::assertChar(',', rb);
-        DB::readDoubleQuoted(value.second, rb);
+        PYJU::readDoubleQuoted(value.first, rb);
+        PYJU::assertChar(',', rb);
+        PYJU::readDoubleQuoted(value.second, rb);
     }
 
     static bool constexpr need_to_notify_cell_during_move = false;
@@ -274,7 +274,7 @@ public:
     {
         if (auto it = this->find(x); it != this->end())
             return it->getMapped();
-        throw DB::Exception("Cannot find element in HashMap::at method", DB::ErrorCodes::LOGICAL_ERROR);
+        throw PYJU::Exception("Cannot find element in HashMap::at method", PYJU::ErrorCodes::LOGICAL_ERROR);
     }
 };
 

@@ -8,7 +8,7 @@
 #include <Common/MultiVersion.h>
 
 
-namespace DB
+namespace PYJU
 {
 class ReadBufferFromFileBase;
 class WriteBufferFromFileBase;

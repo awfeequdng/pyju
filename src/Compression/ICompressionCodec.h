@@ -7,7 +7,7 @@
 #include <Common/SipHash.h>
 #include <unordered_map>
 
-namespace DB
+namespace PYJU
 {
 
 class ICompressionCodec;

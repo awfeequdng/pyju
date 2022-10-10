@@ -11,7 +11,7 @@
 #include <IO/ReadSettings.h>
 #include <azure/storage/blobs.hpp>
 
-namespace DB
+namespace PYJU
 {
 
 class ReadBufferFromAzureBlobStorage : public SeekableReadBuffer

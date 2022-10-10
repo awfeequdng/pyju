@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 
-namespace DB
+namespace PYJU
 {
 
 VersionNumber::VersionNumber(std::string version_string)

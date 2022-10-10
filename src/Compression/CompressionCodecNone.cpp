@@ -3,7 +3,7 @@
 #include <Compression/CompressionFactory.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 CompressionCodecNone::CompressionCodecNone()

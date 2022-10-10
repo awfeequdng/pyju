@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 #define APPLY_FOR_TOKENS(M) \

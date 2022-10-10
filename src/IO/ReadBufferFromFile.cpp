@@ -12,7 +12,7 @@ namespace ProfileEvents
 }
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

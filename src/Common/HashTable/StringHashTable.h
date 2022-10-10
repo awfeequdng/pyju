@@ -8,7 +8,7 @@
 
 
 using StringKey8 = UInt64;
-using StringKey16 = DB::UInt128;
+using StringKey16 = PYJU::UInt128;
 struct StringKey24
 {
     UInt64 a;
@@ -139,10 +139,10 @@ public:
         return hasZero() ? zeroValue() : nullptr;
     }
 
-    void write(DB::WriteBuffer & wb) const { zeroValue()->write(wb); }
-    void writeText(DB::WriteBuffer & wb) const { zeroValue()->writeText(wb); }
-    void read(DB::ReadBuffer & rb) { zeroValue()->read(rb); }
-    void readText(DB::ReadBuffer & rb) { zeroValue()->readText(rb); }
+    void write(PYJU::WriteBuffer & wb) const { zeroValue()->write(wb); }
+    void writeText(PYJU::WriteBuffer & wb) const { zeroValue()->writeText(wb); }
+    void read(PYJU::ReadBuffer & rb) { zeroValue()->read(rb); }
+    void readText(PYJU::ReadBuffer & rb) { zeroValue()->readText(rb); }
     size_t size() const { return hasZero() ? 1 : 0; }
     bool empty() const { return !hasZero(); }
     size_t getBufferSizeInBytes() const { return sizeof(Cell); }
@@ -370,7 +370,7 @@ public:
         return dispatch(*this, x, FindCallable{}) != nullptr;
     }
 
-    void write(DB::WriteBuffer & wb) const
+    void write(PYJU::WriteBuffer & wb) const
     {
         m0.write(wb);
         m1.write(wb);
@@ -379,20 +379,20 @@ public:
         ms.write(wb);
     }
 
-    void writeText(DB::WriteBuffer & wb) const
+    void writeText(PYJU::WriteBuffer & wb) const
     {
         m0.writeText(wb);
-        DB::writeChar(',', wb);
+        PYJU::writeChar(',', wb);
         m1.writeText(wb);
-        DB::writeChar(',', wb);
+        PYJU::writeChar(',', wb);
         m2.writeText(wb);
-        DB::writeChar(',', wb);
+        PYJU::writeChar(',', wb);
         m3.writeText(wb);
-        DB::writeChar(',', wb);
+        PYJU::writeChar(',', wb);
         ms.writeText(wb);
     }
 
-    void read(DB::ReadBuffer & rb)
+    void read(PYJU::ReadBuffer & rb)
     {
         m0.read(rb);
         m1.read(rb);
@@ -401,16 +401,16 @@ public:
         ms.read(rb);
     }
 
-    void readText(DB::ReadBuffer & rb)
+    void readText(PYJU::ReadBuffer & rb)
     {
         m0.readText(rb);
-        DB::assertChar(',', rb);
+        PYJU::assertChar(',', rb);
         m1.readText(rb);
-        DB::assertChar(',', rb);
+        PYJU::assertChar(',', rb);
         m2.readText(rb);
-        DB::assertChar(',', rb);
+        PYJU::assertChar(',', rb);
         m3.readText(rb);
-        DB::assertChar(',', rb);
+        PYJU::assertChar(',', rb);
         ms.readText(rb);
     }
 

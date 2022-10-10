@@ -10,7 +10,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <unordered_map>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

@@ -6,7 +6,7 @@
 #include <string_view>
 #include <unordered_set>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes
@@ -23,7 +23,7 @@ TLDList::TLDList(size_t size)
 bool TLDList::insert(const StringRef & host)
 {
     bool inserted;
-    tld_container.emplace(DB::ArenaKeyHolder{host, *pool}, inserted);
+    tld_container.emplace(PYJU::ArenaKeyHolder{host, *pool}, inserted);
     return inserted;
 }
 bool TLDList::has(const StringRef & host) const

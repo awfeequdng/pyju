@@ -8,7 +8,7 @@
 
 namespace fs = std::filesystem;
 
-namespace DB
+namespace PYJU
 {
 
 bool safeFsExists(const String & path)

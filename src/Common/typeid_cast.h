@@ -11,7 +11,7 @@
 #include <base/demangle.h>
 
 
-namespace DB
+namespace PYJU
 {
     namespace ErrorCodes
     {
@@ -34,11 +34,11 @@ std::enable_if_t<std::is_reference_v<To>, To> typeid_cast(From & from)
     }
     catch (const std::exception & e)
     {
-        throw DB::Exception(e.what(), DB::ErrorCodes::LOGICAL_ERROR);
+        throw PYJU::Exception(e.what(), PYJU::ErrorCodes::LOGICAL_ERROR);
     }
 
-    throw DB::Exception("Bad cast from type " + demangle(typeid(from).name()) + " to " + demangle(typeid(To).name()),
-                        DB::ErrorCodes::LOGICAL_ERROR);
+    throw PYJU::Exception("Bad cast from type " + demangle(typeid(from).name()) + " to " + demangle(typeid(To).name()),
+                        PYJU::ErrorCodes::LOGICAL_ERROR);
 }
 
 
@@ -54,7 +54,7 @@ std::enable_if_t<std::is_pointer_v<To>, To> typeid_cast(From * from)
     }
     catch (const std::exception & e)
     {
-        throw DB::Exception(e.what(), DB::ErrorCodes::LOGICAL_ERROR);
+        throw PYJU::Exception(e.what(), PYJU::ErrorCodes::LOGICAL_ERROR);
     }
 }
 
@@ -71,6 +71,6 @@ std::enable_if_t<is_shared_ptr_v<To>, To> typeid_cast(const std::shared_ptr<From
     }
     catch (const std::exception & e)
     {
-        throw DB::Exception(e.what(), DB::ErrorCodes::LOGICAL_ERROR);
+        throw PYJU::Exception(e.what(), PYJU::ErrorCodes::LOGICAL_ERROR);
     }
 }

@@ -16,7 +16,7 @@
 
 namespace fs = std::filesystem;
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes
@@ -96,7 +96,7 @@ String getFilesystemName([[maybe_unused]] const String & mount_point)
 #if defined(__linux__)
     FILE * mounted_filesystems = setmntent("/etc/mtab", "r");
     if (!mounted_filesystems)
-        throw DB::Exception("Cannot open /etc/mtab to get name of filesystem", ErrorCodes::SYSTEM_ERROR);
+        throw PYJU::Exception("Cannot open /etc/mtab to get name of filesystem", ErrorCodes::SYSTEM_ERROR);
     mntent fs_info;
     constexpr size_t buf_size = 4096;     /// The same as buffer used for getmntent in glibc. It can happen that it's not enough
     std::vector<char> buf(buf_size);
@@ -104,10 +104,10 @@ String getFilesystemName([[maybe_unused]] const String & mount_point)
         ;
     endmntent(mounted_filesystems);
     if (fs_info.mnt_dir != mount_point)
-        throw DB::Exception("Cannot find name of filesystem by mount point " + mount_point, ErrorCodes::SYSTEM_ERROR);
+        throw PYJU::Exception("Cannot find name of filesystem by mount point " + mount_point, ErrorCodes::SYSTEM_ERROR);
     return fs_info.mnt_fsname;
 #else
-    throw DB::Exception("The function getFilesystemName is supported on Linux only", ErrorCodes::NOT_IMPLEMENTED);
+    throw PYJU::Exception("The function getFilesystemName is supported on Linux only", ErrorCodes::NOT_IMPLEMENTED);
 #endif
 }
 
@@ -163,7 +163,7 @@ bool createFile(const std::string & path)
         close(n);
         return true;
     }
-    DB::throwFromErrnoWithPath("Cannot create file: " + path, path, DB::ErrorCodes::CANNOT_CREATE_FILE);
+    PYJU::throwFromErrnoWithPath("Cannot create file: " + path, path, PYJU::ErrorCodes::CANNOT_CREATE_FILE);
 }
 
 bool canRead(const std::string & path)
@@ -178,7 +178,7 @@ bool canRead(const std::string & path)
         else
             return (st.st_mode & S_IROTH) != 0 || geteuid() == 0;
     }
-    DB::throwFromErrnoWithPath("Cannot check read access to file: " + path, path, DB::ErrorCodes::PATH_ACCESS_DENIED);
+    PYJU::throwFromErrnoWithPath("Cannot check read access to file: " + path, path, PYJU::ErrorCodes::PATH_ACCESS_DENIED);
 }
 
 
@@ -194,7 +194,7 @@ bool canWrite(const std::string & path)
         else
             return (st.st_mode & S_IWOTH) != 0 || geteuid() == 0;
     }
-    DB::throwFromErrnoWithPath("Cannot check write access to file: " + path, path, DB::ErrorCodes::PATH_ACCESS_DENIED);
+    PYJU::throwFromErrnoWithPath("Cannot check write access to file: " + path, path, PYJU::ErrorCodes::PATH_ACCESS_DENIED);
 }
 
 time_t getModificationTime(const std::string & path)
@@ -202,7 +202,7 @@ time_t getModificationTime(const std::string & path)
     struct stat st;
     if (stat(path.c_str(), &st) == 0)
         return st.st_mtime;
-    DB::throwFromErrnoWithPath("Cannot check modification time for file: " + path, path, DB::ErrorCodes::PATH_ACCESS_DENIED);
+    PYJU::throwFromErrnoWithPath("Cannot check modification time for file: " + path, path, PYJU::ErrorCodes::PATH_ACCESS_DENIED);
 }
 
 Poco::Timestamp getModificationTimestamp(const std::string & path)
@@ -216,6 +216,6 @@ void setModificationTime(const std::string & path, time_t time)
     tb.actime  = time;
     tb.modtime = time;
     if (utime(path.c_str(), &tb) != 0)
-        DB::throwFromErrnoWithPath("Cannot set modification time for file: " + path, path, DB::ErrorCodes::PATH_ACCESS_DENIED);
+        PYJU::throwFromErrnoWithPath("Cannot set modification time for file: " + path, path, PYJU::ErrorCodes::PATH_ACCESS_DENIED);
 }
 }

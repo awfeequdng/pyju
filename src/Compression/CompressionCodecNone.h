@@ -5,7 +5,7 @@
 #include <IO/BufferWithOwnMemory.h>
 // #include <Parsers/StringRange.h>
 
-namespace DB
+namespace PYJU
 {
 
 class CompressionCodecNone : public ICompressionCodec

@@ -24,7 +24,7 @@ namespace CurrentMetrics
     extern const Metric DiskSpaceReservedForMerge;
 }
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes
@@ -395,7 +395,7 @@ Poco::Timestamp DiskLocal::getLastModified(const String & path)
 
 void DiskLocal::createHardLink(const String & src_path, const String & dst_path)
 {
-    DB::createHardLink(fs::path(disk_path) / src_path, fs::path(disk_path) / dst_path);
+    PYJU::createHardLink(fs::path(disk_path) / src_path, fs::path(disk_path) / dst_path);
 }
 
 void DiskLocal::truncateFile(const String & path, size_t size)

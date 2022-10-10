@@ -28,7 +28,7 @@ namespace fs = std::filesystem;
 
 using namespace Poco::XML;
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

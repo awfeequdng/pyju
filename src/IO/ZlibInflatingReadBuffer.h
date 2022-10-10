@@ -7,7 +7,7 @@
 #include <zlib.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

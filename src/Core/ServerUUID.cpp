@@ -5,7 +5,7 @@
 #include <IO/WriteHelpers.h>
 #include <base/logger_useful.h>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

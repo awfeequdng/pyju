@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

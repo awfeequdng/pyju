@@ -4,7 +4,7 @@
 #    include <IO/Bzip2ReadBuffer.h>
 #    include <bzlib.h>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

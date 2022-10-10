@@ -4,7 +4,7 @@
 #include <base/types.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /**

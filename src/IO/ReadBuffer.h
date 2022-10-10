@@ -9,7 +9,7 @@
 #include <IO/BufferBase.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

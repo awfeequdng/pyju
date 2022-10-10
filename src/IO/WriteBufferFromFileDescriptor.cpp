@@ -25,7 +25,7 @@ namespace CurrentMetrics
     extern const Metric Write;
 }
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

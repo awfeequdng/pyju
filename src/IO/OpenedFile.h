@@ -10,7 +10,7 @@ namespace CurrentMetrics
 }
 
 
-namespace DB
+namespace PYJU
 {
 
 /// RAII for readonly opened file descriptor.

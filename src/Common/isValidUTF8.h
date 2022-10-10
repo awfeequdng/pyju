@@ -2,7 +2,7 @@
 
 #include <base/types.h>
 
-namespace DB::UTF8
+namespace PYJU::UTF8
 {
 
 UInt8 isValidUTF8(const UInt8 * data, UInt64 len);

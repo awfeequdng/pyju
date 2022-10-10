@@ -6,7 +6,7 @@
 #include <IO/BufferWithOwnMemory.h>
 #include <IO/WriteBuffer.h>
 
-namespace DB
+namespace PYJU
 {
 /// Performs compression using snappy library and write compressed data to the underlying buffer.
 class SnappyWriteBuffer : public BufferWithOwnMemory<WriteBuffer>

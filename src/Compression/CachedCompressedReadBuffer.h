@@ -7,7 +7,7 @@
 #include <IO/UncompressedCache.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 

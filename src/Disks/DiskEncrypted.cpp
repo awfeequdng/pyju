@@ -11,7 +11,7 @@
 #include <boost/algorithm/hex.hpp>
 #include <Common/typeid_cast.h>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

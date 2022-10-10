@@ -4,7 +4,7 @@
 #include <string>
 #include <Core/Defines.h>
 
-namespace DB
+namespace PYJU
 {
 enum class LocalFSReadMethod
 {

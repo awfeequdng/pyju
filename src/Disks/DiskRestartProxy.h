@@ -5,7 +5,7 @@
 #include <base/logger_useful.h>
 #include <shared_mutex>
 
-namespace DB
+namespace PYJU
 {
 using ReadLock = std::shared_lock<std::shared_timed_mutex>;
 using WriteLock = std::unique_lock<std::shared_timed_mutex>;

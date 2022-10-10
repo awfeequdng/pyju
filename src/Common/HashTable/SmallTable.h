@@ -3,7 +3,7 @@
 #include <Common/HashTable/HashMap.h>
 
 
-namespace DB
+namespace PYJU
 {
     namespace ErrorCodes
     {
@@ -79,7 +79,7 @@ public:
     class Reader final : private Cell::State
     {
     public:
-        Reader(DB::ReadBuffer & in_)
+        Reader(PYJU::ReadBuffer & in_)
             : in(in_)
         {
         }
@@ -92,10 +92,10 @@ public:
             if (!is_initialized)
             {
                 Cell::State::read(in);
-                DB::readVarUInt(size, in);
+                PYJU::readVarUInt(size, in);
 
                 if (size > capacity)
-                    throw DB::Exception("Illegal size", DB::ErrorCodes::INCORRECT_DATA);
+                    throw PYJU::Exception("Illegal size", PYJU::ErrorCodes::INCORRECT_DATA);
 
                 is_initialized = true;
             }
@@ -115,13 +115,13 @@ public:
         inline const value_type & get() const
         {
             if (!is_initialized || is_eof)
-                throw DB::Exception("No available data", DB::ErrorCodes::NO_AVAILABLE_DATA);
+                throw PYJU::Exception("No available data", PYJU::ErrorCodes::NO_AVAILABLE_DATA);
 
             return cell.getValue();
         }
 
     private:
-        DB::ReadBuffer & in;
+        PYJU::ReadBuffer & in;
         Cell cell;
         size_t read_count = 0;
         size_t size = 0;
@@ -284,38 +284,38 @@ public:
     const_iterator ALWAYS_INLINE find(Key x) const     { return iteratorTo(findCell(x)); }
 
 
-    void write(DB::WriteBuffer & wb) const
+    void write(PYJU::WriteBuffer & wb) const
     {
         Cell::State::write(wb);
-        DB::writeVarUInt(m_size, wb);
+        PYJU::writeVarUInt(m_size, wb);
 
         for (size_t i = 0; i < m_size; ++i)
             buf[i].write(wb);
     }
 
-    void writeText(DB::WriteBuffer & wb) const
+    void writeText(PYJU::WriteBuffer & wb) const
     {
         Cell::State::writeText(wb);
-        DB::writeText(m_size, wb);
+        PYJU::writeText(m_size, wb);
 
         for (size_t i = 0; i < m_size; ++i)
         {
-            DB::writeChar(',', wb);
+            PYJU::writeChar(',', wb);
             buf[i].writeText(wb);
         }
     }
 
-    void read(DB::ReadBuffer & rb)
+    void read(PYJU::ReadBuffer & rb)
     {
         Cell::State::read(rb);
 
         m_size = 0;
 
         size_t new_size = 0;
-        DB::readVarUInt(new_size, rb);
+        PYJU::readVarUInt(new_size, rb);
 
         if (new_size > capacity)
-            throw DB::Exception("Illegal size", DB::ErrorCodes::INCORRECT_DATA);
+            throw PYJU::Exception("Illegal size", PYJU::ErrorCodes::INCORRECT_DATA);
 
         for (size_t i = 0; i < new_size; ++i)
             buf[i].read(rb);
@@ -323,21 +323,21 @@ public:
         m_size = new_size;
     }
 
-    void readText(DB::ReadBuffer & rb)
+    void readText(PYJU::ReadBuffer & rb)
     {
         Cell::State::readText(rb);
 
         m_size = 0;
 
         size_t new_size = 0;
-        DB::readText(new_size, rb);
+        PYJU::readText(new_size, rb);
 
         if (new_size > capacity)
-            throw DB::Exception("Illegal size", DB::ErrorCodes::INCORRECT_DATA);
+            throw PYJU::Exception("Illegal size", PYJU::ErrorCodes::INCORRECT_DATA);
 
         for (size_t i = 0; i < new_size; ++i)
         {
-            DB::assertChar(',', rb);
+            PYJU::assertChar(',', rb);
             buf[i].readText(rb);
         }
 

@@ -8,7 +8,7 @@
 #include <IO/ReadBuffer.h>
 #include <IO/BufferWithOwnMemory.h>
 
-namespace DB
+namespace PYJU
 {
 
 

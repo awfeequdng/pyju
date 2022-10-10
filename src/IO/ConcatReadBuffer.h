@@ -5,7 +5,7 @@
 #include <IO/ReadBuffer.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Reads from the concatenation of multiple ReadBuffer's

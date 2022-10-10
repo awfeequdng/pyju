@@ -2,7 +2,7 @@
 #include <Common/Exception.h>
 #include <IO/ReadBufferFromFile.h>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

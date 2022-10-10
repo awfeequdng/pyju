@@ -10,7 +10,7 @@ namespace
 {
 
 /// Parse error as number or as a string (name of the error code const)
-int parseErrorCode(DB::ReadBufferFromString & in)
+int parseErrorCode(PYJU::ReadBufferFromString & in)
 {
     int code = -1;
     String code_name;
@@ -24,12 +24,12 @@ int parseErrorCode(DB::ReadBufferFromString & in)
 
     /// Try parse as string
     readStringUntilWhitespace(code_name, in);
-    return DB::ErrorCodes::getErrorCodeByName(code_name);
+    return PYJU::ErrorCodes::getErrorCodeByName(code_name);
 }
 
 }
 
-namespace DB
+namespace PYJU
 {
 
 TestHint::TestHint(bool enabled_, const String & query_)

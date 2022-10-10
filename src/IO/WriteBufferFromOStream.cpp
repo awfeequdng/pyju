@@ -1,7 +1,7 @@
 #include <IO/WriteBufferFromOStream.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

@@ -9,7 +9,7 @@
 #include <IO/WriteBufferDecorator.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Encrypts data and writes the encrypted data to the underlying write buffer.

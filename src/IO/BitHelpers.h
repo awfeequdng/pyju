@@ -8,7 +8,7 @@
 #include <cassert>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

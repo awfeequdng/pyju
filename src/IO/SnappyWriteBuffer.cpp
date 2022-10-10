@@ -8,7 +8,7 @@
 #include <Common/ErrorCodes.h>
 #include "SnappyWriteBuffer.h"
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

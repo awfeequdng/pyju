@@ -10,7 +10,7 @@
 #include <Compression/CompressionFactory.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 class CompressedWriteBuffer : public BufferWithOwnMemory<WriteBuffer>

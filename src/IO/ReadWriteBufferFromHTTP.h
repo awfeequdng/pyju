@@ -29,7 +29,7 @@ namespace ProfileEvents
     extern const Event ReadBufferSeekCancelConnection;
 }
 
-namespace DB
+namespace PYJU
 {
 /** Perform HTTP POST request and provide response to read.
   */

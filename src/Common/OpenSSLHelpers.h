@@ -6,7 +6,7 @@
 #    include <base/types.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Encodes `text` and returns it.

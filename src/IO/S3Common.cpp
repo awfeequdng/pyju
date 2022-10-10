@@ -42,17 +42,17 @@ const char * S3_LOGGER_TAG_NAMES[][2] = {
     {"AWSAuthV4Signer", "AWSClient (AWSAuthV4Signer)"},
 };
 
-const std::pair<DB::LogsLevel, Poco::Message::Priority> & convertLogLevel(Aws::Utils::Logging::LogLevel log_level)
+const std::pair<PYJU::LogsLevel, Poco::Message::Priority> & convertLogLevel(Aws::Utils::Logging::LogLevel log_level)
 {
-    static const std::unordered_map<Aws::Utils::Logging::LogLevel, std::pair<DB::LogsLevel, Poco::Message::Priority>> mapping =
+    static const std::unordered_map<Aws::Utils::Logging::LogLevel, std::pair<PYJU::LogsLevel, Poco::Message::Priority>> mapping =
     {
-        {Aws::Utils::Logging::LogLevel::Off, {DB::LogsLevel::none, Poco::Message::PRIO_FATAL}},
-        {Aws::Utils::Logging::LogLevel::Fatal, {DB::LogsLevel::error, Poco::Message::PRIO_FATAL}},
-        {Aws::Utils::Logging::LogLevel::Error, {DB::LogsLevel::error, Poco::Message::PRIO_ERROR}},
-        {Aws::Utils::Logging::LogLevel::Warn, {DB::LogsLevel::warning, Poco::Message::PRIO_WARNING}},
-        {Aws::Utils::Logging::LogLevel::Info, {DB::LogsLevel::information, Poco::Message::PRIO_INFORMATION}},
-        {Aws::Utils::Logging::LogLevel::Debug, {DB::LogsLevel::debug, Poco::Message::PRIO_TEST}},
-        {Aws::Utils::Logging::LogLevel::Trace, {DB::LogsLevel::trace, Poco::Message::PRIO_TEST}},
+        {Aws::Utils::Logging::LogLevel::Off, {PYJU::LogsLevel::none, Poco::Message::PRIO_FATAL}},
+        {Aws::Utils::Logging::LogLevel::Fatal, {PYJU::LogsLevel::error, Poco::Message::PRIO_FATAL}},
+        {Aws::Utils::Logging::LogLevel::Error, {PYJU::LogsLevel::error, Poco::Message::PRIO_ERROR}},
+        {Aws::Utils::Logging::LogLevel::Warn, {PYJU::LogsLevel::warning, Poco::Message::PRIO_WARNING}},
+        {Aws::Utils::Logging::LogLevel::Info, {PYJU::LogsLevel::information, Poco::Message::PRIO_INFORMATION}},
+        {Aws::Utils::Logging::LogLevel::Debug, {PYJU::LogsLevel::debug, Poco::Message::PRIO_TEST}},
+        {Aws::Utils::Logging::LogLevel::Trace, {PYJU::LogsLevel::trace, Poco::Message::PRIO_TEST}},
     };
     return mapping.at(log_level);
 }
@@ -370,7 +370,7 @@ class AwsAuthSTSAssumeRoleWebIdentityCredentialsProvider : public Aws::Auth::AWS
     /// See STSAssumeRoleWebIdentityCredentialsProvider.
 
 public:
-    explicit AwsAuthSTSAssumeRoleWebIdentityCredentialsProvider(DB::S3::PocoHTTPClientConfiguration & aws_client_configuration)
+    explicit AwsAuthSTSAssumeRoleWebIdentityCredentialsProvider(PYJU::S3::PocoHTTPClientConfiguration & aws_client_configuration)
         : logger(&Poco::Logger::get("AwsAuthSTSAssumeRoleWebIdentityCredentialsProvider"))
     {
         // check environment variables
@@ -517,7 +517,7 @@ private:
 class S3CredentialsProviderChain : public Aws::Auth::AWSCredentialsProviderChain
 {
 public:
-    explicit S3CredentialsProviderChain(const DB::S3::PocoHTTPClientConfiguration & configuration, const Aws::Auth::AWSCredentials & credentials, bool use_environment_credentials, bool use_insecure_imds_request)
+    explicit S3CredentialsProviderChain(const PYJU::S3::PocoHTTPClientConfiguration & configuration, const Aws::Auth::AWSCredentials & credentials, bool use_environment_credentials, bool use_insecure_imds_request)
     {
         auto * logger = &Poco::Logger::get("S3CredentialsProviderChain");
 
@@ -536,7 +536,7 @@ public:
             AddProvider(std::make_shared<Aws::Auth::ProcessCredentialsProvider>());
 
             {
-                DB::S3::PocoHTTPClientConfiguration aws_client_configuration = DB::S3::ClientFactory::instance().createClientConfiguration(configuration.region, configuration.remote_host_filter, configuration.s3_max_redirects);
+                PYJU::S3::PocoHTTPClientConfiguration aws_client_configuration = PYJU::S3::ClientFactory::instance().createClientConfiguration(configuration.region, configuration.remote_host_filter, configuration.s3_max_redirects);
                 AddProvider(std::make_shared<AwsAuthSTSAssumeRoleWebIdentityCredentialsProvider>(aws_client_configuration));
             }
 
@@ -570,7 +570,7 @@ public:
             }
             else if (Aws::Utils::StringUtils::ToLower(ec2_metadata_disabled.c_str()) != "true")
             {
-                DB::S3::PocoHTTPClientConfiguration aws_client_configuration = DB::S3::ClientFactory::instance().createClientConfiguration(configuration.region, configuration.remote_host_filter, configuration.s3_max_redirects);
+                PYJU::S3::PocoHTTPClientConfiguration aws_client_configuration = PYJU::S3::ClientFactory::instance().createClientConfiguration(configuration.region, configuration.remote_host_filter, configuration.s3_max_redirects);
 
                 /// See MakeDefaultHttpResourceClientConfiguration().
                 /// This is part of EC2 metadata client, but unfortunately it can't be accessed from outside
@@ -610,12 +610,12 @@ public:
     S3AuthSigner(
         const Aws::Client::ClientConfiguration & client_configuration,
         const Aws::Auth::AWSCredentials & credentials,
-        const DB::HeaderCollection & headers_,
+        const PYJU::HeaderCollection & headers_,
         bool use_environment_credentials,
         bool use_insecure_imds_request)
         : Aws::Client::AWSAuthV4Signer(
             std::make_shared<S3CredentialsProviderChain>(
-                static_cast<const DB::S3::PocoHTTPClientConfiguration &>(client_configuration),
+                static_cast<const PYJU::S3::PocoHTTPClientConfiguration &>(client_configuration),
                 credentials,
                 use_environment_credentials,
                 use_insecure_imds_request),
@@ -667,13 +667,13 @@ public:
     }
 
 private:
-    const DB::HeaderCollection headers;
+    const PYJU::HeaderCollection headers;
 };
 
 }
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

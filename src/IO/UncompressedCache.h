@@ -14,7 +14,7 @@ namespace ProfileEvents
     extern const Event UncompressedCacheWeightLost;
 }
 
-namespace DB
+namespace PYJU
 {
 
 

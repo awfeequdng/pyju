@@ -3,7 +3,7 @@
 #include <Common/hex.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 template <typename IteratorSrc, typename IteratorDst>

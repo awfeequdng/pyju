@@ -4,7 +4,7 @@
 #include <Core/Types.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Checks expected server and client error codes in --testmode.

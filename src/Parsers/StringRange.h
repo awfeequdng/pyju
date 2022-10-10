@@ -7,7 +7,7 @@
 #include <Common/SipHash.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 struct StringRange

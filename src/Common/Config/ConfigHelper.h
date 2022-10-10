@@ -10,7 +10,7 @@ namespace Poco
     }
 }
 
-namespace DB::ConfigHelper
+namespace PYJU::ConfigHelper
 {
 
 /// The behavior is like `config.getBool(key, default_)`,

@@ -3,7 +3,7 @@
 #include <IO/ReadBuffer.h>
 #include <optional>
 
-namespace DB
+namespace PYJU
 {
 
 class SeekableReadBuffer : public ReadBuffer

@@ -17,7 +17,7 @@
 #include <bitset>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** Gorilla column codec implementation.

@@ -5,7 +5,7 @@
 #include <IO/ReadBuffer.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** A buffer for reading from a compressed file with just checking checksums of

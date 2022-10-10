@@ -1,6 +1,6 @@
 #include <Compression/CheckingCompressedReadBuffer.h>
 
-namespace DB
+namespace PYJU
 {
 
 bool CheckingCompressedReadBuffer::nextImpl()

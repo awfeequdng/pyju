@@ -8,7 +8,7 @@
 #include <lz4frame.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 class Lz4InflatingReadBuffer : public BufferWithOwnMemory<ReadBuffer>

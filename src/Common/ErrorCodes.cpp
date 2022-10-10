@@ -620,7 +620,7 @@
 
 /* See END */
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

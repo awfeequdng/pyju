@@ -2,7 +2,7 @@
 
 #include <IO/WriteBufferFromFileBase.h>
 
-namespace DB
+namespace PYJU
 {
 
 /// Delegates all writes to underlying buffer. Doesn't have own memory.

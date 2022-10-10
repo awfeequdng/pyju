@@ -2,13 +2,13 @@
 #include <iomanip>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// computation of the hash depends on the partitioning of blocks
 /// so you need to compute a hash of n complete pieces and one incomplete
 template <typename Buffer>
-void IHashingBuffer<Buffer>::calculateHash(DB::BufferBase::Position data, size_t len)
+void IHashingBuffer<Buffer>::calculateHash(PYJU::BufferBase::Position data, size_t len)
 {
     if (len)
     {
@@ -48,7 +48,7 @@ void IHashingBuffer<Buffer>::calculateHash(DB::BufferBase::Position data, size_t
     }
 }
 
-template class IHashingBuffer<DB::ReadBuffer>;
-template class IHashingBuffer<DB::WriteBuffer>;
+template class IHashingBuffer<PYJU::ReadBuffer>;
+template class IHashingBuffer<PYJU::WriteBuffer>;
 
 }

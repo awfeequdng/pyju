@@ -13,7 +13,7 @@
 
 #include "SnappyReadBuffer.h"
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

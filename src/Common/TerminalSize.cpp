@@ -8,7 +8,7 @@
 #include <boost/program_options.hpp>
 
 
-namespace DB::ErrorCodes
+namespace PYJU::ErrorCodes
 {
     extern const int SYSTEM_ERROR;
 }
@@ -19,12 +19,12 @@ uint16_t getTerminalWidth()
     if (isatty(STDIN_FILENO))
     {
         if (ioctl(STDIN_FILENO, TIOCGWINSZ, &terminal_size))
-            DB::throwFromErrno("Cannot obtain terminal window size (ioctl TIOCGWINSZ)", DB::ErrorCodes::SYSTEM_ERROR);
+            PYJU::throwFromErrno("Cannot obtain terminal window size (ioctl TIOCGWINSZ)", PYJU::ErrorCodes::SYSTEM_ERROR);
     }
     else if (isatty(STDERR_FILENO))
     {
         if (ioctl(STDERR_FILENO, TIOCGWINSZ, &terminal_size))
-            DB::throwFromErrno("Cannot obtain terminal window size (ioctl TIOCGWINSZ)", DB::ErrorCodes::SYSTEM_ERROR);
+            PYJU::throwFromErrno("Cannot obtain terminal window size (ioctl TIOCGWINSZ)", PYJU::ErrorCodes::SYSTEM_ERROR);
     }
     /// Default - 0.
     return terminal_size.ws_col;

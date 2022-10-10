@@ -19,7 +19,7 @@
 #endif
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

@@ -2,7 +2,7 @@
 
 #include <IO/WriteBuffer.h>
 
-namespace DB
+namespace PYJU
 {
 
 WriteBufferFromFileDecorator::WriteBufferFromFileDecorator(std::unique_ptr<WriteBuffer> impl_)

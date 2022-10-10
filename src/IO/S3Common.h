@@ -15,14 +15,14 @@ namespace Aws::S3
     class S3Client;
 }
 
-namespace DB
+namespace PYJU
 {
     class RemoteHostFilter;
     struct HttpHeader;
     using HeaderCollection = std::vector<HttpHeader>;
 }
 
-namespace DB::S3
+namespace PYJU::S3
 {
 class ClientFactory
 {

@@ -6,7 +6,7 @@
 
 namespace fs = std::filesystem;
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes
@@ -52,7 +52,7 @@ namespace ErrorCodes
 #endif
 
 
-namespace DB
+namespace PYJU
 {
 
 static bool supportsRenameat2Impl()
@@ -106,7 +106,7 @@ bool supportsRenameat2()
 #define RENAME_NOREPLACE -1
 #define RENAME_EXCHANGE -1
 
-namespace DB
+namespace PYJU
 {
 
 static bool renameat2(const std::string &, const std::string &, int)
@@ -123,7 +123,7 @@ bool supportsRenameat2()
 
 #endif
 
-namespace DB
+namespace PYJU
 {
 
 static void renameNoReplaceFallback(const std::string & old_path, const std::string & new_path)

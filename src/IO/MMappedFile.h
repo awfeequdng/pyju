@@ -11,7 +11,7 @@ namespace CurrentMetrics
 }
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Opens a file and mmaps a region in it (or a whole file) into memory. Unmaps and closes in destructor.

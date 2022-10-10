@@ -9,7 +9,7 @@
 #include <base/demangle.h>
 
 
-namespace DB
+namespace PYJU
 {
     namespace ErrorCodes
     {
@@ -41,11 +41,11 @@ To assert_cast(From && from)
     }
     catch (const std::exception & e)
     {
-        throw DB::Exception(e.what(), DB::ErrorCodes::LOGICAL_ERROR);
+        throw PYJU::Exception(e.what(), PYJU::ErrorCodes::LOGICAL_ERROR);
     }
 
-    throw DB::Exception("Bad cast from type " + demangle(typeid(from).name()) + " to " + demangle(typeid(To).name()),
-                        DB::ErrorCodes::LOGICAL_ERROR);
+    throw PYJU::Exception("Bad cast from type " + demangle(typeid(from).name()) + " to " + demangle(typeid(To).name()),
+                        PYJU::ErrorCodes::LOGICAL_ERROR);
 #else
     return static_cast<To>(from);
 #endif

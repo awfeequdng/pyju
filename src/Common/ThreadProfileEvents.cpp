@@ -63,7 +63,7 @@ namespace ProfileEvents
 #endif
 }
 
-namespace DB
+namespace PYJU
 {
 
 bool TasksStatsCounters::checkIfAvailable()
@@ -166,7 +166,7 @@ void TasksStatsCounters::incrementProfileEvents(const ::taskstats & prev, const 
 
 #if defined(__linux__)
 
-namespace DB
+namespace PYJU
 {
 
 thread_local PerfEventsCounters current_thread_counters;
@@ -604,7 +604,7 @@ void PerfDescriptorsHolder::releaseResources()
 
 #else
 
-namespace DB
+namespace PYJU
 {
 
 // the functionality is disabled when we are not running on Linux.

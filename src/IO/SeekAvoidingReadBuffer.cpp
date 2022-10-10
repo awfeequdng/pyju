@@ -1,7 +1,7 @@
 #include <IO/SeekAvoidingReadBuffer.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 SeekAvoidingReadBuffer::SeekAvoidingReadBuffer(std::unique_ptr<ReadBufferFromFileBase> impl_, UInt64 min_bytes_for_seek_)

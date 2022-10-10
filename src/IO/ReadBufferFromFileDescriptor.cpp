@@ -28,7 +28,7 @@ namespace CurrentMetrics
     extern const Metric Read;
 }
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

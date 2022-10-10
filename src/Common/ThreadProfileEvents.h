@@ -26,7 +26,7 @@ namespace ProfileEvents
     extern const Event HardPageFaults;
 }
 
-namespace DB
+namespace PYJU
 {
 
 /// Handles overflow

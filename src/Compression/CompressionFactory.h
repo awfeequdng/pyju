@@ -9,7 +9,7 @@
 #include <optional>
 #include <unordered_map>
 
-namespace DB
+namespace PYJU
 {
 
 static constexpr auto DEFAULT_CODEC_NAME = "Default";

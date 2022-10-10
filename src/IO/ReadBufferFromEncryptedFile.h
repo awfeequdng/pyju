@@ -7,7 +7,7 @@
 #include <IO/FileEncryptionCommon.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Reads data from the underlying read buffer and decrypts it.

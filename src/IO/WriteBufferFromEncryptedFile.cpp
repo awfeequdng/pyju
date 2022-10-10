@@ -2,7 +2,7 @@
 
 #if USE_SSL
 
-namespace DB
+namespace PYJU
 {
 
 WriteBufferFromEncryptedFile::WriteBufferFromEncryptedFile(

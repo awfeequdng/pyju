@@ -8,7 +8,7 @@
 #include <Common/setThreadName.h>
 #include <base/EnumReflection.h>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes
@@ -43,7 +43,7 @@ void asyncCopy(IDisk & from_disk, String from_path, IDisk & to_disk, String to_p
             [&from_disk, from_path, &to_disk, to_path]()
             {
                 setThreadName("DiskCopier");
-                DB::copyFile(from_disk, from_path, to_disk, fs::path(to_path) / fileName(from_path));
+                PYJU::copyFile(from_disk, from_path, to_disk, fs::path(to_path) / fileName(from_path));
             });
 
         results.push_back(std::move(result));

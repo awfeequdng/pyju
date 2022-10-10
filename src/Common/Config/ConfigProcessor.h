@@ -18,7 +18,7 @@
 #include <Poco/Util/AbstractConfiguration.h>
 #include <base/logger_useful.h>
 
-namespace DB
+namespace PYJU
 {
 
 using ConfigurationPtr = Poco::AutoPtr<Poco::Util::AbstractConfiguration>;

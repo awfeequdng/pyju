@@ -2,7 +2,7 @@
 
 #include <base/types.h>
 
-namespace DB
+namespace PYJU
 {
 
 /// Create a hard link `destination_path` pointing to `source_path`.

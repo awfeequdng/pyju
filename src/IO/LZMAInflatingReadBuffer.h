@@ -5,7 +5,7 @@
 
 #include <lzma.h>
 
-namespace DB
+namespace PYJU
 {
 
 class LZMAInflatingReadBuffer : public BufferWithOwnMemory<ReadBuffer>

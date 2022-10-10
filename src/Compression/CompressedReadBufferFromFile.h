@@ -7,7 +7,7 @@
 #include <memory>
 
 
-namespace DB
+namespace PYJU
 {
 
 class MMappedFileCache;

@@ -5,7 +5,7 @@
 #include <utility>
 #include <memory>
 
-namespace DB
+namespace PYJU
 {
 
 class WriteBuffer;

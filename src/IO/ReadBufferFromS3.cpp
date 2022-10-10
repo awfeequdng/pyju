@@ -24,7 +24,7 @@ namespace ProfileEvents
     extern const Event ReadBufferSeekCancelConnection;
 }
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

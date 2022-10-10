@@ -3,7 +3,7 @@
 #include <IO/AsynchronousReader.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** Implementation of IAsynchronousReader that in fact synchronous.

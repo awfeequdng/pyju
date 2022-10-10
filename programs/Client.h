@@ -3,7 +3,7 @@
 #include <Client/ClientBase.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 class Client : public ClientBase

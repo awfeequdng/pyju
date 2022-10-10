@@ -6,7 +6,7 @@
 
 class DateLUTImpl;
 
-namespace DB
+namespace PYJU
 {
 
 class ReadBuffer;

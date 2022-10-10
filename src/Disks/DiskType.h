@@ -2,7 +2,7 @@
 
 #include <base/types.h>
 
-namespace DB
+namespace PYJU
 {
 
 enum class DiskType

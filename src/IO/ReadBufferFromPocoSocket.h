@@ -5,7 +5,7 @@
 
 #include <Poco/Net/Socket.h>
 
-namespace DB
+namespace PYJU
 {
 
 using AsyncCallback = std::function<void(int, Poco::Timespan, const std::string &)>;

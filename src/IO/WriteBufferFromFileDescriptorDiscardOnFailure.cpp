@@ -5,7 +5,7 @@ namespace ProfileEvents
     extern const Event CannotWriteToWriteBufferDiscard;
 }
 
-namespace DB
+namespace PYJU
 {
 
 void WriteBufferFromFileDescriptorDiscardOnFailure::nextImpl()

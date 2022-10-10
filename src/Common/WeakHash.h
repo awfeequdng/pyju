@@ -1,7 +1,7 @@
 #pragma once
 #include <Common/PODArray.h>
 
-namespace DB
+namespace PYJU
 {
 
 /// It's a class which represents the result of weak and fast hash function per row in column.

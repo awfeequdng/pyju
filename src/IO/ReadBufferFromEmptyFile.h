@@ -2,7 +2,7 @@
 
 #include <IO/ReadBuffer.h>
 
-namespace DB
+namespace PYJU
 {
 
 /// In case of empty file it does not make any sense to read it.

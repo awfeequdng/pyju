@@ -2,7 +2,7 @@
 
 #include <Core/Types.h>
 
-namespace DB
+namespace PYJU
 {
 /**
  * Obtain TypeIndex value from real type if possible.

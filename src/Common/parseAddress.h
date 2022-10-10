@@ -5,7 +5,7 @@
 #include <base/types.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** Parse address from string, that can contain host with or without port.

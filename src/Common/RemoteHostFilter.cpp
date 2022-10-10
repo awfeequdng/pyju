@@ -7,7 +7,7 @@
 #include <IO/WriteHelpers.h>
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

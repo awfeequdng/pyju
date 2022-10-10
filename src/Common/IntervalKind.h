@@ -3,7 +3,7 @@
 #include <base/types.h>
 #include <base/EnumReflection.h>
 
-namespace DB
+namespace PYJU
 {
 /// Kind of a temporal interval.
 struct IntervalKind

@@ -7,7 +7,7 @@
 #include <zstd.h>
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

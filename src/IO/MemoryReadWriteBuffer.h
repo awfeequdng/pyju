@@ -8,7 +8,7 @@
 #include <boost/noncopyable.hpp>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Stores data in memory chunks, size of chunks are exponentially increasing during write

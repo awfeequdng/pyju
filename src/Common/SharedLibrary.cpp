@@ -5,7 +5,7 @@
 #include "Exception.h"
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

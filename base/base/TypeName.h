@@ -3,7 +3,7 @@
 #include "Decimal.h"
 #include "UUID.h"
 
-namespace DB
+namespace PYJU
 {
 struct Array;
 struct Tuple;

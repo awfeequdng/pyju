@@ -6,7 +6,7 @@
 #include <IO/BufferWithOwnMemory.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 class WriteBufferFromOStream : public BufferWithOwnMemory<WriteBuffer>

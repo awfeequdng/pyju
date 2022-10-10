@@ -1,6 +1,6 @@
 #include <IO/MySQLPacketPayloadWriteBuffer.h>
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

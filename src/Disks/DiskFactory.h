@@ -11,7 +11,7 @@
 #include <unordered_map>
 
 
-namespace DB
+namespace PYJU
 {
 /**
  * Disk factory. Responsible for creating new disk objects.

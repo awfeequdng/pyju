@@ -7,7 +7,7 @@
 #include <Poco/Util/LayeredConfiguration.h>
 #include <Common/MultiVersion.h>
 
-namespace DB
+namespace PYJU
 {
 
 /// Now we have two algorithms.

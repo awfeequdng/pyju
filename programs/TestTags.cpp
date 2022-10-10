@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-namespace DB
+namespace PYJU
 {
 
 size_t getTestTagsLength(const String & multiline_query)

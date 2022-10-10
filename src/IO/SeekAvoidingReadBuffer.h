@@ -3,7 +3,7 @@
 #include <IO/ReadBufferFromFileDecorator.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// `SeekAvoidingReadBuffer` prefers sequential reads over seeks within specified window.

@@ -45,7 +45,7 @@
 #include <Formats/FormatSettings.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

@@ -7,7 +7,7 @@
 #include <utility>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** Structure that holds closed interval with left and right.

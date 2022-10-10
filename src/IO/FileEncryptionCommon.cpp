@@ -12,7 +12,7 @@
 #include <random>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

@@ -3,7 +3,7 @@
 #include <Poco/TemporaryFile.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 TemporaryFileOnDisk::TemporaryFileOnDisk(const DiskPtr & disk_, const String & prefix_)

@@ -23,7 +23,7 @@
 /** Taken from MurmurHash. This is Murmur finalizer.
   * Faster than intHash32 when inserting into the hash table UInt64 -> UInt64, where the key is the visitor ID.
   */
-inline DB::UInt64 intHash64(DB::UInt64 x)
+inline PYJU::UInt64 intHash64(PYJU::UInt64 x)
 {
     x ^= x >> 33;
     x *= 0xff51afd7ed558ccdULL;
@@ -48,7 +48,7 @@ inline DB::UInt64 intHash64(DB::UInt64 x)
 #include <arm_acle.h>
 #endif
 
-inline DB::UInt64 intHashCRC32(DB::UInt64 x)
+inline PYJU::UInt64 intHashCRC32(PYJU::UInt64 x)
 {
 #ifdef __SSE4_2__
     return _mm_crc32_u64(-1ULL, x);
@@ -60,7 +60,7 @@ inline DB::UInt64 intHashCRC32(DB::UInt64 x)
 #endif
 }
 
-inline DB::UInt64 intHashCRC32(DB::UInt64 x, DB::UInt64 updated_value)
+inline PYJU::UInt64 intHashCRC32(PYJU::UInt64 x, PYJU::UInt64 updated_value)
 {
 #ifdef __SSE4_2__
     return _mm_crc32_u64(updated_value, x);
@@ -73,21 +73,21 @@ inline DB::UInt64 intHashCRC32(DB::UInt64 x, DB::UInt64 updated_value)
 }
 
 template <typename T>
-inline typename std::enable_if<(sizeof(T) > sizeof(DB::UInt64)), DB::UInt64>::type
-intHashCRC32(const T & x, DB::UInt64 updated_value)
+inline typename std::enable_if<(sizeof(T) > sizeof(PYJU::UInt64)), PYJU::UInt64>::type
+intHashCRC32(const T & x, PYJU::UInt64 updated_value)
 {
     const auto * begin = reinterpret_cast<const char *>(&x);
     for (size_t i = 0; i < sizeof(T); i += sizeof(UInt64))
     {
-        updated_value = intHashCRC32(unalignedLoad<DB::UInt64>(begin), updated_value);
-        begin += sizeof(DB::UInt64);
+        updated_value = intHashCRC32(unalignedLoad<PYJU::UInt64>(begin), updated_value);
+        begin += sizeof(PYJU::UInt64);
     }
 
     return updated_value;
 }
 
 
-inline UInt32 updateWeakHash32(const DB::UInt8 * pos, size_t size, DB::UInt32 updated_value)
+inline UInt32 updateWeakHash32(const PYJU::UInt8 * pos, size_t size, PYJU::UInt32 updated_value)
 {
     if (size < 8)
     {
@@ -139,12 +139,12 @@ inline UInt32 updateWeakHash32(const DB::UInt8 * pos, size_t size, DB::UInt32 up
     {
         /// If string size is not divisible by 8.
         /// Lets' assume the string was 'abcdefghXYZ', so it's tail is 'XYZ'.
-        DB::UInt8 tail_size = end - pos;
+        PYJU::UInt8 tail_size = end - pos;
         /// Load tailing 8 bytes. Word is 'defghXYZ'.
         auto word = unalignedLoad<UInt64>(end - 8);
         /// Prepare mask which will set other 5 bytes to 0. It is 0xFFFFFFFFFFFFFFFF << 5 = 0xFFFFFF0000000000.
         /// word & mask = '\0\0\0\0\0XYZ' (bytes are reversed because of little ending)
-        word &= (~UInt64(0)) << DB::UInt8(8 * (8 - tail_size));
+        word &= (~UInt64(0)) << PYJU::UInt8(8 * (8 - tail_size));
         /// Use least byte to store tail length.
         word |= tail_size;
         /// Now word is '\3\0\0\0\0XYZ'
@@ -160,7 +160,7 @@ inline size_t DefaultHash64(std::enable_if_t<(sizeof(T) <= sizeof(UInt64)), T> k
     union
     {
         T in;
-        DB::UInt64 out;
+        PYJU::UInt64 out;
     } u;
     u.out = 0;
     u.in = key;
@@ -178,7 +178,7 @@ inline size_t DefaultHash64(std::enable_if_t<(sizeof(T) > sizeof(UInt64)), T> ke
             static_cast<UInt64>(key) ^
             static_cast<UInt64>(key >> 64));
     }
-    else if constexpr (std::is_same_v<T, DB::UUID>)
+    else if constexpr (std::is_same_v<T, PYJU::UUID>)
     {
         return intHash64(
             static_cast<UInt64>(key.toUnderType()) ^
@@ -205,7 +205,7 @@ struct DefaultHash
     }
 };
 
-template <DB::is_decimal T>
+template <PYJU::is_decimal T>
 struct DefaultHash<T>
 {
     size_t operator() (T key) const
@@ -222,7 +222,7 @@ inline size_t hashCRC32(std::enable_if_t<(sizeof(T) <= sizeof(UInt64)), T> key)
     union
     {
         T in;
-        DB::UInt64 out;
+        PYJU::UInt64 out;
     } u;
     u.out = 0;
     u.in = key;
@@ -244,21 +244,21 @@ template <> struct HashCRC32<T>\
     }\
 };
 
-DEFINE_HASH(DB::UInt8)
-DEFINE_HASH(DB::UInt16)
-DEFINE_HASH(DB::UInt32)
-DEFINE_HASH(DB::UInt64)
-DEFINE_HASH(DB::UInt128)
-DEFINE_HASH(DB::UInt256)
-DEFINE_HASH(DB::Int8)
-DEFINE_HASH(DB::Int16)
-DEFINE_HASH(DB::Int32)
-DEFINE_HASH(DB::Int64)
-DEFINE_HASH(DB::Int128)
-DEFINE_HASH(DB::Int256)
-DEFINE_HASH(DB::Float32)
-DEFINE_HASH(DB::Float64)
-DEFINE_HASH(DB::UUID)
+DEFINE_HASH(PYJU::UInt8)
+DEFINE_HASH(PYJU::UInt16)
+DEFINE_HASH(PYJU::UInt32)
+DEFINE_HASH(PYJU::UInt64)
+DEFINE_HASH(PYJU::UInt128)
+DEFINE_HASH(PYJU::UInt256)
+DEFINE_HASH(PYJU::Int8)
+DEFINE_HASH(PYJU::Int16)
+DEFINE_HASH(PYJU::Int32)
+DEFINE_HASH(PYJU::Int64)
+DEFINE_HASH(PYJU::Int128)
+DEFINE_HASH(PYJU::Int256)
+DEFINE_HASH(PYJU::Float32)
+DEFINE_HASH(PYJU::Float64)
+DEFINE_HASH(PYJU::UUID)
 
 #undef DEFINE_HASH
 
@@ -273,7 +273,7 @@ struct UInt128Hash
 
 struct UUIDHash
 {
-    size_t operator()(DB::UUID x) const
+    size_t operator()(PYJU::UUID x) const
     {
         return UInt128Hash()(x.toUnderType());
     }
@@ -306,7 +306,7 @@ struct UInt128TrivialHash
 
 struct UUIDTrivialHash
 {
-    size_t operator()(DB::UUID x) const { return x.toUnderType().items[0]; }
+    size_t operator()(PYJU::UUID x) const { return x.toUnderType().items[0]; }
 };
 
 struct UInt256Hash
@@ -343,13 +343,13 @@ struct UInt256HashCRC32 : public UInt256Hash {};
 #endif
 
 template <>
-struct DefaultHash<DB::UInt128> : public UInt128Hash {};
+struct DefaultHash<PYJU::UInt128> : public UInt128Hash {};
 
 template <>
-struct DefaultHash<DB::UInt256> : public UInt256Hash {};
+struct DefaultHash<PYJU::UInt256> : public UInt256Hash {};
 
 template <>
-struct DefaultHash<DB::UUID> : public UUIDHash {};
+struct DefaultHash<PYJU::UUID> : public UUIDHash {};
 
 
 /// It is reasonable to use for UInt8, UInt16 with sufficient hash table size.
@@ -380,8 +380,8 @@ struct TrivialHash
   * NOTE As mentioned, this function is slower than intHash64.
   * But occasionally, it is faster, when written in a loop and loop is vectorized.
   */
-template <DB::UInt64 salt>
-inline DB::UInt32 intHash32(DB::UInt64 key)
+template <PYJU::UInt64 salt>
+inline PYJU::UInt32 intHash32(PYJU::UInt64 key)
 {
     key ^= salt;
 
@@ -397,7 +397,7 @@ inline DB::UInt32 intHash32(DB::UInt64 key)
 
 
 /// For containers.
-template <typename T, DB::UInt64 salt = 0>
+template <typename T, PYJU::UInt64 salt = 0>
 struct IntHash32
 {
     size_t operator() (const T & key) const

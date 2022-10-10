@@ -9,7 +9,7 @@
 #include <zstd.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Performs stream compression using zstd library and writes compressed data to out_ WriteBuffer.

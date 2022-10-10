@@ -5,7 +5,7 @@
 #include <Common/Stopwatch.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 class ProfilingScopedWriteRWLock

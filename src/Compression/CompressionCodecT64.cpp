@@ -7,7 +7,7 @@
 #include <Core/Types.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Get 64 integer values, makes 64x64 bit matrix, transpose it and crop unused bits (most significant zeroes).

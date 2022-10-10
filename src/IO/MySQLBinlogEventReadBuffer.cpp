@@ -1,7 +1,7 @@
 #include <IO/MySQLBinlogEventReadBuffer.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

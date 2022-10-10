@@ -13,7 +13,7 @@
 namespace po = boost::program_options;
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

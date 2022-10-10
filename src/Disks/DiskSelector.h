@@ -7,7 +7,7 @@
 
 #include <map>
 
-namespace DB
+namespace PYJU
 {
 
 class DiskSelector;

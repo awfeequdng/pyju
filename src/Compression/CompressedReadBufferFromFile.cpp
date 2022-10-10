@@ -7,7 +7,7 @@
 #include <IO/createReadBufferFromFileBase.h>
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

@@ -7,7 +7,7 @@
 #include <Poco/Util/Application.h>
 #include "OwnSplitChannel.h"
 
-namespace DB
+namespace PYJU
 {
     class TextLog;
 }
@@ -35,8 +35,8 @@ private:
     /// Previous value of logger element in config. It is used to reinitialize loggers whenever the value changed.
     std::string config_logger;
 
-    std::weak_ptr<DB::TextLog> text_log;
+    std::weak_ptr<PYJU::TextLog> text_log;
     int text_log_max_priority = -1;
 
-    Poco::AutoPtr<DB::OwnSplitChannel> split;
+    Poco::AutoPtr<PYJU::OwnSplitChannel> split;
 };

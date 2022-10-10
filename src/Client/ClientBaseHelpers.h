@@ -8,7 +8,7 @@
 #endif
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Should we celebrate a bit?

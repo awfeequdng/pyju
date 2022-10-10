@@ -5,7 +5,7 @@
 #include <boost/noncopyable.hpp>
 
 
-namespace DB
+namespace PYJU
 {
 
 class WriteBuffer;

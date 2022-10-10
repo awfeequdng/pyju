@@ -9,7 +9,7 @@
 #include <base/UUID.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /// Data types for representing elementary values from a database in RAM.

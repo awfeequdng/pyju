@@ -3,7 +3,7 @@
 #include <IO/ReadBufferFromFileDecorator.h>
 #include <IO/WriteBufferFromFileDecorator.h>
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

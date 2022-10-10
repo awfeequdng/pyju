@@ -42,7 +42,7 @@ namespace CurrentMetrics
     extern const Metric MemoryTracking;
 }
 
-namespace DB
+namespace PYJU
 {
 
 static const NameSet exit_strings
@@ -82,7 +82,7 @@ namespace ProfileEvents
     extern const Event SystemTimeMicroseconds;
 }
 
-namespace DB
+namespace PYJU
 {
 
 std::atomic_flag exit_on_signal = ATOMIC_FLAG_INIT;

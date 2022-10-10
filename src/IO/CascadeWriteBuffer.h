@@ -3,7 +3,7 @@
 #include <IO/WriteBuffer.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

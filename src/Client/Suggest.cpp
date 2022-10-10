@@ -6,7 +6,7 @@
 #include <IO/Operators.h>
 
 
-namespace DB
+namespace PYJU
 {
 namespace ErrorCodes
 {

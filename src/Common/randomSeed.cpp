@@ -8,7 +8,7 @@
 #include <base/types.h>
 
 
-namespace DB
+namespace PYJU
 {
     namespace ErrorCodes
     {
@@ -17,11 +17,11 @@ namespace DB
 }
 
 
-DB::UInt64 randomSeed()
+PYJU::UInt64 randomSeed()
 {
     struct timespec times;
     if (clock_gettime(CLOCK_MONOTONIC, &times))
-        DB::throwFromErrno("Cannot clock_gettime.", DB::ErrorCodes::CANNOT_CLOCK_GETTIME);
+        PYJU::throwFromErrno("Cannot clock_gettime.", PYJU::ErrorCodes::CANNOT_CLOCK_GETTIME);
 
     /// Not cryptographically secure as time, pid and stack address can be predictable.
 

@@ -72,6 +72,7 @@ target_link_libraries(pyju_core
     Poco::Net
     Poco::Foundation
     Poco::Util
+    Poco::Net::SSL
     boost::headers_only
     boost::program_options
     ch_contrib::magic_enum

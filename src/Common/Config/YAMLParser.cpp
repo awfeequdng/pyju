@@ -23,7 +23,7 @@
 
 using namespace Poco::XML;
 
-namespace DB
+namespace PYJU
 {
 
 namespace ErrorCodes

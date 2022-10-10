@@ -5,7 +5,7 @@
 #include <base/StringRef.h>
 
 
-namespace DB
+namespace PYJU
 {
 
 /** Writes the data to a string.

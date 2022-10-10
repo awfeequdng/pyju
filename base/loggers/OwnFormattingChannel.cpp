@@ -2,7 +2,7 @@
 #include "OwnPatternFormatter.h"
 
 
-namespace DB
+namespace PYJU
 {
 
 void OwnFormattingChannel::logExtended(const ExtendedLogMessage & msg)
