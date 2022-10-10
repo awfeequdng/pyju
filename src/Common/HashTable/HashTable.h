@@ -23,7 +23,7 @@
 #include <Common/HashTable/HashTableAllocator.h>
 #include <Common/HashTable/HashTableKeyHolder.h>
 
-#ifdef DBMS_HASH_MAP_DEBUG_RESIZES
+#ifdef PYJU_HASH_MAP_DEBUG_RESIZES
     #include <iostream>
     #include <iomanip>
     #include <Common/Stopwatch.h>
@@ -413,7 +413,7 @@ protected:
     Cell * buf;               /// A piece of memory for all elements except the element with zero key.
     Grower grower;
 
-#ifdef DBMS_HASH_MAP_COUNT_COLLISIONS
+#ifdef PYJU_HASH_MAP_COUNT_COLLISIONS
     mutable size_t collisions = 0;
 #endif
 
@@ -423,7 +423,7 @@ protected:
         while (!buf[place_value].isZero(*this) && !buf[place_value].keyEquals(x, hash_value, *this))
         {
             place_value = grower.next(place_value);
-#ifdef DBMS_HASH_MAP_COUNT_COLLISIONS
+#ifdef PYJU_HASH_MAP_COUNT_COLLISIONS
             ++collisions;
 #endif
         }
@@ -438,7 +438,7 @@ protected:
         while (!buf[place_value].isZero(*this))
         {
             place_value = grower.next(place_value);
-#ifdef DBMS_HASH_MAP_COUNT_COLLISIONS
+#ifdef PYJU_HASH_MAP_COUNT_COLLISIONS
             ++collisions;
 #endif
         }
@@ -464,7 +464,7 @@ protected:
     /// Increase the size of the buffer.
     void resize(size_t for_num_elems = 0, size_t for_buf_size = 0)
     {
-#ifdef DBMS_HASH_MAP_DEBUG_RESIZES
+#ifdef PYJU_HASH_MAP_DEBUG_RESIZES
         Stopwatch watch;
 #endif
 
@@ -545,7 +545,7 @@ protected:
                     Cell::move(&buf[i], &buf[updated_place_value]);
         }
 
-#ifdef DBMS_HASH_MAP_DEBUG_RESIZES
+#ifdef PYJU_HASH_MAP_DEBUG_RESIZES
         watch.stop();
         std::cerr << std::fixed << std::setprecision(3)
             << "Resize from " << old_size << " to " << grower.bufSize() << " took " << watch.elapsedSeconds() << " sec."
@@ -1313,7 +1313,7 @@ public:
         return ptr - buf + 1;
     }
 
-#ifdef DBMS_HASH_MAP_COUNT_COLLISIONS
+#ifdef PYJU_HASH_MAP_COUNT_COLLISIONS
     size_t getCollisions() const
     {
         return collisions;

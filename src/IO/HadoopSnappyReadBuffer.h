@@ -58,7 +58,7 @@ private:
     inline Status readCompressedLength(size_t * avail_in, const char ** next_in);
     inline Status readCompressedData(size_t * avail_in, const char ** next_in, size_t * avail_out, char ** next_out);
 
-    char buffer[DBMS_DEFAULT_BUFFER_SIZE] = {0};
+    char buffer[PYJU_DEFAULT_BUFFER_SIZE] = {0};
     int buffer_length = 0;
 
     int block_length = -1;
@@ -90,7 +90,7 @@ public:
 
     explicit HadoopSnappyReadBuffer(
         std::unique_ptr<ReadBuffer> in_,
-        size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE,
+        size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE,
         char * existing_memory = nullptr,
         size_t alignment = 0);
 

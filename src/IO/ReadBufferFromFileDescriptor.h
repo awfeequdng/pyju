@@ -28,7 +28,7 @@ protected:
 public:
     ReadBufferFromFileDescriptor(
         int fd_,
-        size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE,
+        size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE,
         char * existing_memory = nullptr,
         size_t alignment = 0,
         std::optional<size_t> file_size_ = std::nullopt)
@@ -69,7 +69,7 @@ class ReadBufferFromFileDescriptorPRead : public ReadBufferFromFileDescriptor
 public:
     ReadBufferFromFileDescriptorPRead(
         int fd_,
-        size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE,
+        size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE,
         char * existing_memory = nullptr,
         size_t alignment = 0,
         std::optional<size_t> file_size_ = std::nullopt)

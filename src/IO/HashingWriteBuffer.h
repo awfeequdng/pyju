@@ -5,7 +5,7 @@
 #include <IO/ReadHelpers.h>
 #include <city.h>
 
-#define DBMS_DEFAULT_HASHING_BLOCK_SIZE 2048ULL
+#define PYJU_DEFAULT_HASHING_BLOCK_SIZE 2048ULL
 
 
 namespace PYJU
@@ -17,7 +17,7 @@ class IHashingBuffer : public BufferWithOwnMemory<Buffer>
 public:
     using uint128 = CityHash_v1_0_2::uint128;
 
-    IHashingBuffer(size_t block_size_ = DBMS_DEFAULT_HASHING_BLOCK_SIZE)
+    IHashingBuffer(size_t block_size_ = PYJU_DEFAULT_HASHING_BLOCK_SIZE)
         : BufferWithOwnMemory<Buffer>(block_size_), block_pos(0), block_size(block_size_), state(0, 0)
     {
     }
@@ -68,7 +68,7 @@ private:
 public:
     HashingWriteBuffer(
         WriteBuffer & out_,
-        size_t block_size_ = DBMS_DEFAULT_HASHING_BLOCK_SIZE)
+        size_t block_size_ = PYJU_DEFAULT_HASHING_BLOCK_SIZE)
         : IHashingBuffer<PYJU::WriteBuffer>(block_size_), out(out_)
     {
         out.next(); /// If something has already been written to `out` before us, we will not let the remains of this data affect the hash.

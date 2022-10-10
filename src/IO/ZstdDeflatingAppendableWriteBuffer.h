@@ -32,7 +32,7 @@ public:
         std::unique_ptr<WriteBufferFromFile> out_,
         int compression_level,
         bool append_to_existing_file_,
-        size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE,
+        size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE,
         char * existing_memory = nullptr,
         size_t alignment = 0);
 

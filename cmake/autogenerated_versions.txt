@@ -1,7 +1,7 @@
 # This variables autochanged by release_lib.sh:
 
-# NOTE: has nothing common with DBMS_TCP_PROTOCOL_VERSION,
-# only DBMS_TCP_PROTOCOL_VERSION should be incremented on protocol changes.
+# NOTE: has nothing common with PYJU_TCP_PROTOCOL_VERSION,
+# only PYJU_TCP_PROTOCOL_VERSION should be incremented on protocol changes.
 SET(VERSION_REVISION 1)
 SET(VERSION_MAJOR 0)
 SET(VERSION_MINOR 1)

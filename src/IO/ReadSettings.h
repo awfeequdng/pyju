@@ -58,8 +58,8 @@ struct ReadSettings
     /// Method to use reading from remote filesystem.
     RemoteFSReadMethod remote_fs_method = RemoteFSReadMethod::read;
 
-    size_t local_fs_buffer_size = DBMS_DEFAULT_BUFFER_SIZE;
-    size_t remote_fs_buffer_size = DBMS_DEFAULT_BUFFER_SIZE;
+    size_t local_fs_buffer_size = PYJU_DEFAULT_BUFFER_SIZE;
+    size_t remote_fs_buffer_size = PYJU_DEFAULT_BUFFER_SIZE;
 
     bool local_fs_prefetch = false;
     bool remote_fs_prefetch = false;
@@ -77,7 +77,7 @@ struct ReadSettings
     size_t remote_fs_read_max_backoff_ms = 10000;
     size_t remote_fs_read_backoff_max_tries = 4;
 
-    size_t remote_read_min_bytes_for_seek = DBMS_DEFAULT_BUFFER_SIZE;
+    size_t remote_read_min_bytes_for_seek = PYJU_DEFAULT_BUFFER_SIZE;
 
     size_t http_max_tries = 1;
     size_t http_retry_initial_backoff_ms = 100;

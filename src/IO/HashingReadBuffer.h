@@ -13,7 +13,7 @@ namespace PYJU
 class HashingReadBuffer : public IHashingBuffer<ReadBuffer>
 {
 public:
-    explicit HashingReadBuffer(ReadBuffer & in_, size_t block_size_ = DBMS_DEFAULT_HASHING_BLOCK_SIZE)
+    explicit HashingReadBuffer(ReadBuffer & in_, size_t block_size_ = PYJU_DEFAULT_HASHING_BLOCK_SIZE)
         : IHashingBuffer<ReadBuffer>(block_size_), in(in_)
     {
         working_buffer = in.buffer();

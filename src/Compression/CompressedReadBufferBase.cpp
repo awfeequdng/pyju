@@ -148,7 +148,7 @@ size_t CompressedReadBufferBase::readCompressedData(size_t & size_decompressed, 
     /// This is for clang static analyzer.
     assert(size_decompressed > 0);
 
-    if (size_compressed_without_checksum > DBMS_MAX_COMPRESSED_SIZE)
+    if (size_compressed_without_checksum > PYJU_MAX_COMPRESSED_SIZE)
         throw Exception("Too large size_compressed_without_checksum: "
                         + toString(size_compressed_without_checksum)
                         + ". Most likely corrupted data.",

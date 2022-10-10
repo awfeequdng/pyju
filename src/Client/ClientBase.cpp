@@ -130,57 +130,25 @@ void ClientBase::setupSignalHandler()
         throw Exception(ErrorCodes::CANNOT_SET_SIGNAL_HANDLER, "Cannot set signal handler.");
 }
 
-
-void ClientBase::processTextAsSingleQuery(const String & full_query)
-{
-    std::cout << full_query << std::endl;
-}
-
-
-bool ClientBase::processQueryText(const String & text)
+bool ClientBase::processScriptText(const String & text, std::function<int(std::string)>pyju_main_script)
 {
     if (exit_strings.end() != exit_strings.find(trim(text, [](char c) { return isWhitespaceASCII(c) || c == ';'; })))
         return false;
 
-    processTextAsSingleQuery(text);
-
+    // std::cout << text << std::endl;
+    pyju_main_script(text);
     return true;
 }
-
 
 String ClientBase::prompt() const
 {
     return "pyju :]";
 }
 
-
-void ClientBase::initQueryIdFormats()
+void ClientBase::runInteractive(std::function<int(std::string)> pyju_main_script)
 {
-    if (!query_id_formats.empty())
-        return;
-
-    /// Initialize query_id_formats if any
-    if (config().has("query_id_formats"))
-    {
-        Poco::Util::AbstractConfiguration::Keys keys;
-        config().keys("query_id_formats", keys);
-        for (const auto & name : keys)
-            query_id_formats.emplace_back(name + ":", config().getString("query_id_formats." + name));
-    }
-
-    if (query_id_formats.empty())
-        query_id_formats.emplace_back("Query id:", " {query_id}\n");
-}
-
-
-void ClientBase::runInteractive()
-{
-    if (config().has("query_id"))
-        throw Exception("query_id could be specified only in non-interactive mode", ErrorCodes::BAD_ARGUMENTS);
     if (print_time_to_stderr)
         throw Exception("time option could be specified only in non-interactive mode", ErrorCodes::BAD_ARGUMENTS);
-
-    initQueryIdFormats();
 
     /// Initialize DateLUT here to avoid counting time spent here as query execution time.
     const auto local_tz = DateLUT::instance().getTimeZone();
@@ -260,7 +228,6 @@ void ClientBase::runInteractive()
                 {
                     String new_input = command;
                     // append the rest of input to the command
-                    // for parameters support, e.g. \c db_name -> USE db_name
                     new_input.append(it, input.end());
                     input = std::move(new_input);
                     break;
@@ -270,14 +237,13 @@ void ClientBase::runInteractive()
 
         try
         {
-            if (!processQueryText(input))
+            if (!processScriptText(input, pyju_main_script))
                 break;
         }
         catch (const Exception & e)
         {
             /// We don't need to handle the test hints in the interactive mode.
             std::cerr << "Exception on client:" << std::endl << getExceptionMessage(e, print_stack_trace, true) << std::endl << std::endl;
-            client_exception = std::make_unique<Exception>(e);
         }
 
     }
@@ -291,54 +257,10 @@ void ClientBase::runInteractive()
         std::cout << "Bye." << std::endl;
 }
 
-
-void ClientBase::runNonInteractive()
+void ClientBase::runNonInteractive(std::function<int(int, char **)> pyju_main)
 {
-    if (delayed_interactive)
-        initQueryIdFormats();
-
-    if (!queries_files.empty())
-    {
-        auto process_query_from_file = [&](const String & file)
-        {
-            String queries_from_file;
-
-            ReadBufferFromFile in(file);
-            readStringUntilEOF(queries_from_file, in);
-
-            return processQueryText(queries_from_file);
-        };
-
-        for (const auto & queries_file : queries_files)
-        {
-            for (const auto & interleave_file : interleave_queries_files)
-                if (!process_query_from_file(interleave_file))
-                    return;
-
-            if (!process_query_from_file(queries_file))
-                return;
-        }
-
-        return;
-    }
-
-    String text;
-    if (config().has("query"))
-    {
-        text += config().getRawString("query"); /// Poco configuration should not process substitutions in form of ${...} inside query.
-    }
-    else
-    {
-        /// If 'query' parameter is not set, read a query from stdin.
-        /// The query is read entirely into memory (streaming is disabled).
-        ReadBufferFromFileDescriptor in(STDIN_FILENO);
-        readStringUntilEOF(text, in);
-    }
-
-
-    processQueryText(text);
+    pyju_main(argc_, argv_);
 }
-
 
 void ClientBase::clearTerminal()
 {
@@ -352,156 +274,18 @@ void ClientBase::clearTerminal()
 
 void ClientBase::showClientVersion()
 {
-    std::cout << DBMS_NAME << " " + getName() + " version " << VERSION_STRING << VERSION_OFFICIAL << "." << std::endl;
+    std::cout << PYJU_NAME << " " + getName() + " version " << VERSION_STRING << VERSION_OFFICIAL << "." << std::endl;
 }
 
 
-void ClientBase::readArguments(
-    int argc,
-    char ** argv,
-    Arguments & common_arguments,
-    std::vector<Arguments> & external_tables_arguments,
-    std::vector<Arguments> & hosts_and_ports_arguments)
+void ClientBase::readArguments(int argc, char ** argv, Arguments & common_arguments)
 {
-    /** We allow different groups of arguments:
-        * - common arguments;
-        * - arguments for any number of external tables each in form "--external args...",
-        *   where possible args are file, name, format, structure, types;
-        * - param arguments for prepared statements.
-        * Split these groups before processing.
-        */
-
-    bool in_external_group = false;
-
-    std::string prev_host_arg;
-    std::string prev_port_arg;
-
-    for (int arg_num = 1; arg_num < argc; ++arg_num)
-    {
+    for (int arg_num = 1; arg_num < argc; ++arg_num) {
         const char * arg = argv[arg_num];
+        if (arg_num == 1) script_file = arg;
 
-        if (arg == "--external"sv)
-        {
-            in_external_group = true;
-            external_tables_arguments.emplace_back(Arguments{""});
-        }
-        /// Options with value after equal sign.
-        else if (in_external_group
-            && (0 == strncmp(arg, "--file=", strlen("--file=")) || 0 == strncmp(arg, "--name=", strlen("--name="))
-                || 0 == strncmp(arg, "--format=", strlen("--format=")) || 0 == strncmp(arg, "--structure=", strlen("--structure="))
-                || 0 == strncmp(arg, "--types=", strlen("--types="))))
-        {
-            external_tables_arguments.back().emplace_back(arg);
-        }
-        /// Options with value after whitespace.
-        else if (in_external_group
-            && (arg == "--file"sv || arg == "--name"sv || arg == "--format"sv
-                || arg == "--structure"sv || arg == "--types"sv))
-        {
-            if (arg_num + 1 < argc)
-            {
-                external_tables_arguments.back().emplace_back(arg);
-                ++arg_num;
-                arg = argv[arg_num];
-                external_tables_arguments.back().emplace_back(arg);
-            }
-            else
-                break;
-        }
-        else
-        {
-            in_external_group = false;
-
-            /// Parameter arg after underline.
-            if (startsWith(arg, "--param_"))
-            {
-                const char * param_continuation = arg + strlen("--param_");
-                const char * equal_pos = strchr(param_continuation, '=');
-
-                if (equal_pos == param_continuation)
-                    throw Exception("Parameter name cannot be empty", ErrorCodes::BAD_ARGUMENTS);
-
-                if (equal_pos)
-                {
-                    /// param_name=value
-                }
-                else
-                {
-                    /// param_name value
-                    ++arg_num;
-                    if (arg_num >= argc)
-                        throw Exception("Parameter requires value", ErrorCodes::BAD_ARGUMENTS);
-                    arg = argv[arg_num];
-                }
-            }
-            else if (startsWith(arg, "--host") || startsWith(arg, "-h"))
-            {
-                std::string host_arg;
-                /// --host host
-                if (arg == "--host"sv || arg == "-h"sv)
-                {
-                    ++arg_num;
-                    if (arg_num >= argc)
-                        throw Exception("Host argument requires value", ErrorCodes::BAD_ARGUMENTS);
-                    arg = argv[arg_num];
-                    host_arg = "--host=";
-                    host_arg.append(arg);
-                }
-                else
-                    host_arg = arg;
-
-                /// --port port1 --host host1
-                if (!prev_port_arg.empty())
-                {
-                    hosts_and_ports_arguments.push_back({host_arg, prev_port_arg});
-                    prev_port_arg.clear();
-                }
-                else
-                {
-                    /// --host host1 --host host2
-                    if (!prev_host_arg.empty())
-                        hosts_and_ports_arguments.push_back({prev_host_arg});
-
-                    prev_host_arg = host_arg;
-                }
-            }
-            else if (startsWith(arg, "--port"))
-            {
-                std::string port_arg = arg;
-                /// --port port
-                if (arg == "--port"sv)
-                {
-                    port_arg.push_back('=');
-                    ++arg_num;
-                    if (arg_num >= argc)
-                        throw Exception("Port argument requires value", ErrorCodes::BAD_ARGUMENTS);
-                    arg = argv[arg_num];
-                    port_arg.append(arg);
-                }
-
-                /// --host host1 --port port1
-                if (!prev_host_arg.empty())
-                {
-                    hosts_and_ports_arguments.push_back({port_arg, prev_host_arg});
-                    prev_host_arg.clear();
-                }
-                else
-                {
-                    /// --port port1 --port port2
-                    if (!prev_port_arg.empty())
-                        hosts_and_ports_arguments.push_back({prev_port_arg});
-
-                    prev_port_arg = port_arg;
-                }
-            }
-            else
-                common_arguments.emplace_back(arg);
-        }
+        common_arguments.emplace_back(arg);
     }
-    if (!prev_host_arg.empty())
-        hosts_and_ports_arguments.push_back({prev_host_arg});
-    if (!prev_port_arg.empty())
-        hosts_and_ports_arguments.push_back({prev_port_arg});
 }
 
 void ClientBase::parseAndCheckOptions(OptionsDescription & options_description, po::variables_map & options, Arguments & arguments)
@@ -510,26 +294,14 @@ void ClientBase::parseAndCheckOptions(OptionsDescription & options_description, 
     auto parser = po::command_line_parser(arguments).options(options_description.main_description.value()).allow_unregistered();
     po::parsed_options parsed = parser.run();
 
-    /// Check unrecognized options without positional options.
-    auto unrecognized_options = po::collect_unrecognized(parsed.options, po::collect_unrecognized_mode::exclude_positional);
-    if (!unrecognized_options.empty())
-    {
-        auto hints = this->getHints(unrecognized_options[0]);
-        if (!hints.empty())
-            // throw Exception(ErrorCodes::UNRECOGNIZED_ARGUMENTS, "Unrecognized option '{}'. Maybe you meant {}", unrecognized_options[0], toString(hints[0]));
-            throw Exception(ErrorCodes::UNRECOGNIZED_ARGUMENTS, "Unrecognized option '{}'. Maybe you meant {}, not full implemented", unrecognized_options[0], hints[0]);
-
-        throw Exception(ErrorCodes::UNRECOGNIZED_ARGUMENTS, "Unrecognized option '{}'", unrecognized_options[0]);
-    }
-
-    /// Check positional options (options after ' -- ', ex: clickhouse-client -- <options>).
-    unrecognized_options = po::collect_unrecognized(parsed.options, po::collect_unrecognized_mode::include_positional);
-    if (unrecognized_options.size() > 1)
-        throw Exception(ErrorCodes::BAD_ARGUMENTS, "Positional options are not supported.");
-
     po::store(parsed, options);
-}
 
+    if (arguments.size() > 1) {
+        is_interactive = false;
+    } else {
+        is_interactive = true;
+    }
+}
 
 void ClientBase::init(int argc, char ** argv)
 {
@@ -543,10 +315,8 @@ void ClientBase::init(int argc, char ** argv)
     terminal_width = getTerminalWidth();
 
     Arguments common_arguments{""}; /// 0th argument is ignored.
-    std::vector<Arguments> external_tables_arguments;
-    std::vector<Arguments> hosts_and_ports_arguments;
 
-    readArguments(argc, argv, common_arguments, external_tables_arguments, hosts_and_ports_arguments);
+    readArguments(argc, argv, common_arguments);
 
     po::variables_map options;
     OptionsDescription options_description;
@@ -557,48 +327,28 @@ void ClientBase::init(int argc, char ** argv)
         ("help", "produce help message")
         ("version,V", "print version information and exit")
         ("version-clean", "print version in machine-readable format and exit")
-
         ("config-file,C", po::value<std::string>(), "config-file path")
-        ("queries-file", po::value<std::vector<std::string>>()->multitoken(),
-            "file path with queries to execute; multiple files can be specified (--queries-file file1 file2...)")
-        ("database,d", po::value<std::string>(), "database")
         ("history_file", po::value<std::string>(), "path to history file")
 
-        ("query,q", po::value<std::string>(), "query")
-        ("stage", po::value<std::string>()->default_value("complete"), "Request query processing up to specified stage: complete,fetch_columns,with_mergeable_state,with_mergeable_state_after_aggregation,with_mergeable_state_after_aggregation_and_limit")
-        ("query_id", po::value<std::string>(), "query_id")
-        ("progress", "print progress of queries execution")
+        ("time,t", "print script execution time to stderr in non-interactive mode (for benchmarks)")
 
-        ("disable_suggestion,A", "Disable loading suggestion data. Note that suggestion data is loaded asynchronously through a second connection to ClickHouse server. Also it is reasonable to disable suggestion if you want to paste a query with TAB characters. Shorthand option -A is for those who get used to mysql client.")
-        ("time,t", "print query execution time to stderr in non-interactive mode (for benchmarks)")
-
-        ("echo", "in batch mode, print query before execution")
-        ("verbose", "print query and other debugging info")
+        ("echo", "in batch mode, script query before execution")
+        ("verbose", "print script and other debugging info")
 
         ("log-level", po::value<std::string>(), "log level")
 
         ("multiline,m", "multiline")
-        ("multiquery,n", "multiquery")
 
-        ("suggestion_limit", po::value<int>()->default_value(10000),
-            "Suggestion limit for how many databases, tables and columns to fetch.")
-
-        ("format,f", po::value<std::string>(), "default output format")
-        ("vertical,E", "vertical output format, same as --format=Vertical or FORMAT Vertical or \\G at end of command")
         ("highlight", po::value<bool>()->default_value(true), "enable or disable basic syntax highlight in interactive command line")
 
-        ("ignore-error", "do not stop processing in multiquery mode")
         ("stacktrace", "print stack traces of exceptions")
         ("hardware-utilization", "print hardware utilization information in progress bar")
         ("print-profile-events", po::value(&profile_events.print)->zero_tokens(), "Printing ProfileEvents packets")
         ("profile-events-delay-ms", po::value<UInt64>()->default_value(profile_events.delay_ms), "Delay between printing `ProfileEvents` packets (-1 - print only totals, 0 - print every single packet)")
 
-        ("interactive", "Process queries-file or --query query and start interactive mode")
+        ("interactive", "Process script-file and start interactive mode")
         ("pager", po::value<std::string>(), "Pipe all output into this command (less or similar)")
-        ("max_memory_usage_in_client", po::value<int>(), "Set memory limit in client/local server")
     ;
-
-    addOptions(options_description);
 
     auto getter = [](const auto & op)
     {
@@ -610,12 +360,6 @@ void ClientBase::init(int argc, char ** argv)
     {
         const auto & main_options = options_description.main_description->options();
         std::transform(main_options.begin(), main_options.end(), std::back_inserter(cmd_options), getter);
-    }
-
-    if (options_description.external_description)
-    {
-        const auto & external_options = options_description.external_description->options();
-        std::transform(external_options.begin(), external_options.end(), std::back_inserter(cmd_options), getter);
     }
 
     parseAndCheckOptions(options_description, options, common_arguments);
@@ -644,40 +388,16 @@ void ClientBase::init(int argc, char ** argv)
     /// Common options for clickhouse-client and clickhouse-local.
     if (options.count("time"))
         print_time_to_stderr = true;
-    if (options.count("query"))
-        config().setString("query", options["query"].as<std::string>());
-    if (options.count("query_id"))
-        config().setString("query_id", options["query_id"].as<std::string>());
-    if (options.count("database"))
-        config().setString("database", options["database"].as<std::string>());
-    if (options.count("config-file"))
-        config().setString("config-file", options["config-file"].as<std::string>());
-    if (options.count("queries-file"))
-        queries_files = options["queries-file"].as<std::vector<std::string>>();
     if (options.count("multiline"))
         config().setBool("multiline", true);
-    if (options.count("multiquery"))
-        config().setBool("multiquery", true);
-    if (options.count("ignore-error"))
-        config().setBool("ignore-error", true);
-    if (options.count("format"))
-        config().setString("format", options["format"].as<std::string>());
-    if (options.count("vertical"))
-        config().setBool("vertical", true);
     if (options.count("stacktrace"))
         config().setBool("stacktrace", true);
     if (options.count("print-profile-events"))
         config().setBool("print-profile-events", true);
     if (options.count("profile-events-delay-ms"))
         config().setInt("profile-events-delay-ms", options["profile-events-delay-ms"].as<UInt64>());
-    if (options.count("progress"))
-        config().setBool("progress", true);
     if (options.count("echo"))
         config().setBool("echo", true);
-    if (options.count("disable_suggestion"))
-        config().setBool("disable_suggestion", true);
-    if (options.count("suggestion_limit"))
-        config().setInt("suggestion_limit", options["suggestion_limit"].as<int>());
     if (options.count("highlight"))
         config().setBool("highlight", options["highlight"].as<bool>());
     if (options.count("history_file"))
@@ -686,18 +406,15 @@ void ClientBase::init(int argc, char ** argv)
         config().setBool("verbose", true);
     if (options.count("interactive"))
         config().setBool("interactive", true);
-    if (options.count("pager"))
-        config().setString("pager", options["pager"].as<std::string>());
-
     if (options.count("log-level"))
         Poco::Logger::root().setLevel(options["log-level"].as<std::string>());
 
     profile_events.print = options.count("print-profile-events");
     profile_events.delay_ms = options["profile-events-delay-ms"].as<UInt64>();
 
-    processOptions(options_description, options, external_tables_arguments, hosts_and_ports_arguments);
-    argsToConfig(common_arguments, config(), 100);
     clearPasswordFromCommandLine(argc, argv);
+    argc_ = argc;
+    argv_ = argv;
 
     /// Limit on total memory usage
     size_t max_client_memory_usage = config().getInt64("max_memory_usage_in_client", 0 /*default value*/);

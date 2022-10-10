@@ -37,7 +37,7 @@ public:
         AsynchronousReaderPtr reader_,
         Int32 priority_,
         int fd_,
-        size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE,
+        size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE,
         char * existing_memory = nullptr,
         size_t alignment = 0,
         std::optional<size_t> file_size_ = std::nullopt)

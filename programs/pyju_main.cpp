@@ -10,10 +10,14 @@
 #include "base/arena.h"
 #include "Parser/flex_bison/parse.h"
 #include "ast/ast.h"
+#include <filesystem>
+#include <fstream>
 
 #include "vm/run_ast.h"
 
 #include <cstdlib>
+
+namespace fs = std::filesystem;
 
 static auto Main(llvm::StringRef default_prelude_file, int argc, char **argv)
     -> PYJU::ErrorOr<PYJU::Success> {
@@ -38,6 +42,7 @@ static auto Main(llvm::StringRef default_prelude_file, int argc, char **argv)
     // Set up a stream for trace output.
     std::unique_ptr<llvm::raw_ostream> scoped_trace_stream;
     std::optional<PYJU::Nonnull<llvm::raw_ostream*>> trace_stream;
+    trace_stream = &llvm::outs();
     if (!trace_file_name.empty()) {
         if (trace_file_name == "-") {
             trace_stream = &llvm::outs();
@@ -68,7 +73,36 @@ static auto Main(llvm::StringRef default_prelude_file, int argc, char **argv)
     return PYJU::Success();
 }
 
-auto pyju_main(int argc, char **argv) -> int {
+PYJU::ErrorOr<PYJU::Success> pyju_runscript(std::string &script_text) {
+    std::optional<PYJU::Nonnull<llvm::raw_ostream*>> trace_stream;
+    trace_stream = &llvm::outs();
+    std::string tmp_fname = std::tmpnam(nullptr);
+
+    std::ofstream ofs;
+    ofs.open(tmp_fname);
+    ofs << script_text << std::endl;
+
+    PYJU::Arena arena;
+    PXC_ASSIGN_OR_RETURN(PYJU::ASTPtr ast,
+                         PYJU::Parse(&arena,
+                                     tmp_fname,
+                                     {}));
+    PXC_ASSIGN_OR_RETURN(int return_code,
+                         vm::RunAst(&arena, ast, trace_stream));
+    llvm::outs() << "run ast return code: " << return_code << "\n";
+
+    return PYJU::Success();
+}
+
+int pyju_main_script(std::string script_text) {
+    if (auto result = pyju_runscript(script_text); !result.ok()) {
+        llvm::errs() << result.error().message() << "\n";
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
+
+int pyju_main(int argc, char **argv) {
     llvm::SmallString<256> path;
     if (std::error_code err = llvm::sys::fs::current_path(path)) {
         llvm::errs() << "Failed to get working directory: " << err.message();

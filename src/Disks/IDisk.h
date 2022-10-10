@@ -166,7 +166,7 @@ public:
     /// Open the file for write and return WriteBufferFromFileBase object.
     virtual std::unique_ptr<WriteBufferFromFileBase> writeFile(
         const String & path,
-        size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE,
+        size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE,
         WriteMode mode = WriteMode::Rewrite) = 0;
 
     /// Remove file. Throws exception if file doesn't exists or it's a directory.

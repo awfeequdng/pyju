@@ -490,7 +490,7 @@ public:
     const Cell * data() const { return buf; }
     Cell * data() { return buf; }
 
-#ifdef DBMS_HASH_MAP_COUNT_COLLISIONS
+#ifdef PYJU_HASH_MAP_COUNT_COLLISIONS
     size_t getCollisions() const { return 0; }
 #endif
 };

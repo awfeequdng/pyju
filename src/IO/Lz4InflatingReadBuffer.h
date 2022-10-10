@@ -16,7 +16,7 @@ class Lz4InflatingReadBuffer : public BufferWithOwnMemory<ReadBuffer>
 public:
     Lz4InflatingReadBuffer(
         std::unique_ptr<ReadBuffer> in_,
-        size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE,
+        size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE,
         char * existing_memory = nullptr,
         size_t alignment = 0);
 

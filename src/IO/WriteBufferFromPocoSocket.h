@@ -14,7 +14,7 @@ namespace PYJU
 class WriteBufferFromPocoSocket : public BufferWithOwnMemory<WriteBuffer>
 {
 public:
-    WriteBufferFromPocoSocket(Poco::Net::Socket & socket_, size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE);
+    WriteBufferFromPocoSocket(Poco::Net::Socket & socket_, size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE);
 
     ~WriteBufferFromPocoSocket() override;
 

@@ -25,7 +25,7 @@ protected:
 public:
     explicit ReadBufferFromFile(
         const std::string & file_name_,
-        size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE,
+        size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE,
         int flags = -1,
         char * existing_memory = nullptr,
         size_t alignment = 0,
@@ -35,7 +35,7 @@ public:
     explicit ReadBufferFromFile(
         int & fd, /// Will be set to -1 if constructor didn't throw and ownership of file descriptor is passed to the object.
         const std::string & original_file_name = {},
-        size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE,
+        size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE,
         char * existing_memory = nullptr,
         size_t alignment = 0,
         std::optional<size_t> file_size_ = std::nullopt);
@@ -59,7 +59,7 @@ class ReadBufferFromFilePRead : public ReadBufferFromFile
 public:
     ReadBufferFromFilePRead(
         const std::string & file_name_,
-        size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE,
+        size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE,
         int flags = -1,
         char * existing_memory = nullptr,
         size_t alignment = 0,
@@ -82,7 +82,7 @@ private:
 public:
     ReadBufferFromFilePReadWithDescriptorsCache(
         const std::string & file_name_,
-        size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE,
+        size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE,
         int flags = -1,
         char * existing_memory = nullptr,
         size_t alignment = 0,

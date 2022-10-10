@@ -19,7 +19,7 @@ public:
     CompressedWriteBuffer(
         WriteBuffer & out_,
         CompressionCodecPtr codec_ = CompressionCodecFactory::instance().getDefaultCodec(),
-        size_t buf_size = DBMS_DEFAULT_BUFFER_SIZE);
+        size_t buf_size = PYJU_DEFAULT_BUFFER_SIZE);
 
     ~CompressedWriteBuffer() override;
 
