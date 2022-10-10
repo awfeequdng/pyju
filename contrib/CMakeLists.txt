@@ -62,4 +62,5 @@ add_contrib (brotli-cmake brotli)
 add_contrib (boringssl-cmake boringssl)
 add_contrib (libcpuid-cmake libcpuid)
 add_contrib (llvm-cmake llvm)
+add_contrib (utf8proc-cmake utf8proc)
 

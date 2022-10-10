@@ -77,3 +77,6 @@
 [submodule "contrib/libunwind"]
 	path = contrib/libunwind
 	url = https://github.com/ClickHouse-Extras/libunwind.git
+[submodule "contrib/utf8proc"]
+	path = contrib/utf8proc
+	url = https://github.com/JuliaStrings/utf8proc.git

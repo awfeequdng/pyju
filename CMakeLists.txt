@@ -139,6 +139,7 @@ target_link_libraries(pyju_core
     OpenSSL::Crypto
     ch_contrib::cpuid
     ch_contrib::llvm
+    ch_contrib::utf8proc
 )
 
 if (OS_LINUX)
