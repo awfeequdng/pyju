@@ -171,6 +171,14 @@ void Statement::PrintDepth(int depth, llvm::raw_ostream& out) const {
         out << ")\n";
         break;
       }
+      case StatementKind::Delete: {
+        Space(depth, out) << "del ";
+        for (auto &elt: cast<Delete>(*this).targets()) {
+          out << *elt << ", ";
+        }
+        out << "\n";
+        break;
+      }
       default:
         out << "unknown kind: ";
         break;

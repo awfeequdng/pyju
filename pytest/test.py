@@ -176,3 +176,8 @@ elif test3:
 else:
     print(4)
 
+del x, d, d
+del (2,s)
+del (2)
+
+

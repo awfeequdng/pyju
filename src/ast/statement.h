@@ -428,4 +428,27 @@ protected:
     std::vector<Nonnull<Expression*>> tuple_;
 };
 
+class Delete : public Statement {
+public:
+    static PYJU::Nonnull<Delete*> make_Delete(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                std::vector<Nonnull<Expression*>> targets) {
+        return arena->New<Delete>(loc, targets);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromDelete(node->kind());
+    }
+
+    Delete(const PYJU::SourceLocation& loc,
+              std::vector<Nonnull<Expression*>>& targets)
+      : Statement(AstNodeKind::Delete, loc),
+        targets_(targets) {}
+    auto targets() const -> const std::vector<Nonnull<Expression*>>& { return targets_; }
+
+protected:
+    std::vector<Nonnull<Expression*>> targets_;
+};
+
 } // namespace PYJU

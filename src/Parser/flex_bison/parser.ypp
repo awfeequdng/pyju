@@ -182,6 +182,7 @@
 %type <Nonnull<Statement*>> script_unit
 %type <Nonnull<Statement*>> statement
 %type <Nonnull<Statement*>> expression_statment
+%type <Nonnull<Statement*>> delete_statement
 %type <Nonnull<Statement*>> tuple_statement
 %type <Nonnull<Statement*>> single_line_statement
 %type <Nonnull<Statement*>> global_statement
@@ -371,6 +372,16 @@ return_statement
     | RETURN tuple_item { $$ = RETURN_02($2, context.source_loc()); }
     ;
 
+
+delete_statement
+    : DEL expr_list { $$ = DELETE_01($2, context.source_loc()); }
+    | DEL expr_list "," { $$ = DELETE_01($2, context.source_loc()); }
+    | DEL "(" expr_list "," ")" {
+        $$ = DELETE_01($3, context.source_loc()); }
+    | DEL "(" expr_list "," expr ")" {
+        $$ = DELETE_01(TUPLE_($3, $5), context.source_loc()); }
+    ;
+
 single_line_statement
     : expression_statment
     | tuple_statement
@@ -379,7 +390,7 @@ single_line_statement
 //    | augassign_statement
 //    | ann_assignment_statement
     | pass_statement
-//    | delete_statement
+    | delete_statement
     | return_statement
     | raise_statement
     | break_statement
