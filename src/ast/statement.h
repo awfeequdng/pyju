@@ -512,4 +512,37 @@ protected:
     Nonnull<Expression*> value_;
 };
 
+class AnnAssign : public Statement {
+public:
+    static PYJU::Nonnull<AnnAssign*> make_AnnAssign(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                Nonnull<Expression*> target,
+                Nonnull<Expression*> annotation,
+                std::optional<Nonnull<Expression*>> value) {
+        return arena->New<AnnAssign>(loc, target, annotation, value);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromAnnAssign(node->kind());
+    }
+
+    AnnAssign(const PYJU::SourceLocation& loc,
+              Nonnull<Expression*> target,
+              Nonnull<Expression*>& annotation,
+              std::optional<Nonnull<Expression*>> value)
+      : Statement(AstNodeKind::AnnAssign, loc),
+        target_(target),
+        annotation_(annotation),
+        value_(value) {}
+    auto target() const -> const Nonnull<Expression*>& { return target_; }
+    auto annotation() const -> const Nonnull<Expression*>& { return annotation_; }
+    auto value() const -> const std::optional<Nonnull<Expression*>>& { return value_; }
+
+protected:
+    Nonnull<Expression*> target_;
+    Nonnull<Expression*> annotation_;
+    std::optional<Nonnull<Expression*>> value_;
+};
+
 } // namespace PYJU

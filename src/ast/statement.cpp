@@ -203,6 +203,20 @@ void Statement::PrintDepth(int depth, llvm::raw_ostream& out) const {
                           << "\n";
         break;
       }
+      case StatementKind::AnnAssign: {
+        auto &ann_assign = cast<AnnAssign>(*this);
+        auto &target = ann_assign.target();
+        auto &annotation = ann_assign.annotation();
+        auto &value = ann_assign.value();
+        Space(depth, out) << "AnnAssign:"
+                          << *target << ":"
+                          << *annotation;
+        if (value) {
+          out << " = " << **value;
+        }
+        out << "\n";
+        break;
+      }
       default:
         out << "unknown kind: ";
         break;

@@ -676,6 +676,7 @@ namespace  PYJU  {
       // return_statement
       // delete_statement
       // augassign_statement
+      // ann_assignment_statement
       // single_line_statement
       // import_statement
       // multi_line_statement
@@ -1030,45 +1031,46 @@ namespace  PYJU  {
         S_delete_statement = 122,                // delete_statement
         S_augassign_statement = 123,             // augassign_statement
         S_augassign_op = 124,                    // augassign_op
-        S_single_line_statement = 125,           // single_line_statement
-        S_module = 126,                          // module
-        S_module_as_id = 127,                    // module_as_id
-        S_module_item_list = 128,                // module_item_list
-        S_dot_list = 129,                        // dot_list
-        S_import_statement = 130,                // import_statement
-        S_multi_line_statement = 131,            // multi_line_statement
-        S_decorators_opt = 132,                  // decorators_opt
-        S_decorators = 133,                      // decorators
-        S_parameter = 134,                       // parameter
-        S_parameter_list = 135,                  // parameter_list
-        S_parameter_list_no_posonly = 136,       // parameter_list_no_posonly
-        S_defparameter_list = 137,               // defparameter_list
-        S_parameter_list_starargs = 138,         // parameter_list_starargs
-        S_parameter_list_opt = 139,              // parameter_list_opt
-        S_comma_opt = 140,                       // comma_opt
-        S_function_def = 141,                    // function_def
-        S_global_statement = 142,                // global_statement
-        S_ternary_if_statement = 143,            // ternary_if_statement
-        S_nonlocal_statement = 144,              // nonlocal_statement
-        S_elif_statement = 145,                  // elif_statement
-        S_if_statement = 146,                    // if_statement
-        S_target_list = 147,                     // target_list
-        S_assignment_statement = 148,            // assignment_statement
-        S_expression_statment = 149,             // expression_statment
-        S_string = 150,                          // string
-        S_expr_list_opt = 151,                   // expr_list_opt
-        S_expr_list = 152,                       // expr_list
-        S_dict = 153,                            // dict
-        S_dict_list = 154,                       // dict_list
-        S_call_arguement_list = 155,             // call_arguement_list
-        S_keyword_item = 156,                    // keyword_item
-        S_keyword_items = 157,                   // keyword_items
-        S_primary = 158,                         // primary
-        S_function_call = 159,                   // function_call
-        S_expr = 160,                            // expr
-        S_id = 161,                              // id
-        S_sep = 162,                             // sep
-        S_sep_one = 163                          // sep_one
+        S_ann_assignment_statement = 125,        // ann_assignment_statement
+        S_single_line_statement = 126,           // single_line_statement
+        S_module = 127,                          // module
+        S_module_as_id = 128,                    // module_as_id
+        S_module_item_list = 129,                // module_item_list
+        S_dot_list = 130,                        // dot_list
+        S_import_statement = 131,                // import_statement
+        S_multi_line_statement = 132,            // multi_line_statement
+        S_decorators_opt = 133,                  // decorators_opt
+        S_decorators = 134,                      // decorators
+        S_parameter = 135,                       // parameter
+        S_parameter_list = 136,                  // parameter_list
+        S_parameter_list_no_posonly = 137,       // parameter_list_no_posonly
+        S_defparameter_list = 138,               // defparameter_list
+        S_parameter_list_starargs = 139,         // parameter_list_starargs
+        S_parameter_list_opt = 140,              // parameter_list_opt
+        S_comma_opt = 141,                       // comma_opt
+        S_function_def = 142,                    // function_def
+        S_global_statement = 143,                // global_statement
+        S_ternary_if_statement = 144,            // ternary_if_statement
+        S_nonlocal_statement = 145,              // nonlocal_statement
+        S_elif_statement = 146,                  // elif_statement
+        S_if_statement = 147,                    // if_statement
+        S_target_list = 148,                     // target_list
+        S_assignment_statement = 149,            // assignment_statement
+        S_expression_statment = 150,             // expression_statment
+        S_string = 151,                          // string
+        S_expr_list_opt = 152,                   // expr_list_opt
+        S_expr_list = 153,                       // expr_list
+        S_dict = 154,                            // dict
+        S_dict_list = 155,                       // dict_list
+        S_call_arguement_list = 156,             // call_arguement_list
+        S_keyword_item = 157,                    // keyword_item
+        S_keyword_items = 158,                   // keyword_items
+        S_primary = 159,                         // primary
+        S_function_call = 160,                   // function_call
+        S_expr = 161,                            // expr
+        S_id = 162,                              // id
+        S_sep = 163,                             // sep
+        S_sep_one = 164                          // sep_one
       };
     };
 
@@ -1156,6 +1158,7 @@ namespace  PYJU  {
       case symbol_kind::S_return_statement: // return_statement
       case symbol_kind::S_delete_statement: // delete_statement
       case symbol_kind::S_augassign_statement: // augassign_statement
+      case symbol_kind::S_ann_assignment_statement: // ann_assignment_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
@@ -1637,6 +1640,7 @@ switch (yykind)
       case symbol_kind::S_return_statement: // return_statement
       case symbol_kind::S_delete_statement: // delete_statement
       case symbol_kind::S_augassign_statement: // augassign_statement
+      case symbol_kind::S_ann_assignment_statement: // ann_assignment_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
@@ -3735,9 +3739,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 2181,     ///< Last index in yytable_.
-      yynnts_ = 60,  ///< Number of nonterminal symbols.
-      yyfinal_ = 101 ///< Termination state number.
+      yylast_ = 2183,     ///< Last index in yytable_.
+      yynnts_ = 61,  ///< Number of nonterminal symbols.
+      yyfinal_ = 102 ///< Termination state number.
     };
 
 
@@ -3867,6 +3871,7 @@ switch (yykind)
       case symbol_kind::S_return_statement: // return_statement
       case symbol_kind::S_delete_statement: // delete_statement
       case symbol_kind::S_augassign_statement: // augassign_statement
+      case symbol_kind::S_ann_assignment_statement: // ann_assignment_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
@@ -4024,6 +4029,7 @@ switch (yykind)
       case symbol_kind::S_return_statement: // return_statement
       case symbol_kind::S_delete_statement: // delete_statement
       case symbol_kind::S_augassign_statement: // augassign_statement
+      case symbol_kind::S_ann_assignment_statement: // ann_assignment_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
@@ -4164,7 +4170,7 @@ switch (yykind)
 
 #line 21 "parser.ypp"
 } //  PYJU 
-#line 4168 "./parser.h"
+#line 4174 "./parser.h"
 
 
 

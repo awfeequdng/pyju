@@ -472,3 +472,5 @@ inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, Nonnul
 #define OPERATOR(op, l) PYJU::operatorType::op
 #define AUGASSIGN_01(x, op, y, l) PYJU::AugAssign::make_AugAssign(arena, l, x, op, y)
 
+#define ANNASSIGN_01(x, y, l) PYJU::AnnAssign::make_AnnAssign(arena, l, x, y, std::nullopt)
+#define ANNASSIGN_02(x, y, val, l) PYJU::AnnAssign::make_AnnAssign(arena, l, x, y, val)

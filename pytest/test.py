@@ -133,6 +133,7 @@ def func(test):
 
 a if world else b
 
+from ast import BitXor
 from matplotlib import test
 import ab.c as b
 import ab.c, c.b as d
@@ -187,6 +188,11 @@ a -= b
 a /= b
 a %= b
 a <<= b
+
+ax : bx
+
+ax : cx = dx
+ax : cx = 3
 
 
 
