@@ -479,4 +479,37 @@ protected:
     Nonnull<Expression*> value_;
 };
 
+class AugAssign : public Statement {
+public:
+    static PYJU::Nonnull<AugAssign*> make_AugAssign(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                Nonnull<Expression*> target,
+                operatorType op,
+                Nonnull<Expression*> value) {
+        return arena->New<AugAssign>(loc, target, op, value);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromAugAssign(node->kind());
+    }
+
+    AugAssign(const PYJU::SourceLocation& loc,
+              Nonnull<Expression*> target,
+              operatorType& op,
+              Nonnull<Expression*> value)
+      : Statement(AstNodeKind::AugAssign, loc),
+        target_(target),
+        op_(op),
+        value_(value) {}
+    auto target() const -> const Nonnull<Expression*>& { return target_; }
+    auto op() const -> const operatorType& { return op_; }
+    auto value() const -> const Nonnull<Expression*>& { return value_; }
+
+protected:
+    Nonnull<Expression*> target_;
+    operatorType op_;
+    Nonnull<Expression*> value_;
+};
+
 } // namespace PYJU

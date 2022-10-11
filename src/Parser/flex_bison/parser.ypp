@@ -168,6 +168,19 @@
   UNDERSCORE      "_"
   RARROW          "->"
 
+  PLUS_EQUAL      "+="
+  MIN_EQUAL       "-="
+  STAR_EQUAL      "*="
+  SLASH_EQUAL     "/="
+  PERCENT_EQUAL   "%="
+  AMPER_EQUAL     "&="
+  VBAR_EQUAL      "|="
+  CARET_EQUAL     "^="
+  LEFTSHIFT_EQUAL "<<="
+  RIGHTSHIFT_EQUAL ">>="
+  POW_EQUAL        "**="
+  DOUBLESLASH_EQUAL     "//="
+
   INDENT
   DEDENT
   NEWLINE
@@ -228,6 +241,8 @@
 %type <std::vector<Nonnull<Alias*>>> module_item_list
 %type <Nonnull<Statement*>> import_statement
 %type <Nonnull<Statement*>> pass_statement
+%type <Nonnull<Statement*>> augassign_statement
+%type <operatorType> augassign_op
 %type <Nonnull<Statement*>> break_statement
 %type <Nonnull<Statement*>> continue_statement
 %type <Nonnull<Statement*>> assert_statement
@@ -384,12 +399,32 @@ delete_statement
         $$ = DELETE_01(TUPLE_($3, $5), context.source_loc()); }
     ;
 
+
+augassign_statement
+    : expr augassign_op expr { $$ = AUGASSIGN_01($1, $2, $3, context.source_loc()); }
+    ;
+
+augassign_op
+    : "+=" { $$ = OPERATOR(Add, context.source_loc()); }
+    | "-=" { $$ = OPERATOR(Sub, context.source_loc()); }
+    | "*=" { $$ = OPERATOR(Mult, context.source_loc()); }
+    | "/=" { $$ = OPERATOR(Div, context.source_loc()); }
+    | "%=" { $$ = OPERATOR(Mod, context.source_loc()); }
+    | "&=" { $$ = OPERATOR(BitAnd, context.source_loc()); }
+    | "|=" { $$ = OPERATOR(BitOr, context.source_loc()); }
+    | "^=" { $$ = OPERATOR(BitXor, context.source_loc()); }
+    | "<<=" { $$ = OPERATOR(LShift, context.source_loc()); }
+    | ">>=" { $$ = OPERATOR(RShift, context.source_loc()); }
+    | "**=" { $$ = OPERATOR(Pow, context.source_loc()); }
+    | "//=" { $$ = OPERATOR(FloorDiv, context.source_loc()); }
+    ;
+
 single_line_statement
     : expression_statment
 //    | tuple_statement
     | assert_statement
     | assignment_statement
-//    | augassign_statement
+    | augassign_statement
 //    | ann_assignment_statement
     | pass_statement
     | delete_statement

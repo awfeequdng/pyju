@@ -469,3 +469,6 @@ inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, Nonnul
 //         EXPRS(SET_EXPR_CTX_02(SET_STORE_02(targets), Store)), targets.size(), \
 //         EXPR(val), extract_type_comment(p, l, type_comment))
 
+#define OPERATOR(op, l) PYJU::operatorType::op
+#define AUGASSIGN_01(x, op, y, l) PYJU::AugAssign::make_AugAssign(arena, l, x, op, y)
+

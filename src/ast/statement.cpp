@@ -191,6 +191,18 @@ void Statement::PrintDepth(int depth, llvm::raw_ostream& out) const {
         out << "\n";
         break;
       }
+      case StatementKind::AugAssign: {
+        auto &aug_assign = cast<AugAssign>(*this);
+        auto &target = aug_assign.target();
+        auto &op = aug_assign.op();
+        auto &value = aug_assign.value();
+        Space(depth, out) << "AugAssign:"
+                          << *target
+                          << operatorTypeStr(op) << "="
+                          << *value
+                          << "\n";
+        break;
+      }
       default:
         out << "unknown kind: ";
         break;

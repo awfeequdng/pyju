@@ -102,6 +102,19 @@ SEMICOLON            ";"
 SLASH                "/"
 UNDERSCORE           "_"
 
+PLUS_EQUAL            "+="
+MIN_EQUAL             "-="
+STAR_EQUAL            "*="
+SLASH_EQUAL           "/="
+PERCENT_EQUAL         "%="
+AMPER_EQUAL           "&="
+VBAR_EQUAL            "|="
+CARET_EQUAL           "^="
+LEFTSHIFT_EQUAL       "<<="
+RIGHTSHIFT_EQUAL      ">>="
+POW_EQUAL             "**="
+DOUBLESLASH_EQUAL     "//="
+
 /* table-end */
 
 /* This should be kept table-like, but isn't automatic due to spaces. */
@@ -259,6 +272,20 @@ one_line_comment      \#[^\n]*\n
   {SEMICOLON}                 { return PXC_TOKEN(SEMICOLON);            }
   {SLASH}                     { return PXC_TOKEN(SLASH);                }
   {UNDERSCORE}                { return PXC_TOKEN(UNDERSCORE);           }
+
+  {PLUS_EQUAL}                { return PXC_TOKEN(PLUS_EQUAL);           }
+  {MIN_EQUAL}                 { return PXC_TOKEN(MIN_EQUAL);            }
+  {STAR_EQUAL}                { return PXC_TOKEN(STAR_EQUAL);           }
+  {SLASH_EQUAL}               { return PXC_TOKEN(SLASH_EQUAL);          }
+  {PERCENT_EQUAL}             { return PXC_TOKEN(PERCENT_EQUAL);        }
+  {AMPER_EQUAL}               { return PXC_TOKEN(AMPER_EQUAL);          }
+  {VBAR_EQUAL}                { return PXC_TOKEN(VBAR_EQUAL);           }
+  {CARET_EQUAL}               { return PXC_TOKEN(CARET_EQUAL);          }
+  {LEFTSHIFT_EQUAL}           { return PXC_TOKEN(LEFTSHIFT_EQUAL);      }
+  {RIGHTSHIFT_EQUAL}          { return PXC_TOKEN(RIGHTSHIFT_EQUAL);     }
+  {POW_EQUAL}                 { return PXC_TOKEN(POW_EQUAL);            }
+  {DOUBLESLASH_EQUAL}         { return PXC_TOKEN(DOUBLESLASH_EQUAL);    }
+
   /* table-end */
 
   {RPARENT} {

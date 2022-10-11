@@ -675,6 +675,7 @@ namespace  PYJU  {
       // raise_statement
       // return_statement
       // delete_statement
+      // augassign_statement
       // single_line_statement
       // import_statement
       // multi_line_statement
@@ -697,17 +698,20 @@ namespace  PYJU  {
       // integer_literal
       char dummy13[sizeof (long long)];
 
+      // augassign_op
+      char dummy14[sizeof (operatorType)];
+
       // identifier
       // sized_type_literal
       // string_literal
       // sep_one
-      char dummy14[sizeof (std::string)];
+      char dummy15[sizeof (std::string)];
 
       // module_item_list
-      char dummy15[sizeof (std::vector<Nonnull<Alias*>>)];
+      char dummy16[sizeof (std::vector<Nonnull<Alias*>>)];
 
       // defparameter_list
-      char dummy16[sizeof (std::vector<Nonnull<Arg*>>)];
+      char dummy17[sizeof (std::vector<Nonnull<Arg*>>)];
 
       // module
       // decorators_opt
@@ -716,10 +720,10 @@ namespace  PYJU  {
       // expr_list_opt
       // expr_list
       // call_arguement_list
-      char dummy17[sizeof (std::vector<Nonnull<Expression*>>)];
+      char dummy18[sizeof (std::vector<Nonnull<Expression*>>)];
 
       // keyword_items
-      char dummy18[sizeof (std::vector<Nonnull<Keyword*>>)];
+      char dummy19[sizeof (std::vector<Nonnull<Keyword*>>)];
 
       // statements
       // sep_statements
@@ -728,13 +732,13 @@ namespace  PYJU  {
       // single_line_statements
       // single_line_multi_statements
       // single_line_multi_statements_opt
-      char dummy19[sizeof (std::vector<Nonnull<Statement*>>)];
+      char dummy20[sizeof (std::vector<Nonnull<Statement*>>)];
 
       // dict_list
-      char dummy20[sizeof (std::vector<PairNonnullExpr>)];
+      char dummy21[sizeof (std::vector<PairNonnullExpr>)];
 
       // sep
-      char dummy21[sizeof (std::vector<std::string>)];
+      char dummy22[sizeof (std::vector<std::string>)];
     };
 
     /// The size of the largest semantic type.
@@ -864,13 +868,25 @@ namespace  PYJU  {
     SLASH = 336,                   // "/"
     UNDERSCORE = 337,              // "_"
     RARROW = 338,                  // "->"
-    INDENT = 339,                  // INDENT
-    DEDENT = 340,                  // DEDENT
-    NEWLINE = 341,                 // NEWLINE
-    COMMENT = 342,                 // COMMENT
-    EOLCOMMENT = 343,              // EOLCOMMENT
-    TYPE_COMMENT = 344,            // TYPE_COMMENT
-    UNARY = 346                    // UNARY
+    PLUS_EQUAL = 339,              // "+="
+    MIN_EQUAL = 340,               // "-="
+    STAR_EQUAL = 341,              // "*="
+    SLASH_EQUAL = 342,             // "/="
+    PERCENT_EQUAL = 343,           // "%="
+    AMPER_EQUAL = 344,             // "&="
+    VBAR_EQUAL = 345,              // "|="
+    CARET_EQUAL = 346,             // "^="
+    LEFTSHIFT_EQUAL = 347,         // "<<="
+    RIGHTSHIFT_EQUAL = 348,        // ">>="
+    POW_EQUAL = 349,               // "**="
+    DOUBLESLASH_EQUAL = 350,       // "//="
+    INDENT = 351,                  // INDENT
+    DEDENT = 352,                  // DEDENT
+    NEWLINE = 353,                 // NEWLINE
+    COMMENT = 354,                 // COMMENT
+    EOLCOMMENT = 355,              // EOLCOMMENT
+    TYPE_COMMENT = 356,            // TYPE_COMMENT
+    UNARY = 358                    // UNARY
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -887,7 +903,7 @@ namespace  PYJU  {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 92, ///< Number of tokens.
+        YYNTOKENS = 104, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // END_OF_FILE
         S_YYerror = 1,                           // error
@@ -973,72 +989,86 @@ namespace  PYJU  {
         S_SLASH = 81,                            // "/"
         S_UNDERSCORE = 82,                       // "_"
         S_RARROW = 83,                           // "->"
-        S_INDENT = 84,                           // INDENT
-        S_DEDENT = 85,                           // DEDENT
-        S_NEWLINE = 86,                          // NEWLINE
-        S_COMMENT = 87,                          // COMMENT
-        S_EOLCOMMENT = 88,                       // EOLCOMMENT
-        S_TYPE_COMMENT = 89,                     // TYPE_COMMENT
-        S_90_ = 90,                              // "!="
-        S_UNARY = 91,                            // UNARY
-        S_YYACCEPT = 92,                         // $accept
-        S_units = 93,                            // units
-        S_script_unit = 94,                      // script_unit
-        S_statements = 95,                       // statements
-        S_sep_statements = 96,                   // sep_statements
-        S_body_stmts = 97,                       // body_stmts
-        S_statements1 = 98,                      // statements1
-        S_single_line_statements = 99,           // single_line_statements
-        S_single_line_multi_statements = 100,    // single_line_multi_statements
-        S_single_line_multi_statements_opt = 101, // single_line_multi_statements_opt
-        S_statement = 102,                       // statement
-        S_pass_statement = 103,                  // pass_statement
-        S_break_statement = 104,                 // break_statement
-        S_continue_statement = 105,              // continue_statement
-        S_assert_statement = 106,                // assert_statement
-        S_tuple_item = 107,                      // tuple_item
-        S_raise_statement = 108,                 // raise_statement
-        S_return_statement = 109,                // return_statement
-        S_delete_statement = 110,                // delete_statement
-        S_single_line_statement = 111,           // single_line_statement
-        S_module = 112,                          // module
-        S_module_as_id = 113,                    // module_as_id
-        S_module_item_list = 114,                // module_item_list
-        S_dot_list = 115,                        // dot_list
-        S_import_statement = 116,                // import_statement
-        S_multi_line_statement = 117,            // multi_line_statement
-        S_decorators_opt = 118,                  // decorators_opt
-        S_decorators = 119,                      // decorators
-        S_parameter = 120,                       // parameter
-        S_parameter_list = 121,                  // parameter_list
-        S_parameter_list_no_posonly = 122,       // parameter_list_no_posonly
-        S_defparameter_list = 123,               // defparameter_list
-        S_parameter_list_starargs = 124,         // parameter_list_starargs
-        S_parameter_list_opt = 125,              // parameter_list_opt
-        S_comma_opt = 126,                       // comma_opt
-        S_function_def = 127,                    // function_def
-        S_global_statement = 128,                // global_statement
-        S_ternary_if_statement = 129,            // ternary_if_statement
-        S_nonlocal_statement = 130,              // nonlocal_statement
-        S_elif_statement = 131,                  // elif_statement
-        S_if_statement = 132,                    // if_statement
-        S_target_list = 133,                     // target_list
-        S_assignment_statement = 134,            // assignment_statement
-        S_expression_statment = 135,             // expression_statment
-        S_string = 136,                          // string
-        S_expr_list_opt = 137,                   // expr_list_opt
-        S_expr_list = 138,                       // expr_list
-        S_dict = 139,                            // dict
-        S_dict_list = 140,                       // dict_list
-        S_call_arguement_list = 141,             // call_arguement_list
-        S_keyword_item = 142,                    // keyword_item
-        S_keyword_items = 143,                   // keyword_items
-        S_primary = 144,                         // primary
-        S_function_call = 145,                   // function_call
-        S_expr = 146,                            // expr
-        S_id = 147,                              // id
-        S_sep = 148,                             // sep
-        S_sep_one = 149                          // sep_one
+        S_PLUS_EQUAL = 84,                       // "+="
+        S_MIN_EQUAL = 85,                        // "-="
+        S_STAR_EQUAL = 86,                       // "*="
+        S_SLASH_EQUAL = 87,                      // "/="
+        S_PERCENT_EQUAL = 88,                    // "%="
+        S_AMPER_EQUAL = 89,                      // "&="
+        S_VBAR_EQUAL = 90,                       // "|="
+        S_CARET_EQUAL = 91,                      // "^="
+        S_LEFTSHIFT_EQUAL = 92,                  // "<<="
+        S_RIGHTSHIFT_EQUAL = 93,                 // ">>="
+        S_POW_EQUAL = 94,                        // "**="
+        S_DOUBLESLASH_EQUAL = 95,                // "//="
+        S_INDENT = 96,                           // INDENT
+        S_DEDENT = 97,                           // DEDENT
+        S_NEWLINE = 98,                          // NEWLINE
+        S_COMMENT = 99,                          // COMMENT
+        S_EOLCOMMENT = 100,                      // EOLCOMMENT
+        S_TYPE_COMMENT = 101,                    // TYPE_COMMENT
+        S_102_ = 102,                            // "!="
+        S_UNARY = 103,                           // UNARY
+        S_YYACCEPT = 104,                        // $accept
+        S_units = 105,                           // units
+        S_script_unit = 106,                     // script_unit
+        S_statements = 107,                      // statements
+        S_sep_statements = 108,                  // sep_statements
+        S_body_stmts = 109,                      // body_stmts
+        S_statements1 = 110,                     // statements1
+        S_single_line_statements = 111,          // single_line_statements
+        S_single_line_multi_statements = 112,    // single_line_multi_statements
+        S_single_line_multi_statements_opt = 113, // single_line_multi_statements_opt
+        S_statement = 114,                       // statement
+        S_pass_statement = 115,                  // pass_statement
+        S_break_statement = 116,                 // break_statement
+        S_continue_statement = 117,              // continue_statement
+        S_assert_statement = 118,                // assert_statement
+        S_tuple_item = 119,                      // tuple_item
+        S_raise_statement = 120,                 // raise_statement
+        S_return_statement = 121,                // return_statement
+        S_delete_statement = 122,                // delete_statement
+        S_augassign_statement = 123,             // augassign_statement
+        S_augassign_op = 124,                    // augassign_op
+        S_single_line_statement = 125,           // single_line_statement
+        S_module = 126,                          // module
+        S_module_as_id = 127,                    // module_as_id
+        S_module_item_list = 128,                // module_item_list
+        S_dot_list = 129,                        // dot_list
+        S_import_statement = 130,                // import_statement
+        S_multi_line_statement = 131,            // multi_line_statement
+        S_decorators_opt = 132,                  // decorators_opt
+        S_decorators = 133,                      // decorators
+        S_parameter = 134,                       // parameter
+        S_parameter_list = 135,                  // parameter_list
+        S_parameter_list_no_posonly = 136,       // parameter_list_no_posonly
+        S_defparameter_list = 137,               // defparameter_list
+        S_parameter_list_starargs = 138,         // parameter_list_starargs
+        S_parameter_list_opt = 139,              // parameter_list_opt
+        S_comma_opt = 140,                       // comma_opt
+        S_function_def = 141,                    // function_def
+        S_global_statement = 142,                // global_statement
+        S_ternary_if_statement = 143,            // ternary_if_statement
+        S_nonlocal_statement = 144,              // nonlocal_statement
+        S_elif_statement = 145,                  // elif_statement
+        S_if_statement = 146,                    // if_statement
+        S_target_list = 147,                     // target_list
+        S_assignment_statement = 148,            // assignment_statement
+        S_expression_statment = 149,             // expression_statment
+        S_string = 150,                          // string
+        S_expr_list_opt = 151,                   // expr_list_opt
+        S_expr_list = 152,                       // expr_list
+        S_dict = 153,                            // dict
+        S_dict_list = 154,                       // dict_list
+        S_call_arguement_list = 155,             // call_arguement_list
+        S_keyword_item = 156,                    // keyword_item
+        S_keyword_items = 157,                   // keyword_items
+        S_primary = 158,                         // primary
+        S_function_call = 159,                   // function_call
+        S_expr = 160,                            // expr
+        S_id = 161,                              // id
+        S_sep = 162,                             // sep
+        S_sep_one = 163                          // sep_one
       };
     };
 
@@ -1125,6 +1155,7 @@ namespace  PYJU  {
       case symbol_kind::S_raise_statement: // raise_statement
       case symbol_kind::S_return_statement: // return_statement
       case symbol_kind::S_delete_statement: // delete_statement
+      case symbol_kind::S_augassign_statement: // augassign_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
@@ -1149,6 +1180,10 @@ namespace  PYJU  {
 
       case symbol_kind::S_integer_literal: // integer_literal
         value.move< long long > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_augassign_op: // augassign_op
+        value.move< operatorType > (std::move (that.value));
         break;
 
       case symbol_kind::S_identifier: // identifier
@@ -1404,6 +1439,20 @@ namespace  PYJU  {
 #endif
 
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, operatorType&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const operatorType& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, std::string&& v, location_type&& l)
         : Base (t)
         , value (std::move (v))
@@ -1587,6 +1636,7 @@ switch (yykind)
       case symbol_kind::S_raise_statement: // raise_statement
       case symbol_kind::S_return_statement: // return_statement
       case symbol_kind::S_delete_statement: // delete_statement
+      case symbol_kind::S_augassign_statement: // augassign_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
@@ -1611,6 +1661,10 @@ switch (yykind)
 
       case symbol_kind::S_integer_literal: // integer_literal
         value.template destroy< long long > ();
+        break;
+
+      case symbol_kind::S_augassign_op: // augassign_op
+        value.template destroy< operatorType > ();
         break;
 
       case symbol_kind::S_identifier: // identifier
@@ -3095,6 +3149,186 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_PLUS_EQUAL (location_type l)
+      {
+        return symbol_type (token::PLUS_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_PLUS_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::PLUS_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_MIN_EQUAL (location_type l)
+      {
+        return symbol_type (token::MIN_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_MIN_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::MIN_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_STAR_EQUAL (location_type l)
+      {
+        return symbol_type (token::STAR_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_STAR_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::STAR_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_SLASH_EQUAL (location_type l)
+      {
+        return symbol_type (token::SLASH_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_SLASH_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::SLASH_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_PERCENT_EQUAL (location_type l)
+      {
+        return symbol_type (token::PERCENT_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_PERCENT_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::PERCENT_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_AMPER_EQUAL (location_type l)
+      {
+        return symbol_type (token::AMPER_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_AMPER_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::AMPER_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_VBAR_EQUAL (location_type l)
+      {
+        return symbol_type (token::VBAR_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_VBAR_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::VBAR_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_CARET_EQUAL (location_type l)
+      {
+        return symbol_type (token::CARET_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_CARET_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::CARET_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_LEFTSHIFT_EQUAL (location_type l)
+      {
+        return symbol_type (token::LEFTSHIFT_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_LEFTSHIFT_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::LEFTSHIFT_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_RIGHTSHIFT_EQUAL (location_type l)
+      {
+        return symbol_type (token::RIGHTSHIFT_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_RIGHTSHIFT_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::RIGHTSHIFT_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_POW_EQUAL (location_type l)
+      {
+        return symbol_type (token::POW_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_POW_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::POW_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_DOUBLESLASH_EQUAL (location_type l)
+      {
+        return symbol_type (token::DOUBLESLASH_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_DOUBLESLASH_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::DOUBLESLASH_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_INDENT (location_type l)
       {
         return symbol_type (token::INDENT, std::move (l));
@@ -3501,9 +3735,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 2021,     ///< Last index in yytable_.
-      yynnts_ = 58,  ///< Number of nonterminal symbols.
-      yyfinal_ = 100 ///< Termination state number.
+      yylast_ = 2181,     ///< Last index in yytable_.
+      yynnts_ = 60,  ///< Number of nonterminal symbols.
+      yyfinal_ = 101 ///< Termination state number.
     };
 
 
@@ -3559,10 +3793,11 @@ switch (yykind)
       55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
       65,    66,    67,    68,    69,    70,    71,    72,    73,    74,
       75,    76,    77,    78,    79,    80,    81,    82,    83,    84,
-      85,    86,    87,    88,    89,    90,    91
+      85,    86,    87,    88,    89,    90,    91,    92,    93,    94,
+      95,    96,    97,    98,    99,   100,   101,   102,   103
     };
     // Last valid token kind.
-    const int code_max = 346;
+    const int code_max = 358;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -3631,6 +3866,7 @@ switch (yykind)
       case symbol_kind::S_raise_statement: // raise_statement
       case symbol_kind::S_return_statement: // return_statement
       case symbol_kind::S_delete_statement: // delete_statement
+      case symbol_kind::S_augassign_statement: // augassign_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
@@ -3655,6 +3891,10 @@ switch (yykind)
 
       case symbol_kind::S_integer_literal: // integer_literal
         value.copy< long long > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_augassign_op: // augassign_op
+        value.copy< operatorType > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_identifier: // identifier
@@ -3783,6 +4023,7 @@ switch (yykind)
       case symbol_kind::S_raise_statement: // raise_statement
       case symbol_kind::S_return_statement: // return_statement
       case symbol_kind::S_delete_statement: // delete_statement
+      case symbol_kind::S_augassign_statement: // augassign_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
@@ -3807,6 +4048,10 @@ switch (yykind)
 
       case symbol_kind::S_integer_literal: // integer_literal
         value.move< long long > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_augassign_op: // augassign_op
+        value.move< operatorType > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_identifier: // identifier
@@ -3919,7 +4164,7 @@ switch (yykind)
 
 #line 21 "parser.ypp"
 } //  PYJU 
-#line 3923 "./parser.h"
+#line 4168 "./parser.h"
 
 
 

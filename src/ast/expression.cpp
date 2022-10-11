@@ -43,19 +43,19 @@ std::string operatorTypeStr(const operatorType &x) {
             return "**";
         }
         case (operatorType::LShift) : {
-            return "LShift";
+            return "<<";
         }
         case (operatorType::RShift) : {
-            return "RShift";
+            return ">>";
         }
         case (operatorType::BitOr) : {
-            return "BitOr";
+            return "|";
         }
         case (operatorType::BitXor) : {
-            return "BitXor";
+            return "^";
         }
         case (operatorType::BitAnd) : {
-            return "BitAnd";
+            return "&";
         }
         case (operatorType::FloorDiv) : {
             return "//";
