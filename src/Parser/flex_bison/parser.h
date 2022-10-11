@@ -680,6 +680,7 @@ namespace  PYJU  {
       // function_def
       // global_statement
       // nonlocal_statement
+      // elif_statement
       // if_statement
       // expression_statment
       // tuple_statement
@@ -1016,23 +1017,24 @@ namespace  PYJU  {
         S_global_statement = 127,                // global_statement
         S_ternary_if_statement = 128,            // ternary_if_statement
         S_nonlocal_statement = 129,              // nonlocal_statement
-        S_if_statement = 130,                    // if_statement
-        S_expression_statment = 131,             // expression_statment
-        S_tuple_statement = 132,                 // tuple_statement
-        S_string = 133,                          // string
-        S_expr_list_opt = 134,                   // expr_list_opt
-        S_expr_list = 135,                       // expr_list
-        S_dict = 136,                            // dict
-        S_dict_list = 137,                       // dict_list
-        S_call_arguement_list = 138,             // call_arguement_list
-        S_keyword_item = 139,                    // keyword_item
-        S_keyword_items = 140,                   // keyword_items
-        S_primary = 141,                         // primary
-        S_function_call = 142,                   // function_call
-        S_expr = 143,                            // expr
-        S_id = 144,                              // id
-        S_sep = 145,                             // sep
-        S_sep_one = 146                          // sep_one
+        S_elif_statement = 130,                  // elif_statement
+        S_if_statement = 131,                    // if_statement
+        S_expression_statment = 132,             // expression_statment
+        S_tuple_statement = 133,                 // tuple_statement
+        S_string = 134,                          // string
+        S_expr_list_opt = 135,                   // expr_list_opt
+        S_expr_list = 136,                       // expr_list
+        S_dict = 137,                            // dict
+        S_dict_list = 138,                       // dict_list
+        S_call_arguement_list = 139,             // call_arguement_list
+        S_keyword_item = 140,                    // keyword_item
+        S_keyword_items = 141,                   // keyword_items
+        S_primary = 142,                         // primary
+        S_function_call = 143,                   // function_call
+        S_expr = 144,                            // expr
+        S_id = 145,                              // id
+        S_sep = 146,                             // sep
+        S_sep_one = 147                          // sep_one
       };
     };
 
@@ -1124,6 +1126,7 @@ namespace  PYJU  {
       case symbol_kind::S_function_def: // function_def
       case symbol_kind::S_global_statement: // global_statement
       case symbol_kind::S_nonlocal_statement: // nonlocal_statement
+      case symbol_kind::S_elif_statement: // elif_statement
       case symbol_kind::S_if_statement: // if_statement
       case symbol_kind::S_expression_statment: // expression_statment
       case symbol_kind::S_tuple_statement: // tuple_statement
@@ -1583,6 +1586,7 @@ switch (yykind)
       case symbol_kind::S_function_def: // function_def
       case symbol_kind::S_global_statement: // global_statement
       case symbol_kind::S_nonlocal_statement: // nonlocal_statement
+      case symbol_kind::S_elif_statement: // elif_statement
       case symbol_kind::S_if_statement: // if_statement
       case symbol_kind::S_expression_statment: // expression_statment
       case symbol_kind::S_tuple_statement: // tuple_statement
@@ -3213,7 +3217,7 @@ switch (yykind)
     static bool yy_table_value_is_error_ (int yyvalue);
 
     static const short yypact_ninf_;
-    static const signed char yytable_ninf_;
+    static const short yytable_ninf_;
 
     /// Convert a scanner token kind \a t to a symbol kind.
     /// In theory \a t should be a token_kind_type, but character literals
@@ -3489,8 +3493,8 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 1819,     ///< Last index in yytable_.
-      yynnts_ = 55,  ///< Number of nonterminal symbols.
+      yylast_ = 1847,     ///< Last index in yytable_.
+      yynnts_ = 56,  ///< Number of nonterminal symbols.
       yyfinal_ = 93 ///< Termination state number.
     };
 
@@ -3624,6 +3628,7 @@ switch (yykind)
       case symbol_kind::S_function_def: // function_def
       case symbol_kind::S_global_statement: // global_statement
       case symbol_kind::S_nonlocal_statement: // nonlocal_statement
+      case symbol_kind::S_elif_statement: // elif_statement
       case symbol_kind::S_if_statement: // if_statement
       case symbol_kind::S_expression_statment: // expression_statment
       case symbol_kind::S_tuple_statement: // tuple_statement
@@ -3773,6 +3778,7 @@ switch (yykind)
       case symbol_kind::S_function_def: // function_def
       case symbol_kind::S_global_statement: // global_statement
       case symbol_kind::S_nonlocal_statement: // nonlocal_statement
+      case symbol_kind::S_elif_statement: // elif_statement
       case symbol_kind::S_if_statement: // if_statement
       case symbol_kind::S_expression_statment: // expression_statment
       case symbol_kind::S_tuple_statement: // tuple_statement
@@ -3901,7 +3907,7 @@ switch (yykind)
 
 #line 21 "parser.ypp"
 } //  PYJU 
-#line 3905 "./parser.h"
+#line 3911 "./parser.h"
 
 
 

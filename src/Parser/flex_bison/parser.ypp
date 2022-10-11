@@ -189,6 +189,7 @@
 
 %type <Nonnull<Statement*>> multi_line_statement
 %type <Nonnull<Statement*>> if_statement
+%type <Nonnull<Statement*>> elif_statement
 %type <Nonnull<Statement*>> function_def
 %type <std::vector<Nonnull<Statement*>>> body_stmts
 %type <std::vector<Nonnull<Statement*>>> statements1
@@ -532,6 +533,14 @@ nonlocal_statement
     : NONLOCAL expr_list { $$ = NON_LOCAL($2, context.source_loc()); }
     ;
 
+elif_statement
+    : ELIF expr ":" sep statements { $$ = IF_STMT_01($2, $5,context.source_loc()); }
+    | ELIF expr ":" sep statements ELSE ":" sep statements {
+        $$ = IF_STMT_02($2, $5, $9, context.source_loc()); }
+    | ELIF expr ":" sep statements elif_statement {
+        $$ = IF_STMT_03($2, $5, $6, context.source_loc()); }
+    ;
+
 if_statement
     : IF expr ":" body_stmts {
         $$ = IF_STMT_01($2, $4, context.source_loc());
@@ -539,8 +548,8 @@ if_statement
     | IF expr ":" body_stmts ELSE ":" body_stmts {
         $$ = IF_STMT_02($2, $4, $7, context.source_loc());
       }
-//    | KW_IF expr ":" body_stmts elif_statement {
-//        $$ = IF_STMT_03($2, $4, $5, context.source_loc()); }
+    | IF expr ":" body_stmts elif_statement {
+        $$ = IF_STMT_03($2, $4, $5, context.source_loc()); }
     ;
 
 expression_statment

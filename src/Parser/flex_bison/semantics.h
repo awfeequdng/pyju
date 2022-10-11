@@ -25,6 +25,9 @@
         e, stmt, {})
 #define IF_STMT_02(e, stmt, orelse, l) PYJU::If::make_If(arena, l, \
         e, stmt, orelse)
+#define IF_STMT_03(e, stmt, orelse, l) PYJU::If::make_If(arena, l, \
+        e, stmt, {orelse})
+
 #define INTEGER(x, l) PYJU::ConstantInt::make_ConstantInt(arena, l, x)
 #define FLOAT(x, l) PYJU::ConstantFloat::make_ConstantFloat(arena, l, x)
 #define COMPLEX(x, l) PYJU::ConstantComplex::make_ConstantComplex(arena, l, 0, x)

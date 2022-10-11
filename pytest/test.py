@@ -133,6 +133,7 @@ def func(test):
 
 a if world else b
 
+from matplotlib import test
 import ab.c as b
 import ab.c, c.b as d
 
@@ -154,4 +155,24 @@ assert test, hello
 
 # raise Exception, "exception by raise"
 
-raise Exception,
+raise Exception from test
+
+return 2, 23, 4,234
+
+return
+
+dd, 2, d
+
+
+if test:
+    print(s)
+    print(s1)
+elif test1:
+    print(2)
+    print(21)
+elif test3:
+    print(3)
+    print(31)
+else:
+    print(4)
+
