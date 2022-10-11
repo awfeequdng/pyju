@@ -451,4 +451,32 @@ protected:
     std::vector<Nonnull<Expression*>> targets_;
 };
 
+class Assign : public Statement {
+public:
+    static PYJU::Nonnull<Assign*> make_Assign(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                std::vector<Nonnull<Expression*>> targets,
+                Nonnull<Expression*>& value) {
+        return arena->New<Assign>(loc, targets, value);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromAssign(node->kind());
+    }
+
+    Assign(const PYJU::SourceLocation& loc,
+              std::vector<Nonnull<Expression*>>& targets,
+              Nonnull<Expression*>& value)
+      : Statement(AstNodeKind::Assign, loc),
+        targets_(targets),
+        value_(value) {}
+    auto targets() const -> const std::vector<Nonnull<Expression*>>& { return targets_; }
+    auto value() const -> const Nonnull<Expression*>& { return value_; }
+
+protected:
+    std::vector<Nonnull<Expression*>> targets_;
+    Nonnull<Expression*> value_;
+};
+
 } // namespace PYJU

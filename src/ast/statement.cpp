@@ -179,6 +179,18 @@ void Statement::PrintDepth(int depth, llvm::raw_ostream& out) const {
         out << "\n";
         break;
       }
+      case StatementKind::Assign: {
+        auto &assign = cast<Assign>(*this);
+        auto &targets = assign.targets();
+        auto &value = assign.value();
+        Space(depth, out) << "Assign:";
+        for (auto &target: targets) {
+          out << *target << " = ";
+        }
+        out << *value;
+        out << "\n";
+        break;
+      }
       default:
         out << "unknown kind: ";
         break;

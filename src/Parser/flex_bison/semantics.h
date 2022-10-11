@@ -463,6 +463,9 @@ inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, Nonnul
 #define TUPLE_STMT(e, elts, l) PYJU::TupleStmt::make_TupleStmt(arena, l, TUPLE_(elts, e))
 
 #define DELETE_01(e, l) PYJU::Delete::make_Delete(arena, l, e)
-// #define DELETE_02(e, l) PYJU::Delete::make_Delete(arena, l, {e})
 
+#define ASSIGNMENT(targets, val, l) PYJU::Assign::make_Assign(arena, l, targets, val)
+// #define ASSIGNMENT2(targets, val, type_comment, l) PYJU::Assign::make_Assign(p.m_a, l, \
+//         EXPRS(SET_EXPR_CTX_02(SET_STORE_02(targets), Store)), targets.size(), \
+//         EXPR(val), extract_type_comment(p, l, type_comment))
 

@@ -683,8 +683,8 @@ namespace  PYJU  {
       // nonlocal_statement
       // elif_statement
       // if_statement
+      // assignment_statement
       // expression_statment
-      // tuple_statement
       char dummy10[sizeof (Nonnull<Statement*>)];
 
       // dict
@@ -712,6 +712,7 @@ namespace  PYJU  {
       // module
       // decorators_opt
       // decorators
+      // target_list
       // expr_list_opt
       // expr_list
       // call_arguement_list
@@ -1021,22 +1022,23 @@ namespace  PYJU  {
         S_nonlocal_statement = 130,              // nonlocal_statement
         S_elif_statement = 131,                  // elif_statement
         S_if_statement = 132,                    // if_statement
-        S_expression_statment = 133,             // expression_statment
-        S_tuple_statement = 134,                 // tuple_statement
-        S_string = 135,                          // string
-        S_expr_list_opt = 136,                   // expr_list_opt
-        S_expr_list = 137,                       // expr_list
-        S_dict = 138,                            // dict
-        S_dict_list = 139,                       // dict_list
-        S_call_arguement_list = 140,             // call_arguement_list
-        S_keyword_item = 141,                    // keyword_item
-        S_keyword_items = 142,                   // keyword_items
-        S_primary = 143,                         // primary
-        S_function_call = 144,                   // function_call
-        S_expr = 145,                            // expr
-        S_id = 146,                              // id
-        S_sep = 147,                             // sep
-        S_sep_one = 148                          // sep_one
+        S_target_list = 133,                     // target_list
+        S_assignment_statement = 134,            // assignment_statement
+        S_expression_statment = 135,             // expression_statment
+        S_string = 136,                          // string
+        S_expr_list_opt = 137,                   // expr_list_opt
+        S_expr_list = 138,                       // expr_list
+        S_dict = 139,                            // dict
+        S_dict_list = 140,                       // dict_list
+        S_call_arguement_list = 141,             // call_arguement_list
+        S_keyword_item = 142,                    // keyword_item
+        S_keyword_items = 143,                   // keyword_items
+        S_primary = 144,                         // primary
+        S_function_call = 145,                   // function_call
+        S_expr = 146,                            // expr
+        S_id = 147,                              // id
+        S_sep = 148,                             // sep
+        S_sep_one = 149                          // sep_one
       };
     };
 
@@ -1131,8 +1133,8 @@ namespace  PYJU  {
       case symbol_kind::S_nonlocal_statement: // nonlocal_statement
       case symbol_kind::S_elif_statement: // elif_statement
       case symbol_kind::S_if_statement: // if_statement
+      case symbol_kind::S_assignment_statement: // assignment_statement
       case symbol_kind::S_expression_statment: // expression_statment
-      case symbol_kind::S_tuple_statement: // tuple_statement
         value.move< Nonnull<Statement*> > (std::move (that.value));
         break;
 
@@ -1167,6 +1169,7 @@ namespace  PYJU  {
       case symbol_kind::S_module: // module
       case symbol_kind::S_decorators_opt: // decorators_opt
       case symbol_kind::S_decorators: // decorators
+      case symbol_kind::S_target_list: // target_list
       case symbol_kind::S_expr_list_opt: // expr_list_opt
       case symbol_kind::S_expr_list: // expr_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
@@ -1592,8 +1595,8 @@ switch (yykind)
       case symbol_kind::S_nonlocal_statement: // nonlocal_statement
       case symbol_kind::S_elif_statement: // elif_statement
       case symbol_kind::S_if_statement: // if_statement
+      case symbol_kind::S_assignment_statement: // assignment_statement
       case symbol_kind::S_expression_statment: // expression_statment
-      case symbol_kind::S_tuple_statement: // tuple_statement
         value.template destroy< Nonnull<Statement*> > ();
         break;
 
@@ -1628,6 +1631,7 @@ switch (yykind)
       case symbol_kind::S_module: // module
       case symbol_kind::S_decorators_opt: // decorators_opt
       case symbol_kind::S_decorators: // decorators
+      case symbol_kind::S_target_list: // target_list
       case symbol_kind::S_expr_list_opt: // expr_list_opt
       case symbol_kind::S_expr_list: // expr_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
@@ -3497,9 +3501,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 2003,     ///< Last index in yytable_.
-      yynnts_ = 57,  ///< Number of nonterminal symbols.
-      yyfinal_ = 97 ///< Termination state number.
+      yylast_ = 2021,     ///< Last index in yytable_.
+      yynnts_ = 58,  ///< Number of nonterminal symbols.
+      yyfinal_ = 100 ///< Termination state number.
     };
 
 
@@ -3635,8 +3639,8 @@ switch (yykind)
       case symbol_kind::S_nonlocal_statement: // nonlocal_statement
       case symbol_kind::S_elif_statement: // elif_statement
       case symbol_kind::S_if_statement: // if_statement
+      case symbol_kind::S_assignment_statement: // assignment_statement
       case symbol_kind::S_expression_statment: // expression_statment
-      case symbol_kind::S_tuple_statement: // tuple_statement
         value.copy< Nonnull<Statement*> > (YY_MOVE (that.value));
         break;
 
@@ -3671,6 +3675,7 @@ switch (yykind)
       case symbol_kind::S_module: // module
       case symbol_kind::S_decorators_opt: // decorators_opt
       case symbol_kind::S_decorators: // decorators
+      case symbol_kind::S_target_list: // target_list
       case symbol_kind::S_expr_list_opt: // expr_list_opt
       case symbol_kind::S_expr_list: // expr_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
@@ -3786,8 +3791,8 @@ switch (yykind)
       case symbol_kind::S_nonlocal_statement: // nonlocal_statement
       case symbol_kind::S_elif_statement: // elif_statement
       case symbol_kind::S_if_statement: // if_statement
+      case symbol_kind::S_assignment_statement: // assignment_statement
       case symbol_kind::S_expression_statment: // expression_statment
-      case symbol_kind::S_tuple_statement: // tuple_statement
         value.move< Nonnull<Statement*> > (YY_MOVE (s.value));
         break;
 
@@ -3822,6 +3827,7 @@ switch (yykind)
       case symbol_kind::S_module: // module
       case symbol_kind::S_decorators_opt: // decorators_opt
       case symbol_kind::S_decorators: // decorators
+      case symbol_kind::S_target_list: // target_list
       case symbol_kind::S_expr_list_opt: // expr_list_opt
       case symbol_kind::S_expr_list: // expr_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
@@ -3913,7 +3919,7 @@ switch (yykind)
 
 #line 21 "parser.ypp"
 } //  PYJU 
-#line 3917 "./parser.h"
+#line 3923 "./parser.h"
 
 
 

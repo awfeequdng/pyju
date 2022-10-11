@@ -161,7 +161,7 @@ return 2, 23, 4,234
 
 return
 
-dd, 2, d
+# dd, 2, d
 
 
 if test:
@@ -179,5 +179,7 @@ else:
 del x, d, d
 del (2,s)
 del (2)
+
+a, b, c = d, e, f = 2, 3, 4
 
 
