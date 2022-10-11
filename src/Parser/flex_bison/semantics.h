@@ -185,7 +185,6 @@ static inline NonnullExpr PREFIX_STRING(
     return tmp;
 }
 
-#define TUPLE_EMPTY(l) PYJU::Tuple::make_Tuple(arena, l, {})
 #define LIST(e, l) PYJU::List::make_List(arena, l, e)
 #define SET(e, l) PYJU::Set::make_Set(arena, l, e)
 #define ATTRIBUTE_REF(val, attr, l) \
@@ -420,10 +419,36 @@ inline int dot_count(int inc = 0) {
         module, names, 0)
 #define IMPORT_03(names, l) PYJU::ImportFrom::make_ImportFrom(arena, l, \
         {}, names, dot_count()); dot_count(-1)
-#define IMPORT_04(module, names, l)PYJU::ImportFrom:: make_ImportFrom(arena, l, \
+#define IMPORT_04(module, names, l)PYJU::ImportFrom::make_ImportFrom(arena, l, \
         module, names, dot_count()); \
         dot_count(-1)
 
 #define PASS(l) PYJU::Pass::make_Pass(arena, l)
 #define BREAK(l) PYJU::Break::make_Break(arena, l)
 #define CONTINUE(l) PYJU::Continue::make_Continue(arena, l)
+
+#define RAISE_01(l) PYJU::Raise::make_Raise(arena, l, std::nullopt, std::nullopt)
+#define RAISE_02(exec, l) PYJU::Raise::make_Raise(arena, l, exec, std::nullopt)
+#define RAISE_03(exec, cause, l) PYJU::Raise::make_Raise(arena, l, exec, cause)
+
+#define ASSERT_01(test, l) PYJU::Assert::make_Assert(arena, l, test, std::nullopt)
+#define ASSERT_02(test, msg, l) PYJU::Assert::make_Assert(arena, l, test, msg)
+
+#define TUPLE_01(elts, l) PYJU::Tuple::make_Tuple(arena, l, elts)
+#define TUPLE_EMPTY(l) PYJU::Tuple::make_Tuple(arena, l, {})
+inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, NonnullExpr y) {
+    std::vector<NonnullExpr> v;
+    v.reserve(x.size() + 1);
+    for (size_t i = 0; i < x.size(); i++) {
+        v.push_back(x[i]);
+    }
+    v.push_back(y);
+    return v;
+}
+#define TUPLE_(x, y) TUPLE_APPEND(x, y)
+
+#define RETURN_01(l) PYJU::Return::make_Return(arena, l, std::nullopt)
+#define RETURN_02(e, l) PYJU::Return::make_Return(arena, l, e)
+
+
+#define TUPLE_STMT(e, elts, l) PYJU::TupleStmt::make_TupleStmt(arena, l, TUPLE_(elts, e))

@@ -35,6 +35,7 @@ message(STATUS "Enable all external libraries:" ${ENABLE_LIBRARIES})
 # 解决zstd.h中deprecated报错的问题
 add_definitions(-DZSTD_DISABLE_DEPRECATE_WARNINGS)
 
+# include(cmake/cpu_features.cmake)
 include (cmake/add_warning.cmake)
 include (cmake/warnings.cmake)
 include (cmake/version.cmake)

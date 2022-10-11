@@ -315,4 +315,117 @@ public:
         : Statement(AstNodeKind::Pass, loc) {}
 };
 
+
+class Assert : public Statement {
+public:
+    static Nonnull<Assert*> make_Assert (
+                Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                PYJU::Nonnull<Expression*> test,
+                std::optional<Nonnull<Expression*>> msg) {
+        return arena->New<Assert>(loc, test, msg);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromAssert(node->kind());
+    }
+
+    Assert(const PYJU::SourceLocation& loc,
+       Nonnull<Expression*> test,
+       std::optional<Nonnull<Expression*>> msg)
+      : Statement(AstNodeKind::Assert, loc),
+        test_(test),
+        msg_(msg) {}
+    auto test() const -> const Expression& { return *test_; }
+
+    auto msg() const -> const std::optional<Nonnull<Expression*>>& {
+        return msg_;
+    }
+
+protected:
+    Nonnull<Expression*> test_;
+    std::optional<Nonnull<Expression*>> msg_;
+};
+
+class Raise : public Statement {
+public:
+    static Nonnull<Raise*> make_Raise (
+                Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                std::optional<Nonnull<Expression*>> exc,
+                std::optional<Nonnull<Expression*>> cause) {
+        return arena->New<Raise>(loc, exc, cause);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromRaise(node->kind());
+    }
+
+    Raise(const PYJU::SourceLocation& loc,
+       std::optional<Nonnull<Expression*>> exc,
+       std::optional<Nonnull<Expression*>> cause)
+      : Statement(AstNodeKind::Raise, loc),
+        exc_(exc),
+        cause_(cause) {}
+    auto exc() const -> const std::optional<Nonnull<Expression*>>& {
+        return exc_;
+    }
+
+    auto cause() const -> const std::optional<Nonnull<Expression*>>& {
+        return cause_;
+    }
+
+protected:
+    std::optional<Nonnull<Expression*>> exc_;
+    std::optional<Nonnull<Expression*>> cause_;
+};
+
+class Return : public Statement {
+public:
+    static Nonnull<Return*> make_Return (
+                Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                std::optional<Nonnull<Expression*>> value) {
+        return arena->New<Return>(loc, value);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromReturn(node->kind());
+    }
+
+    Return(const PYJU::SourceLocation& loc,
+       std::optional<Nonnull<Expression*>> value)
+      : Statement(AstNodeKind::Return, loc),
+        value_(value) {}
+    auto value() const -> const std::optional<Nonnull<Expression*>>& {
+        return value_;
+    }
+
+protected:
+    std::optional<Nonnull<Expression*>> value_;
+};
+
+class TupleStmt : public Statement {
+public:
+    static PYJU::Nonnull<TupleStmt*> make_TupleStmt(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                std::vector<Nonnull<Expression*>> tuple) {
+        return arena->New<TupleStmt>(loc, tuple);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromTupleStmt(node->kind());
+    }
+
+    TupleStmt(const PYJU::SourceLocation& loc,
+              std::vector<Nonnull<Expression*>>& tuple)
+      : Statement(AstNodeKind::TupleStmt, loc),
+        tuple_(tuple) {}
+    auto tuple() const -> const std::vector<Nonnull<Expression*>>& { return tuple_; }
+
+protected:
+    std::vector<Nonnull<Expression*>> tuple_;
+};
+
 } // namespace PYJU

@@ -148,3 +148,10 @@ continue
 from a.b import c as b, d, e as f
 
 from .a.b import c
+
+
+assert test, hello
+
+# raise Exception, "exception by raise"
+
+raise Exception,

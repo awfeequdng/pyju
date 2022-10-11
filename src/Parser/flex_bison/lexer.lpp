@@ -27,6 +27,7 @@ NONE                 "None"
 AND                  "and"
 AS                   "as"
 ASSERT               "assert"
+RAISE                "raise"
 ASYNC                "async"
 AWAIT                "await"
 BREAK                "break"
@@ -185,6 +186,7 @@ one_line_comment      \#[^\n]*\n
   {AND}                       { return PXC_TOKEN(AND);                  }
   {AS}                        { return PXC_TOKEN(AS);                   }
   {ASSERT}                    { return PXC_TOKEN(ASSERT);               }
+  {RAISE}                     { return PXC_TOKEN(RAISE);                }
   {ASYNC}                     { return PXC_TOKEN(ASYNC);                }
   {AWAIT}                     { return PXC_TOKEN(AWAIT);                }
   {BREAK}                     { return PXC_TOKEN(BREAK);                }

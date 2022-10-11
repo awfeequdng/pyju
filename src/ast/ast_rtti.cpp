@@ -34,6 +34,7 @@ std::string_view AstNodeKindName(AstNodeKind k) {
     case AstNodeKind::Global: return "global";
     case AstNodeKind::NonLocal: return "non local";
     case AstNodeKind::ExprStmt: return "expr stmt";
+    case AstNodeKind::TupleStmt: return "tuple stmt";
     case AstNodeKind::Pass: return "pass";
     case AstNodeKind::Break: return "break";
     case AstNodeKind::Continue: return "continue";
@@ -133,6 +134,7 @@ std::string_view StatementKindName(StatementKind k) {
     case StatementKind::Global: return "global";
     case StatementKind::NonLocal: return "non local";
     case StatementKind::ExprStmt: return "expr stmt";
+    case StatementKind::TupleStmt: return "tuple stmt";
     case StatementKind::Pass: return "pass";
     case StatementKind::Break: return "break";
     case StatementKind::Continue: return "continue";

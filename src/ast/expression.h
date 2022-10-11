@@ -961,5 +961,6 @@ public:
     Star(PYJU::SourceLocation loc)
         : Expression(AstNodeKind::Star, loc) {}
 };
+
 } // namespace PYJU
 

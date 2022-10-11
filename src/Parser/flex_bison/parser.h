@@ -643,6 +643,7 @@ namespace  PYJU  {
       // parameter_list_opt
       char dummy3[sizeof (Nonnull<Arguments*>)];
 
+      // tuple_item
       // ternary_if_statement
       // string
       // primary
@@ -670,6 +671,9 @@ namespace  PYJU  {
       // pass_statement
       // break_statement
       // continue_statement
+      // assert_statement
+      // raise_statement
+      // return_statement
       // single_line_statement
       // import_statement
       // multi_line_statement
@@ -678,6 +682,7 @@ namespace  PYJU  {
       // nonlocal_statement
       // if_statement
       // expression_statment
+      // tuple_statement
       char dummy10[sizeof (Nonnull<Statement*>)];
 
       // dict
@@ -787,81 +792,82 @@ namespace  PYJU  {
     AND = 267,                     // "and"
     AS = 268,                      // AS
     ASSERT = 269,                  // ASSERT
-    ASYNC = 270,                   // ASYNC
-    AWAIT = 271,                   // AWAIT
-    BREAK = 272,                   // BREAK
-    CLASS = 273,                   // CLASS
-    CONTINUE = 274,                // CONTINUE
-    DEF = 275,                     // DEF
-    DEL = 276,                     // DEL
-    ELIF = 277,                    // ELIF
-    ELSE = 278,                    // ELSE
-    EXCEPT = 279,                  // EXCEPT
-    FINALLY = 280,                 // FINALLY
-    FOR = 281,                     // FOR
-    FROM = 282,                    // FROM
-    GLOBAL = 283,                  // GLOBAL
-    IF = 284,                      // IF
-    IMPORT = 285,                  // IMPORT
-    IN = 286,                      // "in"
-    IS = 287,                      // "is"
-    IS_NOT = 288,                  // "is not"
-    NOT_IN = 289,                  // "not in"
-    LAMBDA = 290,                  // LAMBDA
-    NONLOCAL = 291,                // NONLOCAL
-    NOT = 292,                     // "not"
-    OR = 293,                      // "or"
-    PASS = 294,                    // PASS
-    RETURN = 295,                  // RETURN
-    TRY = 296,                     // TRY
-    WHILE = 297,                   // WHILE
-    WITH = 298,                    // WITH
-    YIELD = 299,                   // YIELD
-    ARROW = 300,                   // ARROW
-    AMPERSAND = 301,               // "&"
-    CARET = 302,                   // "^"
-    COLON = 303,                   // ":"
-    COLON_BANG = 304,              // ":!"
-    COMMA = 305,                   // ","
-    DOUBLE_ARROW = 306,            // "=>"
-    EQUAL = 307,                   // "="
-    COLONEQUAL = 308,              // ":="
-    EQUAL_EQUAL = 309,             // "=="
-    LBRACE = 310,                  // "{"
-    LPARENT = 311,                 // "("
-    LBRACKET = 312,                // "["
-    MINUS = 313,                   // "-"
-    PERIOD = 314,                  // "."
-    PLUS = 315,                    // "+"
-    STAR = 316,                    // "*"
-    POW = 317,                     // "**"
-    AT = 318,                      // "@"
-    FLOOR_DIV = 319,               // "//"
-    MOD = 320,                     // "%"
-    TILDE = 321,                   // "~"
-    VBAR = 322,                    // "|"
-    LSHIFT = 323,                  // "<<"
-    RSHIFT = 324,                  // ">>"
-    LOWER_THEN = 325,              // "<"
-    LOWER_EQUAL = 326,             // "<="
-    GREATER_THEN = 327,            // ">"
-    GREATER_EQUAL = 328,           // ">="
-    ELLIPSIS = 329,                // "..."
-    RBRACE = 330,                  // "}"
-    RPARENT = 331,                 // ")"
-    RBRACKET = 332,                // "]"
-    SELF = 333,                    // "self"
-    SEMICOLON = 334,               // ";"
-    SLASH = 335,                   // "/"
-    UNDERSCORE = 336,              // "_"
-    RARROW = 337,                  // "->"
-    INDENT = 338,                  // INDENT
-    DEDENT = 339,                  // DEDENT
-    NEWLINE = 340,                 // NEWLINE
-    COMMENT = 341,                 // COMMENT
-    EOLCOMMENT = 342,              // EOLCOMMENT
-    TYPE_COMMENT = 343,            // TYPE_COMMENT
-    UNARY = 345                    // UNARY
+    RAISE = 270,                   // RAISE
+    ASYNC = 271,                   // ASYNC
+    AWAIT = 272,                   // AWAIT
+    BREAK = 273,                   // BREAK
+    CLASS = 274,                   // CLASS
+    CONTINUE = 275,                // CONTINUE
+    DEF = 276,                     // DEF
+    DEL = 277,                     // DEL
+    ELIF = 278,                    // ELIF
+    ELSE = 279,                    // ELSE
+    EXCEPT = 280,                  // EXCEPT
+    FINALLY = 281,                 // FINALLY
+    FOR = 282,                     // FOR
+    FROM = 283,                    // FROM
+    GLOBAL = 284,                  // GLOBAL
+    IF = 285,                      // IF
+    IMPORT = 286,                  // IMPORT
+    IN = 287,                      // "in"
+    IS = 288,                      // "is"
+    IS_NOT = 289,                  // "is not"
+    NOT_IN = 290,                  // "not in"
+    LAMBDA = 291,                  // LAMBDA
+    NONLOCAL = 292,                // NONLOCAL
+    NOT = 293,                     // "not"
+    OR = 294,                      // "or"
+    PASS = 295,                    // PASS
+    RETURN = 296,                  // RETURN
+    TRY = 297,                     // TRY
+    WHILE = 298,                   // WHILE
+    WITH = 299,                    // WITH
+    YIELD = 300,                   // YIELD
+    ARROW = 301,                   // ARROW
+    AMPERSAND = 302,               // "&"
+    CARET = 303,                   // "^"
+    COLON = 304,                   // ":"
+    COLON_BANG = 305,              // ":!"
+    COMMA = 306,                   // ","
+    DOUBLE_ARROW = 307,            // "=>"
+    EQUAL = 308,                   // "="
+    COLONEQUAL = 309,              // ":="
+    EQUAL_EQUAL = 310,             // "=="
+    LBRACE = 311,                  // "{"
+    LPARENT = 312,                 // "("
+    LBRACKET = 313,                // "["
+    MINUS = 314,                   // "-"
+    PERIOD = 315,                  // "."
+    PLUS = 316,                    // "+"
+    STAR = 317,                    // "*"
+    POW = 318,                     // "**"
+    AT = 319,                      // "@"
+    FLOOR_DIV = 320,               // "//"
+    MOD = 321,                     // "%"
+    TILDE = 322,                   // "~"
+    VBAR = 323,                    // "|"
+    LSHIFT = 324,                  // "<<"
+    RSHIFT = 325,                  // ">>"
+    LOWER_THEN = 326,              // "<"
+    LOWER_EQUAL = 327,             // "<="
+    GREATER_THEN = 328,            // ">"
+    GREATER_EQUAL = 329,           // ">="
+    ELLIPSIS = 330,                // "..."
+    RBRACE = 331,                  // "}"
+    RPARENT = 332,                 // ")"
+    RBRACKET = 333,                // "]"
+    SELF = 334,                    // "self"
+    SEMICOLON = 335,               // ";"
+    SLASH = 336,                   // "/"
+    UNDERSCORE = 337,              // "_"
+    RARROW = 338,                  // "->"
+    INDENT = 339,                  // INDENT
+    DEDENT = 340,                  // DEDENT
+    NEWLINE = 341,                 // NEWLINE
+    COMMENT = 342,                 // COMMENT
+    EOLCOMMENT = 343,              // EOLCOMMENT
+    TYPE_COMMENT = 344,            // TYPE_COMMENT
+    UNARY = 346                    // UNARY
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -878,7 +884,7 @@ namespace  PYJU  {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 91, ///< Number of tokens.
+        YYNTOKENS = 92, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // END_OF_FILE
         S_YYerror = 1,                           // error
@@ -895,132 +901,138 @@ namespace  PYJU  {
         S_AND = 12,                              // "and"
         S_AS = 13,                               // AS
         S_ASSERT = 14,                           // ASSERT
-        S_ASYNC = 15,                            // ASYNC
-        S_AWAIT = 16,                            // AWAIT
-        S_BREAK = 17,                            // BREAK
-        S_CLASS = 18,                            // CLASS
-        S_CONTINUE = 19,                         // CONTINUE
-        S_DEF = 20,                              // DEF
-        S_DEL = 21,                              // DEL
-        S_ELIF = 22,                             // ELIF
-        S_ELSE = 23,                             // ELSE
-        S_EXCEPT = 24,                           // EXCEPT
-        S_FINALLY = 25,                          // FINALLY
-        S_FOR = 26,                              // FOR
-        S_FROM = 27,                             // FROM
-        S_GLOBAL = 28,                           // GLOBAL
-        S_IF = 29,                               // IF
-        S_IMPORT = 30,                           // IMPORT
-        S_IN = 31,                               // "in"
-        S_IS = 32,                               // "is"
-        S_IS_NOT = 33,                           // "is not"
-        S_NOT_IN = 34,                           // "not in"
-        S_LAMBDA = 35,                           // LAMBDA
-        S_NONLOCAL = 36,                         // NONLOCAL
-        S_NOT = 37,                              // "not"
-        S_OR = 38,                               // "or"
-        S_PASS = 39,                             // PASS
-        S_RETURN = 40,                           // RETURN
-        S_TRY = 41,                              // TRY
-        S_WHILE = 42,                            // WHILE
-        S_WITH = 43,                             // WITH
-        S_YIELD = 44,                            // YIELD
-        S_ARROW = 45,                            // ARROW
-        S_AMPERSAND = 46,                        // "&"
-        S_CARET = 47,                            // "^"
-        S_COLON = 48,                            // ":"
-        S_COLON_BANG = 49,                       // ":!"
-        S_COMMA = 50,                            // ","
-        S_DOUBLE_ARROW = 51,                     // "=>"
-        S_EQUAL = 52,                            // "="
-        S_COLONEQUAL = 53,                       // ":="
-        S_EQUAL_EQUAL = 54,                      // "=="
-        S_LBRACE = 55,                           // "{"
-        S_LPARENT = 56,                          // "("
-        S_LBRACKET = 57,                         // "["
-        S_MINUS = 58,                            // "-"
-        S_PERIOD = 59,                           // "."
-        S_PLUS = 60,                             // "+"
-        S_STAR = 61,                             // "*"
-        S_POW = 62,                              // "**"
-        S_AT = 63,                               // "@"
-        S_FLOOR_DIV = 64,                        // "//"
-        S_MOD = 65,                              // "%"
-        S_TILDE = 66,                            // "~"
-        S_VBAR = 67,                             // "|"
-        S_LSHIFT = 68,                           // "<<"
-        S_RSHIFT = 69,                           // ">>"
-        S_LOWER_THEN = 70,                       // "<"
-        S_LOWER_EQUAL = 71,                      // "<="
-        S_GREATER_THEN = 72,                     // ">"
-        S_GREATER_EQUAL = 73,                    // ">="
-        S_ELLIPSIS = 74,                         // "..."
-        S_RBRACE = 75,                           // "}"
-        S_RPARENT = 76,                          // ")"
-        S_RBRACKET = 77,                         // "]"
-        S_SELF = 78,                             // "self"
-        S_SEMICOLON = 79,                        // ";"
-        S_SLASH = 80,                            // "/"
-        S_UNDERSCORE = 81,                       // "_"
-        S_RARROW = 82,                           // "->"
-        S_INDENT = 83,                           // INDENT
-        S_DEDENT = 84,                           // DEDENT
-        S_NEWLINE = 85,                          // NEWLINE
-        S_COMMENT = 86,                          // COMMENT
-        S_EOLCOMMENT = 87,                       // EOLCOMMENT
-        S_TYPE_COMMENT = 88,                     // TYPE_COMMENT
-        S_89_ = 89,                              // "!="
-        S_UNARY = 90,                            // UNARY
-        S_YYACCEPT = 91,                         // $accept
-        S_units = 92,                            // units
-        S_script_unit = 93,                      // script_unit
-        S_statements = 94,                       // statements
-        S_sep_statements = 95,                   // sep_statements
-        S_body_stmts = 96,                       // body_stmts
-        S_statements1 = 97,                      // statements1
-        S_single_line_statements = 98,           // single_line_statements
-        S_single_line_multi_statements = 99,     // single_line_multi_statements
-        S_single_line_multi_statements_opt = 100, // single_line_multi_statements_opt
-        S_statement = 101,                       // statement
-        S_pass_statement = 102,                  // pass_statement
-        S_break_statement = 103,                 // break_statement
-        S_continue_statement = 104,              // continue_statement
-        S_single_line_statement = 105,           // single_line_statement
-        S_module = 106,                          // module
-        S_module_as_id = 107,                    // module_as_id
-        S_module_item_list = 108,                // module_item_list
-        S_dot_list = 109,                        // dot_list
-        S_import_statement = 110,                // import_statement
-        S_multi_line_statement = 111,            // multi_line_statement
-        S_decorators_opt = 112,                  // decorators_opt
-        S_decorators = 113,                      // decorators
-        S_parameter = 114,                       // parameter
-        S_parameter_list = 115,                  // parameter_list
-        S_parameter_list_no_posonly = 116,       // parameter_list_no_posonly
-        S_defparameter_list = 117,               // defparameter_list
-        S_parameter_list_starargs = 118,         // parameter_list_starargs
-        S_parameter_list_opt = 119,              // parameter_list_opt
-        S_comma_opt = 120,                       // comma_opt
-        S_function_def = 121,                    // function_def
-        S_global_statement = 122,                // global_statement
-        S_ternary_if_statement = 123,            // ternary_if_statement
-        S_nonlocal_statement = 124,              // nonlocal_statement
-        S_if_statement = 125,                    // if_statement
-        S_expression_statment = 126,             // expression_statment
-        S_string = 127,                          // string
-        S_expr_list_opt = 128,                   // expr_list_opt
-        S_expr_list = 129,                       // expr_list
-        S_dict = 130,                            // dict
-        S_dict_list = 131,                       // dict_list
-        S_call_arguement_list = 132,             // call_arguement_list
-        S_keyword_item = 133,                    // keyword_item
-        S_keyword_items = 134,                   // keyword_items
-        S_primary = 135,                         // primary
-        S_function_call = 136,                   // function_call
-        S_expr = 137,                            // expr
-        S_id = 138,                              // id
-        S_sep = 139,                             // sep
-        S_sep_one = 140                          // sep_one
+        S_RAISE = 15,                            // RAISE
+        S_ASYNC = 16,                            // ASYNC
+        S_AWAIT = 17,                            // AWAIT
+        S_BREAK = 18,                            // BREAK
+        S_CLASS = 19,                            // CLASS
+        S_CONTINUE = 20,                         // CONTINUE
+        S_DEF = 21,                              // DEF
+        S_DEL = 22,                              // DEL
+        S_ELIF = 23,                             // ELIF
+        S_ELSE = 24,                             // ELSE
+        S_EXCEPT = 25,                           // EXCEPT
+        S_FINALLY = 26,                          // FINALLY
+        S_FOR = 27,                              // FOR
+        S_FROM = 28,                             // FROM
+        S_GLOBAL = 29,                           // GLOBAL
+        S_IF = 30,                               // IF
+        S_IMPORT = 31,                           // IMPORT
+        S_IN = 32,                               // "in"
+        S_IS = 33,                               // "is"
+        S_IS_NOT = 34,                           // "is not"
+        S_NOT_IN = 35,                           // "not in"
+        S_LAMBDA = 36,                           // LAMBDA
+        S_NONLOCAL = 37,                         // NONLOCAL
+        S_NOT = 38,                              // "not"
+        S_OR = 39,                               // "or"
+        S_PASS = 40,                             // PASS
+        S_RETURN = 41,                           // RETURN
+        S_TRY = 42,                              // TRY
+        S_WHILE = 43,                            // WHILE
+        S_WITH = 44,                             // WITH
+        S_YIELD = 45,                            // YIELD
+        S_ARROW = 46,                            // ARROW
+        S_AMPERSAND = 47,                        // "&"
+        S_CARET = 48,                            // "^"
+        S_COLON = 49,                            // ":"
+        S_COLON_BANG = 50,                       // ":!"
+        S_COMMA = 51,                            // ","
+        S_DOUBLE_ARROW = 52,                     // "=>"
+        S_EQUAL = 53,                            // "="
+        S_COLONEQUAL = 54,                       // ":="
+        S_EQUAL_EQUAL = 55,                      // "=="
+        S_LBRACE = 56,                           // "{"
+        S_LPARENT = 57,                          // "("
+        S_LBRACKET = 58,                         // "["
+        S_MINUS = 59,                            // "-"
+        S_PERIOD = 60,                           // "."
+        S_PLUS = 61,                             // "+"
+        S_STAR = 62,                             // "*"
+        S_POW = 63,                              // "**"
+        S_AT = 64,                               // "@"
+        S_FLOOR_DIV = 65,                        // "//"
+        S_MOD = 66,                              // "%"
+        S_TILDE = 67,                            // "~"
+        S_VBAR = 68,                             // "|"
+        S_LSHIFT = 69,                           // "<<"
+        S_RSHIFT = 70,                           // ">>"
+        S_LOWER_THEN = 71,                       // "<"
+        S_LOWER_EQUAL = 72,                      // "<="
+        S_GREATER_THEN = 73,                     // ">"
+        S_GREATER_EQUAL = 74,                    // ">="
+        S_ELLIPSIS = 75,                         // "..."
+        S_RBRACE = 76,                           // "}"
+        S_RPARENT = 77,                          // ")"
+        S_RBRACKET = 78,                         // "]"
+        S_SELF = 79,                             // "self"
+        S_SEMICOLON = 80,                        // ";"
+        S_SLASH = 81,                            // "/"
+        S_UNDERSCORE = 82,                       // "_"
+        S_RARROW = 83,                           // "->"
+        S_INDENT = 84,                           // INDENT
+        S_DEDENT = 85,                           // DEDENT
+        S_NEWLINE = 86,                          // NEWLINE
+        S_COMMENT = 87,                          // COMMENT
+        S_EOLCOMMENT = 88,                       // EOLCOMMENT
+        S_TYPE_COMMENT = 89,                     // TYPE_COMMENT
+        S_90_ = 90,                              // "!="
+        S_UNARY = 91,                            // UNARY
+        S_YYACCEPT = 92,                         // $accept
+        S_units = 93,                            // units
+        S_script_unit = 94,                      // script_unit
+        S_statements = 95,                       // statements
+        S_sep_statements = 96,                   // sep_statements
+        S_body_stmts = 97,                       // body_stmts
+        S_statements1 = 98,                      // statements1
+        S_single_line_statements = 99,           // single_line_statements
+        S_single_line_multi_statements = 100,    // single_line_multi_statements
+        S_single_line_multi_statements_opt = 101, // single_line_multi_statements_opt
+        S_statement = 102,                       // statement
+        S_pass_statement = 103,                  // pass_statement
+        S_break_statement = 104,                 // break_statement
+        S_continue_statement = 105,              // continue_statement
+        S_assert_statement = 106,                // assert_statement
+        S_tuple_item = 107,                      // tuple_item
+        S_raise_statement = 108,                 // raise_statement
+        S_return_statement = 109,                // return_statement
+        S_single_line_statement = 110,           // single_line_statement
+        S_module = 111,                          // module
+        S_module_as_id = 112,                    // module_as_id
+        S_module_item_list = 113,                // module_item_list
+        S_dot_list = 114,                        // dot_list
+        S_import_statement = 115,                // import_statement
+        S_multi_line_statement = 116,            // multi_line_statement
+        S_decorators_opt = 117,                  // decorators_opt
+        S_decorators = 118,                      // decorators
+        S_parameter = 119,                       // parameter
+        S_parameter_list = 120,                  // parameter_list
+        S_parameter_list_no_posonly = 121,       // parameter_list_no_posonly
+        S_defparameter_list = 122,               // defparameter_list
+        S_parameter_list_starargs = 123,         // parameter_list_starargs
+        S_parameter_list_opt = 124,              // parameter_list_opt
+        S_comma_opt = 125,                       // comma_opt
+        S_function_def = 126,                    // function_def
+        S_global_statement = 127,                // global_statement
+        S_ternary_if_statement = 128,            // ternary_if_statement
+        S_nonlocal_statement = 129,              // nonlocal_statement
+        S_if_statement = 130,                    // if_statement
+        S_expression_statment = 131,             // expression_statment
+        S_tuple_statement = 132,                 // tuple_statement
+        S_string = 133,                          // string
+        S_expr_list_opt = 134,                   // expr_list_opt
+        S_expr_list = 135,                       // expr_list
+        S_dict = 136,                            // dict
+        S_dict_list = 137,                       // dict_list
+        S_call_arguement_list = 138,             // call_arguement_list
+        S_keyword_item = 139,                    // keyword_item
+        S_keyword_items = 140,                   // keyword_items
+        S_primary = 141,                         // primary
+        S_function_call = 142,                   // function_call
+        S_expr = 143,                            // expr
+        S_id = 144,                              // id
+        S_sep = 145,                             // sep
+        S_sep_one = 146                          // sep_one
       };
     };
 
@@ -1069,6 +1081,7 @@ namespace  PYJU  {
         value.move< Nonnull<Arguments*> > (std::move (that.value));
         break;
 
+      case symbol_kind::S_tuple_item: // tuple_item
       case symbol_kind::S_ternary_if_statement: // ternary_if_statement
       case symbol_kind::S_string: // string
       case symbol_kind::S_primary: // primary
@@ -1102,6 +1115,9 @@ namespace  PYJU  {
       case symbol_kind::S_pass_statement: // pass_statement
       case symbol_kind::S_break_statement: // break_statement
       case symbol_kind::S_continue_statement: // continue_statement
+      case symbol_kind::S_assert_statement: // assert_statement
+      case symbol_kind::S_raise_statement: // raise_statement
+      case symbol_kind::S_return_statement: // return_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
@@ -1110,6 +1126,7 @@ namespace  PYJU  {
       case symbol_kind::S_nonlocal_statement: // nonlocal_statement
       case symbol_kind::S_if_statement: // if_statement
       case symbol_kind::S_expression_statment: // expression_statment
+      case symbol_kind::S_tuple_statement: // tuple_statement
         value.move< Nonnull<Statement*> > (std::move (that.value));
         break;
 
@@ -1523,6 +1540,7 @@ switch (yykind)
         value.template destroy< Nonnull<Arguments*> > ();
         break;
 
+      case symbol_kind::S_tuple_item: // tuple_item
       case symbol_kind::S_ternary_if_statement: // ternary_if_statement
       case symbol_kind::S_string: // string
       case symbol_kind::S_primary: // primary
@@ -1556,6 +1574,9 @@ switch (yykind)
       case symbol_kind::S_pass_statement: // pass_statement
       case symbol_kind::S_break_statement: // break_statement
       case symbol_kind::S_continue_statement: // continue_statement
+      case symbol_kind::S_assert_statement: // assert_statement
+      case symbol_kind::S_raise_statement: // raise_statement
+      case symbol_kind::S_return_statement: // return_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
@@ -1564,6 +1585,7 @@ switch (yykind)
       case symbol_kind::S_nonlocal_statement: // nonlocal_statement
       case symbol_kind::S_if_statement: // if_statement
       case symbol_kind::S_expression_statment: // expression_statment
+      case symbol_kind::S_tuple_statement: // tuple_statement
         value.template destroy< Nonnull<Statement*> > ();
         break;
 
@@ -2021,6 +2043,21 @@ switch (yykind)
       make_ASSERT (const location_type& l)
       {
         return symbol_type (token::ASSERT, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_RAISE (location_type l)
+      {
+        return symbol_type (token::RAISE, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_RAISE (const location_type& l)
+      {
+        return symbol_type (token::RAISE, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -3452,9 +3489,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 1530,     ///< Last index in yytable_.
-      yynnts_ = 50,  ///< Number of nonterminal symbols.
-      yyfinal_ = 81 ///< Termination state number.
+      yylast_ = 1819,     ///< Last index in yytable_.
+      yynnts_ = 55,  ///< Number of nonterminal symbols.
+      yyfinal_ = 93 ///< Termination state number.
     };
 
 
@@ -3510,10 +3547,10 @@ switch (yykind)
       55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
       65,    66,    67,    68,    69,    70,    71,    72,    73,    74,
       75,    76,    77,    78,    79,    80,    81,    82,    83,    84,
-      85,    86,    87,    88,    89,    90
+      85,    86,    87,    88,    89,    90,    91
     };
     // Last valid token kind.
-    const int code_max = 345;
+    const int code_max = 346;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -3544,6 +3581,7 @@ switch (yykind)
         value.copy< Nonnull<Arguments*> > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_tuple_item: // tuple_item
       case symbol_kind::S_ternary_if_statement: // ternary_if_statement
       case symbol_kind::S_string: // string
       case symbol_kind::S_primary: // primary
@@ -3577,6 +3615,9 @@ switch (yykind)
       case symbol_kind::S_pass_statement: // pass_statement
       case symbol_kind::S_break_statement: // break_statement
       case symbol_kind::S_continue_statement: // continue_statement
+      case symbol_kind::S_assert_statement: // assert_statement
+      case symbol_kind::S_raise_statement: // raise_statement
+      case symbol_kind::S_return_statement: // return_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
@@ -3585,6 +3626,7 @@ switch (yykind)
       case symbol_kind::S_nonlocal_statement: // nonlocal_statement
       case symbol_kind::S_if_statement: // if_statement
       case symbol_kind::S_expression_statment: // expression_statment
+      case symbol_kind::S_tuple_statement: // tuple_statement
         value.copy< Nonnull<Statement*> > (YY_MOVE (that.value));
         break;
 
@@ -3688,6 +3730,7 @@ switch (yykind)
         value.move< Nonnull<Arguments*> > (YY_MOVE (s.value));
         break;
 
+      case symbol_kind::S_tuple_item: // tuple_item
       case symbol_kind::S_ternary_if_statement: // ternary_if_statement
       case symbol_kind::S_string: // string
       case symbol_kind::S_primary: // primary
@@ -3721,6 +3764,9 @@ switch (yykind)
       case symbol_kind::S_pass_statement: // pass_statement
       case symbol_kind::S_break_statement: // break_statement
       case symbol_kind::S_continue_statement: // continue_statement
+      case symbol_kind::S_assert_statement: // assert_statement
+      case symbol_kind::S_raise_statement: // raise_statement
+      case symbol_kind::S_return_statement: // return_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
@@ -3729,6 +3775,7 @@ switch (yykind)
       case symbol_kind::S_nonlocal_statement: // nonlocal_statement
       case symbol_kind::S_if_statement: // if_statement
       case symbol_kind::S_expression_statment: // expression_statment
+      case symbol_kind::S_tuple_statement: // tuple_statement
         value.move< Nonnull<Statement*> > (YY_MOVE (s.value));
         break;
 
@@ -3854,7 +3901,7 @@ switch (yykind)
 
 #line 21 "parser.ypp"
 } //  PYJU 
-#line 3858 "./parser.h"
+#line 3905 "./parser.h"
 
 
 

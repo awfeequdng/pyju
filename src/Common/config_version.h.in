@@ -6,7 +6,7 @@
 // only PYJU_TCP_PROTOCOL_VERSION should be incremented on protocol changes.
 #cmakedefine VERSION_REVISION @VERSION_REVISION@
 #cmakedefine VERSION_NAME "@VERSION_NAME@"
-#define PYJU VERSION_NAME
+#define PYJU_NAME VERSION_NAME
 #cmakedefine VERSION_MAJOR @VERSION_MAJOR@
 #cmakedefine VERSION_MINOR @VERSION_MINOR@
 #cmakedefine VERSION_PATCH @VERSION_PATCH@

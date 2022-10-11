@@ -136,6 +136,41 @@ void Statement::PrintDepth(int depth, llvm::raw_ostream& out) const {
         Space(depth, out) << "break\n";
         break;
       }
+      case StatementKind::Assert: {
+        auto &asrt = cast<Assert>(*this);
+        auto &test = asrt.test();
+        auto &msg = asrt.msg();
+        Space(depth, out) << "assert " << asrt.test();
+        if (msg) out << " , " << **msg;
+        out << "\n";
+        break;
+      }
+      case StatementKind::Raise: {
+        auto &raise = cast<Raise>(*this);
+        auto &exc = raise.exc();
+        auto &cause = raise.cause();
+        Space(depth, out) << "raise";
+        if (exc) out << " " << **exc;
+        if (cause) out << "from " << **cause;
+        out << "\n";
+        break;
+      }
+      case StatementKind::Return: {
+        auto &ret = cast<Return>(*this);
+        auto &value = ret.value();
+        Space(depth, out) << "return";
+        if (value) out << " " << **value;
+        out << "\n";
+        break;
+      }
+      case StatementKind::TupleStmt: {
+        Space(depth, out) << "TupleStmt(";
+        for (auto &elt: cast<TupleStmt>(*this).tuple()) {
+          out << *elt << ",";
+        }
+        out << ")\n";
+        break;
+      }
       default:
         out << "unknown kind: ";
         break;
