@@ -532,4 +532,7 @@ inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, Nonnul
 
 #define SUBSCRIPT_01(value, slice, l) PYJU::Subscript::make_Subscript(arena, l, value, slice)
 
+#define YIELD_01(l) PYJU::Yield::make_Yield(arena, l, std::nullopt)
+#define YIELD_02(exec, l) PYJU::Yield::make_Yield(arena, l, exec)
+
 

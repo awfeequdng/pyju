@@ -287,3 +287,9 @@ a[::]
 [a, b][2:2]
 {2:3, d:4}[1:2]
 {2:3, d:4}[2]
+
+
+yield
+yield 2*e
+yield 2*e
+yield 2*e

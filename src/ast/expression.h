@@ -1214,5 +1214,32 @@ private:
     Nonnull<Expression*> value_;
     Nonnull<Expression*> slice_;
 };
+
+
+class Yield: public Expression {
+public:
+    static Nonnull<Yield*> make_Yield(
+        Nonnull<PYJU::Arena*> arena,
+        SourceLocation loc,
+        std::optional<Nonnull<Expression*>> value) {
+        return arena->New<Yield>(loc, value);
+    }
+
+    static auto classof(const AstNode* node) {
+        return InheritsFromYield(node->kind());
+    }
+
+    Yield(PYJU::SourceLocation loc,
+            std::optional<Nonnull<Expression*>> value)
+        : Expression(AstNodeKind::Yield, loc),
+        value_(value) {}
+
+    const std::optional<Nonnull<Expression*>> &value() const {
+        return value_;
+    }
+
+private:
+    std::optional<Nonnull<Expression*>> value_;
+};
 } // namespace PYJU
 

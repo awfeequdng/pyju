@@ -912,7 +912,8 @@ namespace  PYJU  {
     COMMENT = 354,                 // COMMENT
     EOLCOMMENT = 355,              // EOLCOMMENT
     TYPE_COMMENT = 356,            // TYPE_COMMENT
-    UNARY = 358                    // UNARY
+    UNARY = 358,                   // UNARY
+    YIELD_PREC = 359               // YIELD_PREC
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -929,7 +930,7 @@ namespace  PYJU  {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 104, ///< Number of tokens.
+        YYNTOKENS = 105, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // END_OF_FILE
         S_YYerror = 1,                           // error
@@ -1035,88 +1036,89 @@ namespace  PYJU  {
         S_TYPE_COMMENT = 101,                    // TYPE_COMMENT
         S_102_ = 102,                            // "!="
         S_UNARY = 103,                           // UNARY
-        S_YYACCEPT = 104,                        // $accept
-        S_units = 105,                           // units
-        S_script_unit = 106,                     // script_unit
-        S_statements = 107,                      // statements
-        S_sep_statements = 108,                  // sep_statements
-        S_body_stmts = 109,                      // body_stmts
-        S_statements1 = 110,                     // statements1
-        S_single_line_statements = 111,          // single_line_statements
-        S_single_line_multi_statements = 112,    // single_line_multi_statements
-        S_single_line_multi_statements_opt = 113, // single_line_multi_statements_opt
-        S_statement = 114,                       // statement
-        S_pass_statement = 115,                  // pass_statement
-        S_break_statement = 116,                 // break_statement
-        S_continue_statement = 117,              // continue_statement
-        S_assert_statement = 118,                // assert_statement
-        S_tuple_item = 119,                      // tuple_item
-        S_for_tuple_item = 120,                  // for_tuple_item
-        S_raise_statement = 121,                 // raise_statement
-        S_return_statement = 122,                // return_statement
-        S_delete_statement = 123,                // delete_statement
-        S_augassign_statement = 124,             // augassign_statement
-        S_augassign_op = 125,                    // augassign_op
-        S_ann_assignment_statement = 126,        // ann_assignment_statement
-        S_single_line_statement = 127,           // single_line_statement
-        S_module = 128,                          // module
-        S_module_as_id = 129,                    // module_as_id
-        S_module_item_list = 130,                // module_item_list
-        S_dot_list = 131,                        // dot_list
-        S_import_statement = 132,                // import_statement
-        S_while_statement = 133,                 // while_statement
-        S_for_statement = 134,                   // for_statement
-        S_except_statement = 135,                // except_statement
-        S_except_list = 136,                     // except_list
-        S_try_statement = 137,                   // try_statement
-        S_with_item = 138,                       // with_item
-        S_with_item_list = 139,                  // with_item_list
-        S_with_statement = 140,                  // with_statement
-        S_multi_line_statement = 141,            // multi_line_statement
-        S_decorators_opt = 142,                  // decorators_opt
-        S_decorators = 143,                      // decorators
-        S_parameter = 144,                       // parameter
-        S_parameter_list = 145,                  // parameter_list
-        S_parameter_list_no_posonly = 146,       // parameter_list_no_posonly
-        S_defparameter_list = 147,               // defparameter_list
-        S_parameter_list_starargs = 148,         // parameter_list_starargs
-        S_parameter_list_opt = 149,              // parameter_list_opt
-        S_comma_opt = 150,                       // comma_opt
-        S_function_def = 151,                    // function_def
-        S_class_def = 152,                       // class_def
-        S_global_statement = 153,                // global_statement
-        S_ternary_if_statement = 154,            // ternary_if_statement
-        S_nonlocal_statement = 155,              // nonlocal_statement
-        S_elif_statement = 156,                  // elif_statement
-        S_if_statement = 157,                    // if_statement
-        S_target_list = 158,                     // target_list
-        S_assignment_statement = 159,            // assignment_statement
-        S_expression_statment = 160,             // expression_statment
-        S_string = 161,                          // string
-        S_expr_list_opt = 162,                   // expr_list_opt
-        S_expr_list = 163,                       // expr_list
-        S_expr_for_list = 164,                   // expr_for_list
-        S_dict = 165,                            // dict
-        S_dict_list = 166,                       // dict_list
-        S_call_arguement_list = 167,             // call_arguement_list
-        S_keyword_item = 168,                    // keyword_item
-        S_keyword_items = 169,                   // keyword_items
-        S_primary = 170,                         // primary
-        S_function_call = 171,                   // function_call
-        S_slice_item_list = 172,                 // slice_item_list
-        S_slice_item = 173,                      // slice_item
-        S_tuple_list = 174,                      // tuple_list
-        S_subscription = 175,                    // subscription
-        S_expr = 176,                            // expr
-        S_lambda_id_list = 177,                  // lambda_id_list
-        S_lambda_expression = 178,               // lambda_expression
-        S_id_list = 179,                         // id_list
-        S_id_item = 180,                         // id_item
-        S_comp_for = 181,                        // comp_for
-        S_comp_for_items = 182,                  // comp_for_items
-        S_id = 183,                              // id
-        S_sep = 184,                             // sep
-        S_sep_one = 185                          // sep_one
+        S_YIELD_PREC = 104,                      // YIELD_PREC
+        S_YYACCEPT = 105,                        // $accept
+        S_units = 106,                           // units
+        S_script_unit = 107,                     // script_unit
+        S_statements = 108,                      // statements
+        S_sep_statements = 109,                  // sep_statements
+        S_body_stmts = 110,                      // body_stmts
+        S_statements1 = 111,                     // statements1
+        S_single_line_statements = 112,          // single_line_statements
+        S_single_line_multi_statements = 113,    // single_line_multi_statements
+        S_single_line_multi_statements_opt = 114, // single_line_multi_statements_opt
+        S_statement = 115,                       // statement
+        S_pass_statement = 116,                  // pass_statement
+        S_break_statement = 117,                 // break_statement
+        S_continue_statement = 118,              // continue_statement
+        S_assert_statement = 119,                // assert_statement
+        S_tuple_item = 120,                      // tuple_item
+        S_for_tuple_item = 121,                  // for_tuple_item
+        S_raise_statement = 122,                 // raise_statement
+        S_return_statement = 123,                // return_statement
+        S_delete_statement = 124,                // delete_statement
+        S_augassign_statement = 125,             // augassign_statement
+        S_augassign_op = 126,                    // augassign_op
+        S_ann_assignment_statement = 127,        // ann_assignment_statement
+        S_single_line_statement = 128,           // single_line_statement
+        S_module = 129,                          // module
+        S_module_as_id = 130,                    // module_as_id
+        S_module_item_list = 131,                // module_item_list
+        S_dot_list = 132,                        // dot_list
+        S_import_statement = 133,                // import_statement
+        S_while_statement = 134,                 // while_statement
+        S_for_statement = 135,                   // for_statement
+        S_except_statement = 136,                // except_statement
+        S_except_list = 137,                     // except_list
+        S_try_statement = 138,                   // try_statement
+        S_with_item = 139,                       // with_item
+        S_with_item_list = 140,                  // with_item_list
+        S_with_statement = 141,                  // with_statement
+        S_multi_line_statement = 142,            // multi_line_statement
+        S_decorators_opt = 143,                  // decorators_opt
+        S_decorators = 144,                      // decorators
+        S_parameter = 145,                       // parameter
+        S_parameter_list = 146,                  // parameter_list
+        S_parameter_list_no_posonly = 147,       // parameter_list_no_posonly
+        S_defparameter_list = 148,               // defparameter_list
+        S_parameter_list_starargs = 149,         // parameter_list_starargs
+        S_parameter_list_opt = 150,              // parameter_list_opt
+        S_comma_opt = 151,                       // comma_opt
+        S_function_def = 152,                    // function_def
+        S_class_def = 153,                       // class_def
+        S_global_statement = 154,                // global_statement
+        S_ternary_if_statement = 155,            // ternary_if_statement
+        S_nonlocal_statement = 156,              // nonlocal_statement
+        S_elif_statement = 157,                  // elif_statement
+        S_if_statement = 158,                    // if_statement
+        S_target_list = 159,                     // target_list
+        S_assignment_statement = 160,            // assignment_statement
+        S_expression_statment = 161,             // expression_statment
+        S_string = 162,                          // string
+        S_expr_list_opt = 163,                   // expr_list_opt
+        S_expr_list = 164,                       // expr_list
+        S_expr_for_list = 165,                   // expr_for_list
+        S_dict = 166,                            // dict
+        S_dict_list = 167,                       // dict_list
+        S_call_arguement_list = 168,             // call_arguement_list
+        S_keyword_item = 169,                    // keyword_item
+        S_keyword_items = 170,                   // keyword_items
+        S_primary = 171,                         // primary
+        S_function_call = 172,                   // function_call
+        S_slice_item_list = 173,                 // slice_item_list
+        S_slice_item = 174,                      // slice_item
+        S_tuple_list = 175,                      // tuple_list
+        S_subscription = 176,                    // subscription
+        S_expr = 177,                            // expr
+        S_lambda_id_list = 178,                  // lambda_id_list
+        S_lambda_expression = 179,               // lambda_expression
+        S_id_list = 180,                         // id_list
+        S_id_item = 181,                         // id_item
+        S_comp_for = 182,                        // comp_for
+        S_comp_for_items = 183,                  // comp_for_items
+        S_id = 184,                              // id
+        S_sep = 185,                             // sep
+        S_sep_one = 186                          // sep_one
       };
     };
 
@@ -3563,6 +3565,21 @@ switch (yykind)
         return symbol_type (token::UNARY, l);
       }
 #endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_YIELD_PREC (location_type l)
+      {
+        return symbol_type (token::YIELD_PREC, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_YIELD_PREC (const location_type& l)
+      {
+        return symbol_type (token::YIELD_PREC, l);
+      }
+#endif
 
 
   private:
@@ -3867,9 +3884,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 3497,     ///< Last index in yytable_.
+      yylast_ = 3513,     ///< Last index in yytable_.
       yynnts_ = 82,  ///< Number of nonterminal symbols.
-      yyfinal_ = 128 ///< Termination state number.
+      yyfinal_ = 130 ///< Termination state number.
     };
 
 
@@ -3926,10 +3943,10 @@ switch (yykind)
       65,    66,    67,    68,    69,    70,    71,    72,    73,    74,
       75,    76,    77,    78,    79,    80,    81,    82,    83,    84,
       85,    86,    87,    88,    89,    90,    91,    92,    93,    94,
-      95,    96,    97,    98,    99,   100,   101,   102,   103
+      95,    96,    97,    98,    99,   100,   101,   102,   103,   104
     };
     // Last valid token kind.
-    const int code_max = 358;
+    const int code_max = 359;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -4352,7 +4369,7 @@ switch (yykind)
 
 #line 21 "parser.ypp"
 } //  PYJU 
-#line 4356 "./parser.h"
+#line 4373 "./parser.h"
 
 
 

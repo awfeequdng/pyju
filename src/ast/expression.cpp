@@ -444,6 +444,13 @@ void Expression::PrintID(llvm::raw_ostream& out) const {
       out << *value << "[" << *slice << "]";
       break;
     }
+    case ExpressionKind::Yield: {
+      auto &yield = cast<Yield>(*this);
+      auto &value = yield.value();
+      out << "yield ";
+      if (value) out << **value;
+      break;
+    }
     default:
       out << "...";
       break;
