@@ -28,6 +28,7 @@ std::string_view AstNodeKindName(AstNodeKind k) {
     case AstNodeKind::Match: return "match";
     case AstNodeKind::Raise: return "raise";
     case AstNodeKind::Try: return "try";
+    case AstNodeKind::ExceptHandler: return "except handler";
     case AstNodeKind::Assert: return "assert";
     case AstNodeKind::Import: return "import";
     case AstNodeKind::ImportFrom: return "import from";
@@ -81,7 +82,6 @@ std::string_view AstNodeKindName(AstNodeKind k) {
     case AstNodeKind::Slice: return "slice";
     case AstNodeKind::Alias: return "alias";
     case AstNodeKind::WithItem: return "with item";
-    case AstNodeKind::ExceptHandler: return "except handler";
     case AstNodeKind::MatchValue: return "match value";
     case AstNodeKind::MatchSingleton: return "match singleton";
     case AstNodeKind::MatchSequence: return "match sequence";
@@ -128,6 +128,7 @@ std::string_view StatementKindName(StatementKind k) {
     case StatementKind::Match: return "match";
     case StatementKind::Raise: return "raise";
     case StatementKind::Try: return "try";
+    case StatementKind::ExceptHandler: return "except handler";
     case StatementKind::Assert: return "assert";
     case StatementKind::Import: return "import";
     case StatementKind::ImportFrom: return "import from";

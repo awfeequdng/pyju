@@ -220,3 +220,28 @@ while b:
 else :
     print("exit while")
 
+
+try:
+    if a:
+        print(a)
+    else:
+        print(b)
+        print(b1)
+except Exception as e:
+    print(e)
+    print(e1)
+except Runtime as r:
+    print(r)
+    print(r1)
+except Error:
+    print("error")
+    print("erro2")
+except:
+    print("other excpet")
+    print("other excpet2")
+finally:
+    print("finally1")
+    print("finally2")
+
+
+

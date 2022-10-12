@@ -197,12 +197,14 @@
 %type <Nonnull<Statement*>> expression_statment
 %type <Nonnull<Statement*>> assignment_statement
 %type <Nonnull<Statement*>> delete_statement
-//%type <Nonnull<Statement*>> tuple_statement
 %type <Nonnull<Statement*>> single_line_statement
 %type <Nonnull<Statement*>> global_statement
 %type <Nonnull<Statement*>> nonlocal_statement
 
 %type <Nonnull<Statement*>> multi_line_statement
+%type <Nonnull<Statement*>> try_statement
+%type <Nonnull<Statement*>> except_statement
+%type <std::vector<Nonnull<Statement*>>> except_list
 %type <Nonnull<Statement*>> if_statement
 %type <Nonnull<Statement*>> elif_statement
 %type <Nonnull<Statement*>> function_def
@@ -511,11 +513,31 @@ for_statement
 //        ELSE ":" sep statements { $$ = FOR_04($2, $4, $8, $12, $6, context.source_loc()); }
     ;
 
+except_statement
+    : EXCEPT ":" sep statements { $$ = EXCEPT_01($4, context.source_loc()); }
+    | EXCEPT expr ":" sep statements { $$ = EXCEPT_02($2, $5, context.source_loc()); }
+    | EXCEPT expr AS id ":" sep statements { $$ = EXCEPT_03($2, $4, $7, context.source_loc()); }
+    ;
+except_list
+    : except_list except_statement { $$ = $1; LIST_ADD($$, $2); }
+    | except_statement { LIST_NEW($$); LIST_ADD($$, $1); }
+    ;
+
+try_statement
+    : TRY ":" sep statements except_list { $$ = TRY_01($4, $5, context.source_loc()); }
+    | TRY ":" sep statements except_list ELSE ":" sep statements {
+        $$ = TRY_02($4, $5, $9, context.source_loc()); }
+    | TRY ":" sep statements except_list FINALLY ":" sep statements {
+        $$ = TRY_03($4, $5, $9, context.source_loc()); }
+    | TRY ":" sep statements except_list ELSE ":" sep statements FINALLY
+        ":" sep statements { $$ = TRY_04($4, $5, $9, $13, context.source_loc()); }
+    | TRY ":" sep statements FINALLY ":" sep statements { $$ = TRY_05($4, $8, context.source_loc()); }
+    ;
 
 multi_line_statement
     : if_statement
     | for_statement
-//    | try_statement
+    | try_statement
 //    | with_statement
     | function_def
 //    | class_def
@@ -649,10 +671,6 @@ expression_statment
     : expr { $$ = EXPR_01($1, context.source_loc()); }
     ;
 
-//tuple_statement
-//    : expr "," expr_list_opt { $$ = TUPLE_STMT($1, $3, context.source_loc()); }
-//    ;
-
 string
     : string string_literal { $$ = STRING2($1, $2, context.source_loc()); }
     | string_literal {
@@ -689,11 +707,6 @@ expr_for_list
     : expr_for_list "," expr %prec FOR { $$ = $1; LIST_ADD($$, $3); }
     | expr %prec FOR { LIST_NEW($$); LIST_ADD($$, $1); }
     ;
-
-//expr_for_list
-//    : expr_for_list "," expr { $$ = $1; LIST_ADD($$, $3); }
-//    | expr { LIST_NEW($$); LIST_ADD($$, $1); }
-//    ;
 
 dict
     : expr ":" expr { $$ = DICT_EXPR($1, $3, context.source_loc()); }

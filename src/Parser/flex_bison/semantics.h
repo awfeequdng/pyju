@@ -19,12 +19,6 @@
 #define LIST_NEW(l) l.reserve(4)
 #define LIST_ADD(l, x) l.push_back(x)
 
-#define DELETE_01(e, l) PYJU::Delete::make_Delete(arena, l, \
-        EXPRS(SET_EXPR_CTX_02(e, Del)), e.size())
-#define DELETE_02(e, l) PYJU::Delete::make_Delete(arena, l, \
-        EXPRS(A2LIST(p.m_a, SET_EXPR_CTX_01(TUPLE_01(e, l), Del))), 1)
-
-
 #define EXPR_01(e, l) PYJU::ExprStmt::make_ExprStmt(arena, l, e)
 
 #define IF_STMT_01(e, stmt, l) PYJU::If::make_If(arena, l, \
@@ -493,4 +487,18 @@ inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, Nonnul
         e, stmts, {})
 #define WHILE_02(e, stmts, orelse, l) PYJU::While::make_While(arena, l, \
         e, stmts, orelse)
+
+#define EXCEPT_01(stmts, l) PYJU::ExceptHandler::make_ExceptHandler(arena, l, \
+        std::nullopt, std::nullopt, stmts)
+#define EXCEPT_02(e, stmts, l) PYJU::ExceptHandler::make_ExceptHandler(arena, l, \
+        e, std::nullopt, stmts)
+#define EXCEPT_03(e, id, stmts, l) PYJU::ExceptHandler::make_ExceptHandler(arena, l, \
+        e, id, stmts)
+
+
+#define TRY_01(stmts, except, l) PYJU::Try::make_Try(arena, l, stmts, except, {}, {})
+#define TRY_02(stmts, except, orelse, l) PYJU::Try::make_Try(arena, l, stmts, except, orelse, {})
+#define TRY_03(stmts, except, final, l) PYJU::Try::make_Try(arena, l, stmts, except, {}, final)
+#define TRY_04(stmts, except, orelse, final, l) PYJU::Try::make_Try(arena, l, stmts, except, orelse, final)
+#define TRY_05(stmts, final, l) PYJU::Try::make_Try(arena, l, stmts, {}, {}, final)
 

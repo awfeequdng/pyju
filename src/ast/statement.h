@@ -9,6 +9,7 @@
 #include "base/ostream.h"
 #include "ast/ast_node.h"
 #include "ast/expression.h"
+#include "ast/name.h"
 #include "base/arena.h"
 #include "base/source_location.h"
 #include "llvm/ADT/ArrayRef.h"
@@ -614,6 +615,80 @@ protected:
     Nonnull<Expression*> test_;
     std::vector<Nonnull<Statement*>> body_;
     std::vector<Nonnull<Statement*>> orelse_;
+};
+
+class ExceptHandler : public Statement {
+public:
+    static PYJU::Nonnull<ExceptHandler*> make_ExceptHandler(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                std::optional<Nonnull<Expression*>> type,
+                std::optional<Nonnull<Name*>> name,
+                std::vector<Nonnull<Statement*>> body) {
+        return arena->New<ExceptHandler>(loc, type, name, body);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromExceptHandler(node->kind());
+    }
+
+    ExceptHandler(const PYJU::SourceLocation& loc,
+              std::optional<Nonnull<Expression*>> type,
+              std::optional<Nonnull<Name*>> name,
+              std::vector<Nonnull<Statement*>> body)
+      : Statement(AstNodeKind::ExceptHandler, loc),
+        type_(type),
+        name_(name),
+        body_(body) {}
+
+    auto type() const -> const std::optional<Nonnull<Expression*>>& { return type_; }
+    auto name() const -> const std::optional<Nonnull<Name*>>& { return name_; }
+    auto body() const -> const std::vector<Nonnull<Statement*>>& { return body_; }
+
+protected:
+    std::optional<Nonnull<Expression*>> type_;
+    std::optional<Nonnull<Name*>> name_;
+    std::vector<Nonnull<Statement*>> body_;
+};
+
+class Try : public Statement {
+public:
+    static PYJU::Nonnull<Try*> make_Try(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                std::vector<Nonnull<Statement*>> body,
+                std::vector<Nonnull<Statement*>> handlers,
+                std::vector<Nonnull<Statement*>> orelse,
+                std::vector<Nonnull<Statement*>> finalbody) {
+        return arena->New<Try>(loc, body, handlers, orelse, finalbody);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromTry(node->kind());
+    }
+
+    Try(const PYJU::SourceLocation& loc,
+              std::vector<Nonnull<Statement*>> body,
+              std::vector<Nonnull<Statement*>> handlers,
+              std::vector<Nonnull<Statement*>> orelse,
+              std::vector<Nonnull<Statement*>> finalbody)
+      : Statement(AstNodeKind::Try, loc),
+        body_(body),
+        handlers_(handlers),
+        orelse_(orelse),
+        finalbody_(finalbody) {}
+
+    auto body() const -> const std::vector<Nonnull<Statement*>>& { return body_; }
+    auto handlers() const -> const std::vector<Nonnull<Statement*>>& { return handlers_; }
+    auto orelse() const -> const std::vector<Nonnull<Statement*>>& { return orelse_; }
+    auto finalbody() const -> const std::vector<Nonnull<Statement*>>& { return finalbody_; }
+
+protected:
+
+    std::vector<Nonnull<Statement*>> body_;
+    std::vector<Nonnull<Statement*>> handlers_;
+    std::vector<Nonnull<Statement*>> orelse_;
+    std::vector<Nonnull<Statement*>> finalbody_;
 };
 
 } // namespace PYJU

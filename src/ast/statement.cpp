@@ -225,11 +225,11 @@ void Statement::PrintDepth(int depth, llvm::raw_ostream& out) const {
         auto &orelse = for_stmt.orelse();
         Space(depth, out) << "for " << *target << " in " << *iter << ":\n";
         for (auto &b: body)
-          cast<Statement>(*b).PrintDepth(depth+1, out);
+          cast<Statement>(*b).PrintDepth(depth + 1, out);
         if (orelse.size()) {
           Space(depth, out) << "else:\n";
           for (auto &b: orelse)
-            cast<Statement>(*b).PrintDepth(depth+1, out);
+            cast<Statement>(*b).PrintDepth(depth + 1, out);
         }
         break;
       }
@@ -240,11 +240,54 @@ void Statement::PrintDepth(int depth, llvm::raw_ostream& out) const {
         auto &orelse = while_stmt.orelse();
         Space(depth, out) << "while " << *test << ":\n";
         for (auto &b: body)
-          cast<Statement>(*b).PrintDepth(depth+1, out);
+          cast<Statement>(*b).PrintDepth(depth + 1, out);
         if (orelse.size()) {
           Space(depth, out) << "else:\n";
           for (auto &b: orelse)
-            cast<Statement>(*b).PrintDepth(depth+1, out);
+            cast<Statement>(*b).PrintDepth(depth + 1, out);
+        }
+        break;
+      }
+      case StatementKind::ExceptHandler: {
+        auto &except = cast<ExceptHandler>(*this);
+        auto &type = except.type();
+        auto &name = except.name();
+        auto &body = except.body();
+        Space(depth, out) << "except";
+        if (type) {
+          out << " " << **type;
+          if (name) out << " as " << **name;
+        }
+        out << ":\n";
+        for (auto &b: body) {
+          cast<Statement>(*b).PrintDepth(depth + 1, out);
+        }
+        break;
+      }
+      case StatementKind::Try: {
+        auto &try_stmt = cast<Try>(*this);
+        auto &body = try_stmt.body();
+        auto &handlers = try_stmt.handlers();
+        auto &orelse = try_stmt.orelse();
+        auto &finalbody = try_stmt.finalbody();
+        Space(depth, out) << "try:\n";
+        for (auto &b: body) {
+          cast<Statement>(*b).PrintDepth(depth + 1, out);
+        }
+        for (auto &b: handlers) {
+          cast<Statement>(*b).PrintDepth(depth, out);
+        }
+        if (orelse.size() > 0) {
+          Space(depth, out) << "else:\n";
+          for (auto &b: orelse) {
+            cast<Statement>(*b).PrintDepth(depth + 1, out);
+          }
+        }
+        if (finalbody.size() > 0) {
+          Space(depth, out) << "finally:\n";
+          for (auto &b: finalbody) {
+            cast<Statement>(*b).PrintDepth(depth + 1, out);
+          }
         }
         break;
       }
