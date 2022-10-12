@@ -207,3 +207,16 @@ else:
 
 for a in d:
     print(d)
+
+
+while (a):
+    print(a)
+    print(b)
+else:
+    print("exit while")
+
+while b:
+    print(a, b)
+else :
+    print("exit while")
+

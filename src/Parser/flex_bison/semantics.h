@@ -488,3 +488,9 @@ inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, Nonnul
         target, iter, stmts, {})
 #define FOR_02(target, iter, stmts, orelse, l) PYJU::For::make_For(arena, l,\
         target, iter, stmts, orelse)
+
+#define WHILE_01(e, stmts, l) PYJU::While::make_While(arena, l, \
+        e, stmts, {})
+#define WHILE_02(e, stmts, orelse, l) PYJU::While::make_While(arena, l, \
+        e, stmts, orelse)
+

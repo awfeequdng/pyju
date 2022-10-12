@@ -223,7 +223,22 @@ void Statement::PrintDepth(int depth, llvm::raw_ostream& out) const {
         auto &iter = for_stmt.iter();
         auto &body = for_stmt.body();
         auto &orelse = for_stmt.orelse();
-        Space(depth, out) << "For:" << *target << " in " << *iter << ":\n";
+        Space(depth, out) << "for " << *target << " in " << *iter << ":\n";
+        for (auto &b: body)
+          cast<Statement>(*b).PrintDepth(depth+1, out);
+        if (orelse.size()) {
+          Space(depth, out) << "else:\n";
+          for (auto &b: orelse)
+            cast<Statement>(*b).PrintDepth(depth+1, out);
+        }
+        break;
+      }
+      case StatementKind::While: {
+        auto &while_stmt = cast<While>(*this);
+        auto &test = while_stmt.test();
+        auto &body = while_stmt.body();
+        auto &orelse = while_stmt.orelse();
+        Space(depth, out) << "while " << *test << ":\n";
         for (auto &b: body)
           cast<Statement>(*b).PrintDepth(depth+1, out);
         if (orelse.size()) {

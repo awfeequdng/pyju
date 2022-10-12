@@ -583,4 +583,37 @@ protected:
     std::vector<Nonnull<Statement*>> orelse_;
 };
 
+class While : public Statement {
+public:
+    static PYJU::Nonnull<While*> make_While(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                Nonnull<Expression*> test,
+                std::vector<Nonnull<Statement*>> body,
+                std::vector<Nonnull<Statement*>> orelse) {
+        return arena->New<While>(loc, test, body, orelse);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromWhile(node->kind());
+    }
+
+    While(const PYJU::SourceLocation& loc,
+              Nonnull<Expression*> test,
+              std::vector<Nonnull<Statement*>> body,
+              std::vector<Nonnull<Statement*>> orelse)
+      : Statement(AstNodeKind::While, loc),
+        test_(test),
+        body_(body),
+        orelse_(orelse) {}
+    auto test() const -> const Nonnull<Expression*>& { return test_; }
+    auto body() const -> const std::vector<Nonnull<Statement*>>& { return body_; }
+    auto orelse() const -> const std::vector<Nonnull<Statement*>>& { return orelse_; }
+
+protected:
+    Nonnull<Expression*> test_;
+    std::vector<Nonnull<Statement*>> body_;
+    std::vector<Nonnull<Statement*>> orelse_;
+};
+
 } // namespace PYJU

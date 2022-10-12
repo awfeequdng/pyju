@@ -680,6 +680,7 @@ namespace  PYJU  {
       // ann_assignment_statement
       // single_line_statement
       // import_statement
+      // while_statement
       // for_statement
       // multi_line_statement
       // function_def
@@ -1042,41 +1043,42 @@ namespace  PYJU  {
         S_module_item_list = 130,                // module_item_list
         S_dot_list = 131,                        // dot_list
         S_import_statement = 132,                // import_statement
-        S_for_statement = 133,                   // for_statement
-        S_multi_line_statement = 134,            // multi_line_statement
-        S_decorators_opt = 135,                  // decorators_opt
-        S_decorators = 136,                      // decorators
-        S_parameter = 137,                       // parameter
-        S_parameter_list = 138,                  // parameter_list
-        S_parameter_list_no_posonly = 139,       // parameter_list_no_posonly
-        S_defparameter_list = 140,               // defparameter_list
-        S_parameter_list_starargs = 141,         // parameter_list_starargs
-        S_parameter_list_opt = 142,              // parameter_list_opt
-        S_comma_opt = 143,                       // comma_opt
-        S_function_def = 144,                    // function_def
-        S_global_statement = 145,                // global_statement
-        S_ternary_if_statement = 146,            // ternary_if_statement
-        S_nonlocal_statement = 147,              // nonlocal_statement
-        S_elif_statement = 148,                  // elif_statement
-        S_if_statement = 149,                    // if_statement
-        S_target_list = 150,                     // target_list
-        S_assignment_statement = 151,            // assignment_statement
-        S_expression_statment = 152,             // expression_statment
-        S_string = 153,                          // string
-        S_expr_list_opt = 154,                   // expr_list_opt
-        S_expr_list = 155,                       // expr_list
-        S_expr_for_list = 156,                   // expr_for_list
-        S_dict = 157,                            // dict
-        S_dict_list = 158,                       // dict_list
-        S_call_arguement_list = 159,             // call_arguement_list
-        S_keyword_item = 160,                    // keyword_item
-        S_keyword_items = 161,                   // keyword_items
-        S_primary = 162,                         // primary
-        S_function_call = 163,                   // function_call
-        S_expr = 164,                            // expr
-        S_id = 165,                              // id
-        S_sep = 166,                             // sep
-        S_sep_one = 167                          // sep_one
+        S_while_statement = 133,                 // while_statement
+        S_for_statement = 134,                   // for_statement
+        S_multi_line_statement = 135,            // multi_line_statement
+        S_decorators_opt = 136,                  // decorators_opt
+        S_decorators = 137,                      // decorators
+        S_parameter = 138,                       // parameter
+        S_parameter_list = 139,                  // parameter_list
+        S_parameter_list_no_posonly = 140,       // parameter_list_no_posonly
+        S_defparameter_list = 141,               // defparameter_list
+        S_parameter_list_starargs = 142,         // parameter_list_starargs
+        S_parameter_list_opt = 143,              // parameter_list_opt
+        S_comma_opt = 144,                       // comma_opt
+        S_function_def = 145,                    // function_def
+        S_global_statement = 146,                // global_statement
+        S_ternary_if_statement = 147,            // ternary_if_statement
+        S_nonlocal_statement = 148,              // nonlocal_statement
+        S_elif_statement = 149,                  // elif_statement
+        S_if_statement = 150,                    // if_statement
+        S_target_list = 151,                     // target_list
+        S_assignment_statement = 152,            // assignment_statement
+        S_expression_statment = 153,             // expression_statment
+        S_string = 154,                          // string
+        S_expr_list_opt = 155,                   // expr_list_opt
+        S_expr_list = 156,                       // expr_list
+        S_expr_for_list = 157,                   // expr_for_list
+        S_dict = 158,                            // dict
+        S_dict_list = 159,                       // dict_list
+        S_call_arguement_list = 160,             // call_arguement_list
+        S_keyword_item = 161,                    // keyword_item
+        S_keyword_items = 162,                   // keyword_items
+        S_primary = 163,                         // primary
+        S_function_call = 164,                   // function_call
+        S_expr = 165,                            // expr
+        S_id = 166,                              // id
+        S_sep = 167,                             // sep
+        S_sep_one = 168                          // sep_one
       };
     };
 
@@ -1168,6 +1170,7 @@ namespace  PYJU  {
       case symbol_kind::S_ann_assignment_statement: // ann_assignment_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
+      case symbol_kind::S_while_statement: // while_statement
       case symbol_kind::S_for_statement: // for_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
       case symbol_kind::S_function_def: // function_def
@@ -1653,6 +1656,7 @@ switch (yykind)
       case symbol_kind::S_ann_assignment_statement: // ann_assignment_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
+      case symbol_kind::S_while_statement: // while_statement
       case symbol_kind::S_for_statement: // for_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
       case symbol_kind::S_function_def: // function_def
@@ -3751,9 +3755,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 2390,     ///< Last index in yytable_.
-      yynnts_ = 64,  ///< Number of nonterminal symbols.
-      yyfinal_ = 108 ///< Termination state number.
+      yylast_ = 2438,     ///< Last index in yytable_.
+      yynnts_ = 65,  ///< Number of nonterminal symbols.
+      yyfinal_ = 111 ///< Termination state number.
     };
 
 
@@ -3887,6 +3891,7 @@ switch (yykind)
       case symbol_kind::S_ann_assignment_statement: // ann_assignment_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
+      case symbol_kind::S_while_statement: // while_statement
       case symbol_kind::S_for_statement: // for_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
       case symbol_kind::S_function_def: // function_def
@@ -4048,6 +4053,7 @@ switch (yykind)
       case symbol_kind::S_ann_assignment_statement: // ann_assignment_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
+      case symbol_kind::S_while_statement: // while_statement
       case symbol_kind::S_for_statement: // for_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
       case symbol_kind::S_function_def: // function_def
@@ -4188,7 +4194,7 @@ switch (yykind)
 
 #line 21 "parser.ypp"
 } //  PYJU 
-#line 4192 "./parser.h"
+#line 4198 "./parser.h"
 
 
 

@@ -243,6 +243,7 @@
 %type <std::vector<Nonnull<Alias*>>> module_item_list
 %type <Nonnull<Statement*>> import_statement
 %type <Nonnull<Statement*>> for_statement
+%type <Nonnull<Statement*>> while_statement
 %type <Nonnull<Statement*>> pass_statement
 %type <Nonnull<Statement*>> augassign_statement
 %type <operatorType> augassign_op
@@ -492,6 +493,10 @@ import_statement
         $$ = IMPORT_04($3, $6, context.source_loc()); }
     ;
 
+while_statement
+    : WHILE expr ":" sep statements { $$ = WHILE_01($2, $5, context.source_loc()); }
+    | WHILE expr ":" sep statements ELSE ":" sep statements {
+        $$ = WHILE_02($2, $5, $9, context.source_loc()); }
 
 for_statement
     : FOR for_tuple_item IN tuple_item ":" sep statements {
