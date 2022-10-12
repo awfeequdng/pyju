@@ -275,3 +275,15 @@ print({e for e in exprs})
 lambda x, y, z: x*y*z
 
 func = lambda x, y : x * y
+
+a = [1, 2 ,3]
+a[3]
+a[3:]
+a[3:d]
+a[3::2]
+a[::2]
+a[::]
+{a, b}[2:2]
+[a, b][2:2]
+{2:3, d:4}[1:2]
+{2:3, d:4}[2]

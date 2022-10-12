@@ -1142,5 +1142,77 @@ private:
     Nonnull<Expression*> expr_;
 };
 
+
+class Slice: public Expression {
+public:
+    static Nonnull<Slice*> make_Slice(
+        Nonnull<PYJU::Arena*> arena,
+        SourceLocation loc,
+        std::optional<Nonnull<Expression*>> lower,
+        std::optional<Nonnull<Expression*>> upper,
+        std::optional<Nonnull<Expression*>> step) {
+        return arena->New<Slice>(loc, lower, upper, step);
+    }
+
+    static auto classof(const AstNode* node) {
+        return InheritsFromSlice(node->kind());
+    }
+
+    Slice(PYJU::SourceLocation loc,
+            std::optional<Nonnull<Expression*>> lower,
+            std::optional<Nonnull<Expression*>> upper,
+            std::optional<Nonnull<Expression*>> step)
+        : Expression(AstNodeKind::Slice, loc),
+        lower_(lower), upper_(upper), step_(step) {}
+
+
+    const std::optional<Nonnull<Expression*>> &lower() const {
+        return lower_;
+    }
+    const std::optional<Nonnull<Expression*>> &upper() const {
+        return upper_;
+    }
+    const std::optional<Nonnull<Expression*>> &step() const {
+        return step_;
+    }
+
+private:
+    std::optional<Nonnull<Expression*>> lower_;
+    std::optional<Nonnull<Expression*>> upper_;
+    std::optional<Nonnull<Expression*>> step_;
+};
+
+
+class Subscript: public Expression {
+public:
+    static Nonnull<Subscript*> make_Subscript(
+        Nonnull<PYJU::Arena*> arena,
+        SourceLocation loc,
+        Nonnull<Expression*> value,
+        Nonnull<Expression*> slice) {
+        return arena->New<Subscript>(loc, value, slice);
+    }
+
+    static auto classof(const AstNode* node) {
+        return InheritsFromSubscript(node->kind());
+    }
+
+    Subscript(PYJU::SourceLocation loc,
+            Nonnull<Expression*> value,
+            Nonnull<Expression*> slice)
+        : Expression(AstNodeKind::Subscript, loc),
+        value_(value),
+        slice_(slice) {}
+
+    const Nonnull<Expression*> &value() const {
+        return value_;
+    }
+    const Nonnull<Expression*> &slice() const {
+        return slice_;
+    }
+private:
+    Nonnull<Expression*> value_;
+    Nonnull<Expression*> slice_;
+};
 } // namespace PYJU
 

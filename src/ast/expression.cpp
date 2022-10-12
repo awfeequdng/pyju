@@ -425,6 +425,25 @@ void Expression::PrintID(llvm::raw_ostream& out) const {
       out << ": " << *expr;
       break;
     }
+    case ExpressionKind::Slice: {
+      auto &slice = cast<Slice>(*this);
+      auto &lower = slice.lower();
+      auto &upper = slice.upper();
+      auto &step = slice.step();
+      if (lower) out << **lower;
+      out << " : ";
+      if (upper) out << **upper;
+      out << " : ";
+      if (step) out << **step;
+      break;
+    }
+    case ExpressionKind::Subscript: {
+      auto &sub = cast<Subscript>(*this);
+      auto &value = sub.value();
+      auto &slice = sub.slice();
+      out << *value << "[" << *slice << "]";
+      break;
+    }
     default:
       out << "...";
       break;

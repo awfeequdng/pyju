@@ -528,3 +528,8 @@ inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, Nonnul
 
 #define LAMBDA_01(args, e, l) PYJU::Lambda::make_Lambda(arena, l, args, e)
 
+#define SLICE_01(lower, upper, step, l) PYJU::Slice::make_Slice(arena, l, lower, upper, step)
+
+#define SUBSCRIPT_01(value, slice, l) PYJU::Subscript::make_Subscript(arena, l, value, slice)
+
+

@@ -652,6 +652,9 @@ namespace  PYJU  {
       // string
       // primary
       // function_call
+      // slice_item
+      // tuple_list
+      // subscription
       // expr
       // lambda_expression
       // id_item
@@ -738,6 +741,7 @@ namespace  PYJU  {
       // expr_list
       // expr_for_list
       // call_arguement_list
+      // slice_item_list
       // lambda_id_list
       // id_list
       char dummy20[sizeof (std::vector<Nonnull<Expression*>>)];
@@ -1099,16 +1103,20 @@ namespace  PYJU  {
         S_keyword_items = 169,                   // keyword_items
         S_primary = 170,                         // primary
         S_function_call = 171,                   // function_call
-        S_expr = 172,                            // expr
-        S_lambda_id_list = 173,                  // lambda_id_list
-        S_lambda_expression = 174,               // lambda_expression
-        S_id_list = 175,                         // id_list
-        S_id_item = 176,                         // id_item
-        S_comp_for = 177,                        // comp_for
-        S_comp_for_items = 178,                  // comp_for_items
-        S_id = 179,                              // id
-        S_sep = 180,                             // sep
-        S_sep_one = 181                          // sep_one
+        S_slice_item_list = 172,                 // slice_item_list
+        S_slice_item = 173,                      // slice_item
+        S_tuple_list = 174,                      // tuple_list
+        S_subscription = 175,                    // subscription
+        S_expr = 176,                            // expr
+        S_lambda_id_list = 177,                  // lambda_id_list
+        S_lambda_expression = 178,               // lambda_expression
+        S_id_list = 179,                         // id_list
+        S_id_item = 180,                         // id_item
+        S_comp_for = 181,                        // comp_for
+        S_comp_for_items = 182,                  // comp_for_items
+        S_id = 183,                              // id
+        S_sep = 184,                             // sep
+        S_sep_one = 185                          // sep_one
       };
     };
 
@@ -1167,6 +1175,9 @@ namespace  PYJU  {
       case symbol_kind::S_string: // string
       case symbol_kind::S_primary: // primary
       case symbol_kind::S_function_call: // function_call
+      case symbol_kind::S_slice_item: // slice_item
+      case symbol_kind::S_tuple_list: // tuple_list
+      case symbol_kind::S_subscription: // subscription
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_lambda_expression: // lambda_expression
       case symbol_kind::S_id_item: // id_item
@@ -1268,6 +1279,7 @@ namespace  PYJU  {
       case symbol_kind::S_expr_list: // expr_list
       case symbol_kind::S_expr_for_list: // expr_for_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
+      case symbol_kind::S_slice_item_list: // slice_item_list
       case symbol_kind::S_lambda_id_list: // lambda_id_list
       case symbol_kind::S_id_list: // id_list
         value.move< std::vector<Nonnull<Expression*>> > (std::move (that.value));
@@ -1700,6 +1712,9 @@ switch (yykind)
       case symbol_kind::S_string: // string
       case symbol_kind::S_primary: // primary
       case symbol_kind::S_function_call: // function_call
+      case symbol_kind::S_slice_item: // slice_item
+      case symbol_kind::S_tuple_list: // tuple_list
+      case symbol_kind::S_subscription: // subscription
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_lambda_expression: // lambda_expression
       case symbol_kind::S_id_item: // id_item
@@ -1801,6 +1816,7 @@ switch (yykind)
       case symbol_kind::S_expr_list: // expr_list
       case symbol_kind::S_expr_for_list: // expr_for_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
+      case symbol_kind::S_slice_item_list: // slice_item_list
       case symbol_kind::S_lambda_id_list: // lambda_id_list
       case symbol_kind::S_id_list: // id_list
         value.template destroy< std::vector<Nonnull<Expression*>> > ();
@@ -3851,9 +3867,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 3247,     ///< Last index in yytable_.
-      yynnts_ = 78,  ///< Number of nonterminal symbols.
-      yyfinal_ = 127 ///< Termination state number.
+      yylast_ = 3497,     ///< Last index in yytable_.
+      yynnts_ = 82,  ///< Number of nonterminal symbols.
+      yyfinal_ = 128 ///< Termination state number.
     };
 
 
@@ -3954,6 +3970,9 @@ switch (yykind)
       case symbol_kind::S_string: // string
       case symbol_kind::S_primary: // primary
       case symbol_kind::S_function_call: // function_call
+      case symbol_kind::S_slice_item: // slice_item
+      case symbol_kind::S_tuple_list: // tuple_list
+      case symbol_kind::S_subscription: // subscription
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_lambda_expression: // lambda_expression
       case symbol_kind::S_id_item: // id_item
@@ -4055,6 +4074,7 @@ switch (yykind)
       case symbol_kind::S_expr_list: // expr_list
       case symbol_kind::S_expr_for_list: // expr_for_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
+      case symbol_kind::S_slice_item_list: // slice_item_list
       case symbol_kind::S_lambda_id_list: // lambda_id_list
       case symbol_kind::S_id_list: // id_list
         value.copy< std::vector<Nonnull<Expression*>> > (YY_MOVE (that.value));
@@ -4135,6 +4155,9 @@ switch (yykind)
       case symbol_kind::S_string: // string
       case symbol_kind::S_primary: // primary
       case symbol_kind::S_function_call: // function_call
+      case symbol_kind::S_slice_item: // slice_item
+      case symbol_kind::S_tuple_list: // tuple_list
+      case symbol_kind::S_subscription: // subscription
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_lambda_expression: // lambda_expression
       case symbol_kind::S_id_item: // id_item
@@ -4236,6 +4259,7 @@ switch (yykind)
       case symbol_kind::S_expr_list: // expr_list
       case symbol_kind::S_expr_for_list: // expr_for_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
+      case symbol_kind::S_slice_item_list: // slice_item_list
       case symbol_kind::S_lambda_id_list: // lambda_id_list
       case symbol_kind::S_id_list: // id_list
         value.move< std::vector<Nonnull<Expression*>> > (YY_MOVE (s.value));
@@ -4328,7 +4352,7 @@ switch (yykind)
 
 #line 21 "parser.ypp"
 } //  PYJU 
-#line 4332 "./parser.h"
+#line 4356 "./parser.h"
 
 
 
