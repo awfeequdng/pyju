@@ -260,6 +260,11 @@
 %type <Nonnull<Statement*>> raise_statement
 %type <Nonnull<Statement*>> return_statement
 
+%type <Nonnull<Comprehension*>> comp_for
+%type <std::vector<Nonnull<Comprehension*>>> comp_for_items
+%type <Nonnull<Expression*>> id_item
+%type <std::vector<Nonnull<Expression*>>> id_list
+
 %type <std::vector<std::string>> sep
 %type <std::string> sep_one
 
@@ -867,13 +872,38 @@ expr
     | expr "or" expr { $$ = BOOLOP($1, Or, $3, context.source_loc()); }
     | "not" expr { $$ = UNARY($2, Not, context.source_loc()); }
 
-   // // Comprehension
-   // | "[" expr comp_for_items "]" { $$ = LIST_COMP_1($2, $3, context.source_loc()); }
-   // | "{" expr comp_for_items "}" { $$ = SET_COMP_1($2, $3, context.source_loc()); }
-   // | "{" expr ":" expr comp_for_items "}" { $$ = DICT_COMP_1($2, $4, $5, context.source_loc()); }
+    // Comprehension
+    | "[" expr comp_for_items "]" { $$ = LIST_COMP_1($2, $3, context.source_loc()); }
+    | "{" expr comp_for_items "}" { $$ = SET_COMP_1($2, $3, context.source_loc()); }
+    | "{" expr ":" expr comp_for_items "}" { $$ = DICT_COMP_1($2, $4, $5, context.source_loc()); }
 
     | ternary_if_statement { $$ = $1; }
    // | lambda_expression { $$ = $1; }
+    ;
+
+
+id_list
+    : id_list "," id { $$ = $1; LIST_ADD($$, $3); }
+    | id { LIST_NEW($$); LIST_ADD($$, $1); }
+    ;
+
+id_item
+    : id_list { $$ = TUPLE_01($1, context.source_loc()); }
+    | id_list "," { $$ = TUPLE_03($1, context.source_loc()); }
+    | "(" id ")" { $$ = $2; }
+    | "(" id_list "," ")" { $$ = TUPLE_03($2, context.source_loc()); }
+    | "(" id_list ","  id ")" { $$ = TUPLE_01(TUPLE_($2, $4), context.source_loc()); }
+    ;
+
+comp_for
+    : FOR id_item IN expr { $$ = COMP_FOR_01($2, $4, context.source_loc()); }
+    | FOR id_item IN expr IF expr {
+        $$ = COMP_FOR_02($2, $4, $6, context.source_loc()); }
+    ;
+
+comp_for_items
+    : comp_for_items comp_for { $$ = $1; LIST_ADD($$, $2); }
+    | comp_for { LIST_NEW($$); LIST_ADD($$, $1); }
     ;
 
 id

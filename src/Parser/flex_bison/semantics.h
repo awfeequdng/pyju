@@ -517,3 +517,11 @@ inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, Nonnul
 #define CLASS_04(decorator, id, keywords, stmts, l) PYJU::ClassDef::make_ClassDef(arena, l, \
         id, {}, keywords, stmts, decorator)
 
+
+#define COMP_FOR_01(target, iter, l) PYJU::Comprehension::make_Comprehension(arena, l, target, iter, {}, 0)
+#define COMP_FOR_02(target, iter, ifs, l) PYJU::Comprehension::make_Comprehension(arena, l, target, iter, {ifs}, 0)
+
+#define LIST_COMP_1(expr, generators, l) PYJU::ListComp::make_ListComp(arena, l, expr, generators)
+#define SET_COMP_1(expr, generators, l) PYJU::SetComp::make_SetComp(arena, l, expr, generators)
+#define DICT_COMP_1(key, val, generators, l) PYJU::DictComp::make_DictComp(arena, l, key, val, generators)
+

@@ -49,6 +49,7 @@ abstract class Expression : AstNode;
   class IfExp : Expression;
   class Dict : Expression;
   class Set : Expression;
+  class Comprehension : Expression;
   class ListComp : Expression;
   class SetComp : Expression;
   class DictComp : Expression;

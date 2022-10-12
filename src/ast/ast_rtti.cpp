@@ -48,6 +48,7 @@ std::string_view AstNodeKindName(AstNodeKind k) {
     case AstNodeKind::IfExp: return "if exp";
     case AstNodeKind::Dict: return "dict";
     case AstNodeKind::Set: return "set";
+    case AstNodeKind::Comprehension: return "comprehension";
     case AstNodeKind::ListComp: return "list comp";
     case AstNodeKind::SetComp: return "set comp";
     case AstNodeKind::DictComp: return "dict comp";
@@ -153,6 +154,7 @@ std::string_view ExpressionKindName(ExpressionKind k) {
     case ExpressionKind::IfExp: return "if exp";
     case ExpressionKind::Dict: return "dict";
     case ExpressionKind::Set: return "set";
+    case ExpressionKind::Comprehension: return "comprehension";
     case ExpressionKind::ListComp: return "list comp";
     case ExpressionKind::SetComp: return "set comp";
     case ExpressionKind::DictComp: return "dict comp";

@@ -643,6 +643,9 @@ namespace  PYJU  {
       // parameter_list_opt
       char dummy3[sizeof (Nonnull<Arguments*>)];
 
+      // comp_for
+      char dummy4[sizeof (Nonnull<Comprehension*>)];
+
       // tuple_item
       // for_tuple_item
       // ternary_if_statement
@@ -650,22 +653,23 @@ namespace  PYJU  {
       // primary
       // function_call
       // expr
-      char dummy4[sizeof (Nonnull<Expression*>)];
+      // id_item
+      char dummy5[sizeof (Nonnull<Expression*>)];
 
       // parameter_list
-      char dummy5[sizeof (Nonnull<FnArg*>)];
+      char dummy6[sizeof (Nonnull<FnArg*>)];
 
       // keyword_item
-      char dummy6[sizeof (Nonnull<Keyword*>)];
+      char dummy7[sizeof (Nonnull<Keyword*>)];
 
       // id
-      char dummy7[sizeof (Nonnull<Name*>)];
+      char dummy8[sizeof (Nonnull<Name*>)];
 
       // parameter_list_no_posonly
-      char dummy8[sizeof (Nonnull<NoPosOnlyArg*>)];
+      char dummy9[sizeof (Nonnull<NoPosOnlyArg*>)];
 
       // parameter_list_starargs
-      char dummy9[sizeof (Nonnull<StarArg*>)];
+      char dummy10[sizeof (Nonnull<StarArg*>)];
 
       // script_unit
       // statement
@@ -695,32 +699,35 @@ namespace  PYJU  {
       // if_statement
       // assignment_statement
       // expression_statment
-      char dummy10[sizeof (Nonnull<Statement*>)];
+      char dummy11[sizeof (Nonnull<Statement*>)];
 
       // dict
-      char dummy11[sizeof (PairNonnullExpr)];
+      char dummy12[sizeof (PairNonnullExpr)];
 
       // real_literal
       // image_literal
-      char dummy12[sizeof (double)];
+      char dummy13[sizeof (double)];
 
       // integer_literal
-      char dummy13[sizeof (long long)];
+      char dummy14[sizeof (long long)];
 
       // augassign_op
-      char dummy14[sizeof (operatorType)];
+      char dummy15[sizeof (operatorType)];
 
       // identifier
       // sized_type_literal
       // string_literal
       // sep_one
-      char dummy15[sizeof (std::string)];
+      char dummy16[sizeof (std::string)];
 
       // module_item_list
-      char dummy16[sizeof (std::vector<Nonnull<Alias*>>)];
+      char dummy17[sizeof (std::vector<Nonnull<Alias*>>)];
 
       // defparameter_list
-      char dummy17[sizeof (std::vector<Nonnull<Arg*>>)];
+      char dummy18[sizeof (std::vector<Nonnull<Arg*>>)];
+
+      // comp_for_items
+      char dummy19[sizeof (std::vector<Nonnull<Comprehension*>>)];
 
       // module
       // decorators_opt
@@ -730,10 +737,11 @@ namespace  PYJU  {
       // expr_list
       // expr_for_list
       // call_arguement_list
-      char dummy18[sizeof (std::vector<Nonnull<Expression*>>)];
+      // id_list
+      char dummy20[sizeof (std::vector<Nonnull<Expression*>>)];
 
       // keyword_items
-      char dummy19[sizeof (std::vector<Nonnull<Keyword*>>)];
+      char dummy21[sizeof (std::vector<Nonnull<Keyword*>>)];
 
       // statements
       // sep_statements
@@ -744,13 +752,13 @@ namespace  PYJU  {
       // single_line_multi_statements_opt
       // except_list
       // with_item_list
-      char dummy20[sizeof (std::vector<Nonnull<Statement*>>)];
+      char dummy22[sizeof (std::vector<Nonnull<Statement*>>)];
 
       // dict_list
-      char dummy21[sizeof (std::vector<PairNonnullExpr>)];
+      char dummy23[sizeof (std::vector<PairNonnullExpr>)];
 
       // sep
-      char dummy22[sizeof (std::vector<std::string>)];
+      char dummy24[sizeof (std::vector<std::string>)];
     };
 
     /// The size of the largest semantic type.
@@ -1090,9 +1098,13 @@ namespace  PYJU  {
         S_primary = 170,                         // primary
         S_function_call = 171,                   // function_call
         S_expr = 172,                            // expr
-        S_id = 173,                              // id
-        S_sep = 174,                             // sep
-        S_sep_one = 175                          // sep_one
+        S_id_list = 173,                         // id_list
+        S_id_item = 174,                         // id_item
+        S_comp_for = 175,                        // comp_for
+        S_comp_for_items = 176,                  // comp_for_items
+        S_id = 177,                              // id
+        S_sep = 178,                             // sep
+        S_sep_one = 179                          // sep_one
       };
     };
 
@@ -1141,6 +1153,10 @@ namespace  PYJU  {
         value.move< Nonnull<Arguments*> > (std::move (that.value));
         break;
 
+      case symbol_kind::S_comp_for: // comp_for
+        value.move< Nonnull<Comprehension*> > (std::move (that.value));
+        break;
+
       case symbol_kind::S_tuple_item: // tuple_item
       case symbol_kind::S_for_tuple_item: // for_tuple_item
       case symbol_kind::S_ternary_if_statement: // ternary_if_statement
@@ -1148,6 +1164,7 @@ namespace  PYJU  {
       case symbol_kind::S_primary: // primary
       case symbol_kind::S_function_call: // function_call
       case symbol_kind::S_expr: // expr
+      case symbol_kind::S_id_item: // id_item
         value.move< Nonnull<Expression*> > (std::move (that.value));
         break;
 
@@ -1234,6 +1251,10 @@ namespace  PYJU  {
         value.move< std::vector<Nonnull<Arg*>> > (std::move (that.value));
         break;
 
+      case symbol_kind::S_comp_for_items: // comp_for_items
+        value.move< std::vector<Nonnull<Comprehension*>> > (std::move (that.value));
+        break;
+
       case symbol_kind::S_module: // module
       case symbol_kind::S_decorators_opt: // decorators_opt
       case symbol_kind::S_decorators: // decorators
@@ -1242,6 +1263,7 @@ namespace  PYJU  {
       case symbol_kind::S_expr_list: // expr_list
       case symbol_kind::S_expr_for_list: // expr_for_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
+      case symbol_kind::S_id_list: // id_list
         value.move< std::vector<Nonnull<Expression*>> > (std::move (that.value));
         break;
 
@@ -1328,6 +1350,20 @@ namespace  PYJU  {
       {}
 #else
       basic_symbol (typename Base::kind_type t, const Nonnull<Arguments*>& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, Nonnull<Comprehension*>&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const Nonnull<Comprehension*>& v, const location_type& l)
         : Base (t)
         , value (v)
         , location (l)
@@ -1531,6 +1567,20 @@ namespace  PYJU  {
 #endif
 
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, std::vector<Nonnull<Comprehension*>>&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const std::vector<Nonnull<Comprehension*>>& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, std::vector<Nonnull<Expression*>>&& v, location_type&& l)
         : Base (t)
         , value (std::move (v))
@@ -1634,6 +1684,10 @@ switch (yykind)
         value.template destroy< Nonnull<Arguments*> > ();
         break;
 
+      case symbol_kind::S_comp_for: // comp_for
+        value.template destroy< Nonnull<Comprehension*> > ();
+        break;
+
       case symbol_kind::S_tuple_item: // tuple_item
       case symbol_kind::S_for_tuple_item: // for_tuple_item
       case symbol_kind::S_ternary_if_statement: // ternary_if_statement
@@ -1641,6 +1695,7 @@ switch (yykind)
       case symbol_kind::S_primary: // primary
       case symbol_kind::S_function_call: // function_call
       case symbol_kind::S_expr: // expr
+      case symbol_kind::S_id_item: // id_item
         value.template destroy< Nonnull<Expression*> > ();
         break;
 
@@ -1727,6 +1782,10 @@ switch (yykind)
         value.template destroy< std::vector<Nonnull<Arg*>> > ();
         break;
 
+      case symbol_kind::S_comp_for_items: // comp_for_items
+        value.template destroy< std::vector<Nonnull<Comprehension*>> > ();
+        break;
+
       case symbol_kind::S_module: // module
       case symbol_kind::S_decorators_opt: // decorators_opt
       case symbol_kind::S_decorators: // decorators
@@ -1735,6 +1794,7 @@ switch (yykind)
       case symbol_kind::S_expr_list: // expr_list
       case symbol_kind::S_expr_for_list: // expr_for_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
+      case symbol_kind::S_id_list: // id_list
         value.template destroy< std::vector<Nonnull<Expression*>> > ();
         break;
 
@@ -3528,7 +3588,7 @@ switch (yykind)
     // YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
     // Performed when YYTABLE does not specify something else to do.  Zero
     // means the default is an error.
-    static const unsigned char yydefact_[];
+    static const short yydefact_[];
 
     // YYPGOTO[NTERM-NUM].
     static const short yypgoto_[];
@@ -3783,9 +3843,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 2920,     ///< Last index in yytable_.
-      yynnts_ = 72,  ///< Number of nonterminal symbols.
-      yyfinal_ = 121 ///< Termination state number.
+      yylast_ = 3121,     ///< Last index in yytable_.
+      yynnts_ = 76,  ///< Number of nonterminal symbols.
+      yyfinal_ = 122 ///< Termination state number.
     };
 
 
@@ -3876,6 +3936,10 @@ switch (yykind)
         value.copy< Nonnull<Arguments*> > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_comp_for: // comp_for
+        value.copy< Nonnull<Comprehension*> > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_tuple_item: // tuple_item
       case symbol_kind::S_for_tuple_item: // for_tuple_item
       case symbol_kind::S_ternary_if_statement: // ternary_if_statement
@@ -3883,6 +3947,7 @@ switch (yykind)
       case symbol_kind::S_primary: // primary
       case symbol_kind::S_function_call: // function_call
       case symbol_kind::S_expr: // expr
+      case symbol_kind::S_id_item: // id_item
         value.copy< Nonnull<Expression*> > (YY_MOVE (that.value));
         break;
 
@@ -3969,6 +4034,10 @@ switch (yykind)
         value.copy< std::vector<Nonnull<Arg*>> > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_comp_for_items: // comp_for_items
+        value.copy< std::vector<Nonnull<Comprehension*>> > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_module: // module
       case symbol_kind::S_decorators_opt: // decorators_opt
       case symbol_kind::S_decorators: // decorators
@@ -3977,6 +4046,7 @@ switch (yykind)
       case symbol_kind::S_expr_list: // expr_list
       case symbol_kind::S_expr_for_list: // expr_for_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
+      case symbol_kind::S_id_list: // id_list
         value.copy< std::vector<Nonnull<Expression*>> > (YY_MOVE (that.value));
         break;
 
@@ -4045,6 +4115,10 @@ switch (yykind)
         value.move< Nonnull<Arguments*> > (YY_MOVE (s.value));
         break;
 
+      case symbol_kind::S_comp_for: // comp_for
+        value.move< Nonnull<Comprehension*> > (YY_MOVE (s.value));
+        break;
+
       case symbol_kind::S_tuple_item: // tuple_item
       case symbol_kind::S_for_tuple_item: // for_tuple_item
       case symbol_kind::S_ternary_if_statement: // ternary_if_statement
@@ -4052,6 +4126,7 @@ switch (yykind)
       case symbol_kind::S_primary: // primary
       case symbol_kind::S_function_call: // function_call
       case symbol_kind::S_expr: // expr
+      case symbol_kind::S_id_item: // id_item
         value.move< Nonnull<Expression*> > (YY_MOVE (s.value));
         break;
 
@@ -4138,6 +4213,10 @@ switch (yykind)
         value.move< std::vector<Nonnull<Arg*>> > (YY_MOVE (s.value));
         break;
 
+      case symbol_kind::S_comp_for_items: // comp_for_items
+        value.move< std::vector<Nonnull<Comprehension*>> > (YY_MOVE (s.value));
+        break;
+
       case symbol_kind::S_module: // module
       case symbol_kind::S_decorators_opt: // decorators_opt
       case symbol_kind::S_decorators: // decorators
@@ -4146,6 +4225,7 @@ switch (yykind)
       case symbol_kind::S_expr_list: // expr_list
       case symbol_kind::S_expr_for_list: // expr_for_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
+      case symbol_kind::S_id_list: // id_list
         value.move< std::vector<Nonnull<Expression*>> > (YY_MOVE (s.value));
         break;
 
@@ -4236,7 +4316,7 @@ switch (yykind)
 
 #line 21 "parser.ypp"
 } //  PYJU 
-#line 4240 "./parser.h"
+#line 4320 "./parser.h"
 
 
 

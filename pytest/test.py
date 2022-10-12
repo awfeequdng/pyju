@@ -266,3 +266,7 @@ class value(A, B):
     def test_no_pass():
         pass
 
+[expr for a in b]
+{a for a in b}
+{a:b for a in set1 for b in set2}
+

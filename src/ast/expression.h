@@ -962,5 +962,152 @@ public:
         : Expression(AstNodeKind::Star, loc) {}
 };
 
+
+class Comprehension : public Expression {
+public:
+    static PYJU::Nonnull<Comprehension*> make_Comprehension(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                Nonnull<Expression*> target,
+                Nonnull<Expression*> iter,
+                std::vector<Nonnull<Expression*>> ifs,
+                bool is_async) {
+        return arena->New<Comprehension>(loc, target, iter, ifs, is_async);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromComprehension(node->kind());
+    }
+
+    Comprehension(const PYJU::SourceLocation& loc,
+              Nonnull<Expression*> target,
+              Nonnull<Expression*> iter,
+              std::vector<Nonnull<Expression*>> ifs,
+              bool is_async)
+      : Expression(AstNodeKind::Comprehension, loc),
+        target_(target),
+        iter_(iter),
+        ifs_(ifs),
+        is_async_(is_async) {}
+
+    auto target() const -> const Nonnull<Expression*>& { return target_; }
+    auto iter() const -> const Nonnull<Expression*>& { return iter_; }
+    auto ifs() const -> const std::vector<Nonnull<Expression*>>& { return ifs_; }
+    auto is_async() -> const bool { return is_async_; }
+
+protected:
+    Nonnull<Expression*> target_;
+    Nonnull<Expression*> iter_;
+    std::vector<Nonnull<Expression*>> ifs_;
+    bool is_async_;
+};
+
+
+class ListComp: public Expression {
+public:
+    static Nonnull<ListComp*> make_ListComp(
+        Nonnull<PYJU::Arena*> arena,
+        SourceLocation loc,
+        Nonnull<Expression*> elt,
+        std::vector<Nonnull<Comprehension*>> generators) {
+        return arena->New<ListComp>(loc, elt, generators);
+    }
+
+    static auto classof(const AstNode* node) {
+        return InheritsFromListComp(node->kind());
+    }
+
+    ListComp(PYJU::SourceLocation loc,
+            Nonnull<Expression*> elt,
+        std::vector<Nonnull<Comprehension*>> generators)
+        : Expression(AstNodeKind::ListComp, loc),
+        elt_(elt),
+        generators_(generators) {}
+
+    const Nonnull<Expression*> &elt() const {
+        return elt_;
+    }
+    const std::vector<Nonnull<Comprehension*>> &generators() const {
+        return generators_;
+    }
+
+private:
+    Nonnull<Expression*> elt_;
+    std::vector<Nonnull<Comprehension*>> generators_;
+};
+
+class SetComp: public Expression {
+public:
+    static Nonnull<SetComp*> make_SetComp(
+        Nonnull<PYJU::Arena*> arena,
+        SourceLocation loc,
+        Nonnull<Expression*> elt,
+        std::vector<Nonnull<Comprehension*>> generators) {
+        return arena->New<SetComp>(loc, elt, generators);
+    }
+
+    static auto classof(const AstNode* node) {
+        return InheritsFromSetComp(node->kind());
+    }
+
+    SetComp(PYJU::SourceLocation loc,
+            Nonnull<Expression*> elt,
+            std::vector<Nonnull<Comprehension*>> generators)
+        : Expression(AstNodeKind::SetComp, loc),
+        elt_(elt),
+        generators_(generators) {}
+
+    const Nonnull<Expression*> &elt() const {
+        return elt_;
+    }
+    const std::vector<Nonnull<Comprehension*>> &generators() const {
+        return generators_;
+    }
+
+private:
+    Nonnull<Expression*> elt_;
+    std::vector<Nonnull<Comprehension*>> generators_;
+};
+
+class DictComp: public Expression {
+public:
+    static Nonnull<DictComp*> make_DictComp(
+        Nonnull<PYJU::Arena*> arena,
+        SourceLocation loc,
+        Nonnull<Expression*> key,
+        Nonnull<Expression*> value,
+        std::vector<Nonnull<Comprehension*>> generators) {
+        return arena->New<DictComp>(loc, key, value, generators);
+    }
+
+    static auto classof(const AstNode* node) {
+        return InheritsFromDictComp(node->kind());
+    }
+
+    DictComp(PYJU::SourceLocation loc,
+            Nonnull<Expression*> key,
+            Nonnull<Expression*> value,
+            std::vector<Nonnull<Comprehension*>> generators)
+        : Expression(AstNodeKind::DictComp, loc),
+        key_(key),
+        value_(value),
+        generators_(generators) {}
+
+    const Nonnull<Expression*> &key() const {
+        return key_;
+    }
+    const Nonnull<Expression*> &value() const {
+        return value_;
+    }
+    const std::vector<Nonnull<Comprehension*>> &generators() const {
+        return generators_;
+    }
+
+private:
+    Nonnull<Expression*> key_;
+    Nonnull<Expression*> value_;
+    std::vector<Nonnull<Comprehension*>> generators_;
+};
+
 } // namespace PYJU
 

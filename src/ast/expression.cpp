@@ -366,6 +366,52 @@ void Expression::PrintID(llvm::raw_ostream& out) const {
       }
       break;
     }
+    case ExpressionKind::ListComp: {
+      auto &comp = cast<ListComp>(*this);
+      auto &elt = comp.elt();
+      auto &generators = comp.generators();
+      out << " [" << *elt;
+      for (size_t i = 0; i < generators.size(); i++) {
+        out << cast<Expression>(*generators[i]) << " ";
+      }
+      out << "] ";
+      break;
+    }
+    case ExpressionKind::SetComp: {
+      auto &comp = cast<SetComp>(*this);
+      auto &elt = comp.elt();
+      auto &generators = comp.generators();
+      out << " {" << *elt;
+      for (size_t i = 0; i < generators.size(); i++) {
+        out << cast<Expression>(*generators[i]) << " ";
+      }
+      out << "} ";
+      break;
+    }
+    case ExpressionKind::DictComp: {
+      auto &comp = cast<DictComp>(*this);
+      auto &key = comp.key();
+      auto &value = comp.value();
+      auto &generators = comp.generators();
+      out << " {" << *key << " : " << *value;
+      for (size_t i = 0; i < generators.size(); i++) {
+        out << cast<Expression>(*generators[i]) << " ";
+      }
+      out << "} ";
+      break;
+    }
+    case ExpressionKind::Comprehension: {
+      auto &comp = cast<Comprehension>(*this);
+      auto &target = comp.target();
+      auto &iter = comp.iter();
+      auto &ifs = comp.ifs();
+      out << " for " << *target << " in " << *iter;
+      if (ifs.size() > 0) {
+        for (auto &if_expr: ifs)
+          out << " if " << *if_expr;
+      }
+      break;
+    }
     default:
       out << "...";
       break;
