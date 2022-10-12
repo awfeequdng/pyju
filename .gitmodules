@@ -80,3 +80,9 @@
 [submodule "contrib/utf8proc"]
 	path = contrib/utf8proc
 	url = https://github.com/JuliaStrings/utf8proc.git
+[submodule "contrib/flex"]
+	path = contrib/flex
+	url = git@github.com:westes/flex.git
+[submodule "contrib/bison"]
+	path = contrib/bison
+	url = https://github.com/akimd/bison

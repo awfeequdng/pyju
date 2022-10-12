@@ -748,4 +748,47 @@ protected:
     std::vector<Nonnull<Statement*>> body_;
 };
 
+class ClassDef : public Statement {
+public:
+    static PYJU::Nonnull<ClassDef*> make_ClassDef(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                Nonnull<Name*> name,
+                std::vector<Nonnull<Expression*>> bases,
+                std::vector<Nonnull<Keyword*>> keywords,
+                std::vector<Nonnull<Statement*>> body,
+                std::vector<Nonnull<Expression*>> decorator_list) {
+        return arena->New<ClassDef>(loc, name, bases, keywords, body, decorator_list);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromClassDef(node->kind());
+    }
+
+    ClassDef(const PYJU::SourceLocation& loc,
+             Nonnull<Name*> name,
+             std::vector<Nonnull<Expression*>> bases,
+             std::vector<Nonnull<Keyword*>> keywords,
+             std::vector<Nonnull<Statement*>> body,
+             std::vector<Nonnull<Expression*>> decorator_list)
+      : Statement(AstNodeKind::ClassDef, loc),
+        name_(name),
+        bases_(bases),
+        keywords_(keywords),
+        body_(body),
+        decorator_list_(decorator_list) {}
+
+    const Nonnull<Name*>& name() const { return name_; }
+    const std::vector<Nonnull<Expression*>>& bases() const { return bases_; }
+    const std::vector<Nonnull<Keyword*>>& keywords() const { return keywords_; }
+    const std::vector<Nonnull<Statement*>>& body() const { return body_; }
+    const std::vector<Nonnull<Expression*>>& decorator_list() const { return decorator_list_; }
+protected:
+    Nonnull<Name*> name_;
+    std::vector<Nonnull<Expression*>> bases_;
+    std::vector<Nonnull<Keyword*>> keywords_;
+    std::vector<Nonnull<Statement*>> body_;
+    std::vector<Nonnull<Expression*>> decorator_list_;
+};
+
 } // namespace PYJU

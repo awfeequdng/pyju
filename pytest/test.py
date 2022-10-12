@@ -249,3 +249,20 @@ with a, b, cxx as c:
     print(b)
     print(c)
 
+@with1(dd)
+@2+2
+@test
+class value(A, B):
+    def __init__():
+        print("hello world")
+
+    def test(x):
+        a = b
+        c += b
+        return
+    def test_pass():
+        pass
+
+    def test_no_pass():
+        pass
+

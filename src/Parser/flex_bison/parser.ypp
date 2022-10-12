@@ -211,6 +211,7 @@
 %type <Nonnull<Statement*>> if_statement
 %type <Nonnull<Statement*>> elif_statement
 %type <Nonnull<Statement*>> function_def
+%type <Nonnull<Statement*>> class_def
 %type <std::vector<Nonnull<Statement*>>> body_stmts
 %type <std::vector<Nonnull<Statement*>>> statements1
 %type <std::vector<Nonnull<Statement*>>> statements
@@ -563,7 +564,7 @@ multi_line_statement
     | try_statement
     | with_statement
     | function_def
-//    | class_def
+    | class_def
 //    | async_func_def
 //    | async_for_stmt
 //    | async_with_stmt
@@ -648,6 +649,21 @@ function_def
 //        TYPE_COMMENT NEWLINE statements {
 //            $$ = FUNCTION_04($1, $3, $5, $8, $12, $10, context.source_loc()); }
     ;
+
+
+class_def
+    : decorators_opt CLASS id ":" sep statements {
+        $$ = CLASS_01($1, $3, $6, context.source_loc()); }
+    | decorators_opt CLASS id "(" expr_list_opt ")" ":" sep statements {
+        $$ = CLASS_02($1, $3, $5, $9, context.source_loc()); }
+    | decorators_opt CLASS id "(" expr_list "," keyword_items ")"
+        ":" sep statements { $$ = CLASS_03($1, $3, $5, $7, $11, context.source_loc()); }
+    | decorators_opt CLASS id "(" keyword_items "," expr_list ")"
+        ":" sep statements { $$ = CLASS_03($1, $3, $7, $5, $11, context.source_loc()); }
+    | decorators_opt CLASS id "(" keyword_items ")" ":" sep statements {
+        $$ = CLASS_04($1, $3, $5, $9, context.source_loc()); }
+    ;
+
 
 global_statement
     : GLOBAL expr_list { $$ = GLOBAL($2, context.source_loc()); }

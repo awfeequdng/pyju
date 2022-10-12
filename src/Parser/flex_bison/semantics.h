@@ -508,3 +508,12 @@ inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, Nonnul
 #define WITH(items, body, l) PYJU::With::make_With(arena, l, items, body)
 
 
+#define CLASS_01(decorator, id, stmts, l) PYJU::ClassDef::make_ClassDef(arena, l, \
+        id, {}, {}, stmts, decorator)
+#define CLASS_02(decorator, id, args, stmts, l) PYJU::ClassDef::make_ClassDef(arena, l, \
+        id, args, {}, stmts, decorator)
+#define CLASS_03(decorator, id, args, keywords, stmts, l) PYJU::ClassDef::make_ClassDef(arena, l, \
+        id, args, keywords, stmts, decorator)
+#define CLASS_04(decorator, id, keywords, stmts, l) PYJU::ClassDef::make_ClassDef(arena, l, \
+        id, {}, keywords, stmts, decorator)
+

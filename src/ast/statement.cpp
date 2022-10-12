@@ -314,6 +314,33 @@ void Statement::PrintDepth(int depth, llvm::raw_ostream& out) const {
         if (vars) out << " as " << **vars;
         break;
       }
+      case StatementKind::ClassDef: {
+        auto &class_def = cast<ClassDef>(*this);
+        auto &name = class_def.name();
+        auto &bases = class_def.bases();
+        auto &keywords = class_def.keywords();
+        auto &body = class_def.body();
+        auto &decorator_list = class_def.decorator_list();
+        for (auto &expr: decorator_list) {
+          Space(depth, out) << "@" << *expr << "\n";
+        }
+        Space(depth, out) << "class " << *name << " (";
+        bool have_bases = (bases.size() > 0);
+        for (size_t i = 0; i < bases.size(); i++) {
+          if (i > 0) out << ", ";
+          out << *bases[i];
+        }
+        for (size_t i = 0; i < keywords.size(); i++) {
+          if (have_bases || i > 0) out << ", ";
+          out << *keywords[i];
+        }
+        out << "):\n";
+        for (auto &b: body) {
+          cast<Statement>(*b).PrintDepth(depth + 1, out);
+        }
+
+        break;
+      }
       default:
         out << "unknown kind: ";
         break;
