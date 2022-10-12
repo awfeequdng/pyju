@@ -525,3 +525,6 @@ inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, Nonnul
 #define SET_COMP_1(expr, generators, l) PYJU::SetComp::make_SetComp(arena, l, expr, generators)
 #define DICT_COMP_1(key, val, generators, l) PYJU::DictComp::make_DictComp(arena, l, key, val, generators)
 
+
+#define LAMBDA_01(args, e, l) PYJU::Lambda::make_Lambda(arena, l, args, e)
+

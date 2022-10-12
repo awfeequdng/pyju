@@ -244,6 +244,8 @@
 %type <Nonnull<Expression*>> primary
 %type <Nonnull<Expression*>> function_call
 %type <Nonnull<Expression*>> ternary_if_statement
+%type <Nonnull<Expression*>> lambda_expression
+%type <std::vector<Nonnull<Expression*>>> lambda_id_list
 %type <std::vector<Nonnull<Expression*>>> module
 %type <Nonnull<Alias*>> module_as_id
 %type <std::vector<Nonnull<Alias*>>> module_item_list
@@ -269,7 +271,7 @@
 %type <std::string> sep_one
 
 // Precedence
-
+%precedence LAMBDA
 %precedence ":="
 %left "or"
 %left "and"
@@ -878,9 +880,28 @@ expr
     | "{" expr ":" expr comp_for_items "}" { $$ = DICT_COMP_1($2, $4, $5, context.source_loc()); }
 
     | ternary_if_statement { $$ = $1; }
-   // | lambda_expression { $$ = $1; }
+    | lambda_expression { $$ = $1; }
     ;
 
+
+lambda_id_list
+    : lambda_id_list "," id { $$ = $1; LIST_ADD($$, $3); }
+    | id { LIST_NEW($$); LIST_ADD($$, ARGS_01($1, context.source_loc())); }
+    ;
+
+lambda_expression
+    : LAMBDA ":" expr %prec LAMBDA {
+        $$ = LAMBDA_01({}, $3, context.source_loc()); }
+    | LAMBDA lambda_id_list ":" expr %prec LAMBDA {
+        $$ = LAMBDA_01($2, $4, context.source_loc()); }
+    ;
+
+//lambda_expression
+//    : KW_LAMBDA ":" expr %prec LAMBDA {
+//        $$ = LAMBDA_01(FUNC_ARG_LIST_02(context.source_loc()), $3, context.source_loc()); }
+//    | KW_LAMBDA lambda_id_list ":" expr %prec LAMBDA {
+//        $$ = LAMBDA_01(FUNC_ARG_LIST_01($2, context.source_loc()), $4, context.source_loc()); }
+//    ;
 
 id_list
     : id_list "," id { $$ = $1; LIST_ADD($$, $3); }

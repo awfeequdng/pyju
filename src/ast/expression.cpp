@@ -412,6 +412,19 @@ void Expression::PrintID(llvm::raw_ostream& out) const {
       }
       break;
     }
+    case ExpressionKind::Lambda: {
+      auto &lambda = cast<Lambda>(*this);
+      auto &args = lambda.args();
+      auto &expr = lambda.expr();
+      out << "lambda ";
+
+      for (size_t i = 0; i < args.size(); i++) {
+        if (i > 0) out << ", ";
+        out << *args[i];
+      }
+      out << ": " << *expr;
+      break;
+    }
     default:
       out << "...";
       break;

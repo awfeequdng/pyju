@@ -1109,5 +1109,38 @@ private:
     std::vector<Nonnull<Comprehension*>> generators_;
 };
 
+class Lambda: public Expression {
+public:
+    static Nonnull<Lambda*> make_Lambda(
+        Nonnull<PYJU::Arena*> arena,
+        SourceLocation loc,
+        std::vector<Nonnull<Expression*>> args,
+        Nonnull<Expression*> expr) {
+        return arena->New<Lambda>(loc, args, expr);
+    }
+
+    static auto classof(const AstNode* node) {
+        return InheritsFromLambda(node->kind());
+    }
+
+    Lambda(PYJU::SourceLocation loc,
+            std::vector<Nonnull<Expression*>> args,
+            Nonnull<Expression*> expr)
+        : Expression(AstNodeKind::Lambda, loc),
+        args_(args),
+        expr_(expr) {}
+
+    const Nonnull<Expression*> &expr() const {
+        return expr_;
+    }
+    const std::vector<Nonnull<Expression*>> &args() const {
+        return args_;
+    }
+
+private:
+    std::vector<Nonnull<Expression*>> args_;
+    Nonnull<Expression*> expr_;
+};
+
 } // namespace PYJU
 

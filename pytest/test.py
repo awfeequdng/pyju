@@ -270,3 +270,8 @@ class value(A, B):
 {a for a in b}
 {a:b for a in set1 for b in set2}
 
+print({e for e in exprs})
+
+lambda x, y, z: x*y*z
+
+func = lambda x, y : x * y
