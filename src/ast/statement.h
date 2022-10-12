@@ -545,4 +545,42 @@ protected:
     std::optional<Nonnull<Expression*>> value_;
 };
 
+class For : public Statement {
+public:
+    static PYJU::Nonnull<For*> make_For(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                Nonnull<Expression*> target,
+                Nonnull<Expression*> iter,
+                std::vector<Nonnull<Statement*>> body,
+                std::vector<Nonnull<Statement*>> orelse) {
+        return arena->New<For>(loc, target, iter, body, orelse);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromFor(node->kind());
+    }
+
+    For(const PYJU::SourceLocation& loc,
+              Nonnull<Expression*> target,
+              Nonnull<Expression*> iter,
+              std::vector<Nonnull<Statement*>> body,
+              std::vector<Nonnull<Statement*>> orelse)
+      : Statement(AstNodeKind::For, loc),
+        target_(target),
+        iter_(iter),
+        body_(body),
+        orelse_(orelse) {}
+    auto target() const -> const Nonnull<Expression*>& { return target_; }
+    auto iter() const -> const Nonnull<Expression*>& { return iter_; }
+    auto body() const -> const std::vector<Nonnull<Statement*>>& { return body_; }
+    auto orelse() const -> const std::vector<Nonnull<Statement*>>& { return orelse_; }
+
+protected:
+    Nonnull<Expression*> target_;
+    Nonnull<Expression*> iter_;
+    std::vector<Nonnull<Statement*>> body_;
+    std::vector<Nonnull<Statement*>> orelse_;
+};
+
 } // namespace PYJU

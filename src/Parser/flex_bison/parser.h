@@ -644,6 +644,7 @@ namespace  PYJU  {
       char dummy3[sizeof (Nonnull<Arguments*>)];
 
       // tuple_item
+      // for_tuple_item
       // ternary_if_statement
       // string
       // primary
@@ -679,6 +680,7 @@ namespace  PYJU  {
       // ann_assignment_statement
       // single_line_statement
       // import_statement
+      // for_statement
       // multi_line_statement
       // function_def
       // global_statement
@@ -720,6 +722,7 @@ namespace  PYJU  {
       // target_list
       // expr_list_opt
       // expr_list
+      // expr_for_list
       // call_arguement_list
       char dummy18[sizeof (std::vector<Nonnull<Expression*>>)];
 
@@ -1026,51 +1029,54 @@ namespace  PYJU  {
         S_continue_statement = 117,              // continue_statement
         S_assert_statement = 118,                // assert_statement
         S_tuple_item = 119,                      // tuple_item
-        S_raise_statement = 120,                 // raise_statement
-        S_return_statement = 121,                // return_statement
-        S_delete_statement = 122,                // delete_statement
-        S_augassign_statement = 123,             // augassign_statement
-        S_augassign_op = 124,                    // augassign_op
-        S_ann_assignment_statement = 125,        // ann_assignment_statement
-        S_single_line_statement = 126,           // single_line_statement
-        S_module = 127,                          // module
-        S_module_as_id = 128,                    // module_as_id
-        S_module_item_list = 129,                // module_item_list
-        S_dot_list = 130,                        // dot_list
-        S_import_statement = 131,                // import_statement
-        S_multi_line_statement = 132,            // multi_line_statement
-        S_decorators_opt = 133,                  // decorators_opt
-        S_decorators = 134,                      // decorators
-        S_parameter = 135,                       // parameter
-        S_parameter_list = 136,                  // parameter_list
-        S_parameter_list_no_posonly = 137,       // parameter_list_no_posonly
-        S_defparameter_list = 138,               // defparameter_list
-        S_parameter_list_starargs = 139,         // parameter_list_starargs
-        S_parameter_list_opt = 140,              // parameter_list_opt
-        S_comma_opt = 141,                       // comma_opt
-        S_function_def = 142,                    // function_def
-        S_global_statement = 143,                // global_statement
-        S_ternary_if_statement = 144,            // ternary_if_statement
-        S_nonlocal_statement = 145,              // nonlocal_statement
-        S_elif_statement = 146,                  // elif_statement
-        S_if_statement = 147,                    // if_statement
-        S_target_list = 148,                     // target_list
-        S_assignment_statement = 149,            // assignment_statement
-        S_expression_statment = 150,             // expression_statment
-        S_string = 151,                          // string
-        S_expr_list_opt = 152,                   // expr_list_opt
-        S_expr_list = 153,                       // expr_list
-        S_dict = 154,                            // dict
-        S_dict_list = 155,                       // dict_list
-        S_call_arguement_list = 156,             // call_arguement_list
-        S_keyword_item = 157,                    // keyword_item
-        S_keyword_items = 158,                   // keyword_items
-        S_primary = 159,                         // primary
-        S_function_call = 160,                   // function_call
-        S_expr = 161,                            // expr
-        S_id = 162,                              // id
-        S_sep = 163,                             // sep
-        S_sep_one = 164                          // sep_one
+        S_for_tuple_item = 120,                  // for_tuple_item
+        S_raise_statement = 121,                 // raise_statement
+        S_return_statement = 122,                // return_statement
+        S_delete_statement = 123,                // delete_statement
+        S_augassign_statement = 124,             // augassign_statement
+        S_augassign_op = 125,                    // augassign_op
+        S_ann_assignment_statement = 126,        // ann_assignment_statement
+        S_single_line_statement = 127,           // single_line_statement
+        S_module = 128,                          // module
+        S_module_as_id = 129,                    // module_as_id
+        S_module_item_list = 130,                // module_item_list
+        S_dot_list = 131,                        // dot_list
+        S_import_statement = 132,                // import_statement
+        S_for_statement = 133,                   // for_statement
+        S_multi_line_statement = 134,            // multi_line_statement
+        S_decorators_opt = 135,                  // decorators_opt
+        S_decorators = 136,                      // decorators
+        S_parameter = 137,                       // parameter
+        S_parameter_list = 138,                  // parameter_list
+        S_parameter_list_no_posonly = 139,       // parameter_list_no_posonly
+        S_defparameter_list = 140,               // defparameter_list
+        S_parameter_list_starargs = 141,         // parameter_list_starargs
+        S_parameter_list_opt = 142,              // parameter_list_opt
+        S_comma_opt = 143,                       // comma_opt
+        S_function_def = 144,                    // function_def
+        S_global_statement = 145,                // global_statement
+        S_ternary_if_statement = 146,            // ternary_if_statement
+        S_nonlocal_statement = 147,              // nonlocal_statement
+        S_elif_statement = 148,                  // elif_statement
+        S_if_statement = 149,                    // if_statement
+        S_target_list = 150,                     // target_list
+        S_assignment_statement = 151,            // assignment_statement
+        S_expression_statment = 152,             // expression_statment
+        S_string = 153,                          // string
+        S_expr_list_opt = 154,                   // expr_list_opt
+        S_expr_list = 155,                       // expr_list
+        S_expr_for_list = 156,                   // expr_for_list
+        S_dict = 157,                            // dict
+        S_dict_list = 158,                       // dict_list
+        S_call_arguement_list = 159,             // call_arguement_list
+        S_keyword_item = 160,                    // keyword_item
+        S_keyword_items = 161,                   // keyword_items
+        S_primary = 162,                         // primary
+        S_function_call = 163,                   // function_call
+        S_expr = 164,                            // expr
+        S_id = 165,                              // id
+        S_sep = 166,                             // sep
+        S_sep_one = 167                          // sep_one
       };
     };
 
@@ -1120,6 +1126,7 @@ namespace  PYJU  {
         break;
 
       case symbol_kind::S_tuple_item: // tuple_item
+      case symbol_kind::S_for_tuple_item: // for_tuple_item
       case symbol_kind::S_ternary_if_statement: // ternary_if_statement
       case symbol_kind::S_string: // string
       case symbol_kind::S_primary: // primary
@@ -1161,6 +1168,7 @@ namespace  PYJU  {
       case symbol_kind::S_ann_assignment_statement: // ann_assignment_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
+      case symbol_kind::S_for_statement: // for_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
       case symbol_kind::S_function_def: // function_def
       case symbol_kind::S_global_statement: // global_statement
@@ -1210,6 +1218,7 @@ namespace  PYJU  {
       case symbol_kind::S_target_list: // target_list
       case symbol_kind::S_expr_list_opt: // expr_list_opt
       case symbol_kind::S_expr_list: // expr_list
+      case symbol_kind::S_expr_for_list: // expr_for_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
         value.move< std::vector<Nonnull<Expression*>> > (std::move (that.value));
         break;
@@ -1602,6 +1611,7 @@ switch (yykind)
         break;
 
       case symbol_kind::S_tuple_item: // tuple_item
+      case symbol_kind::S_for_tuple_item: // for_tuple_item
       case symbol_kind::S_ternary_if_statement: // ternary_if_statement
       case symbol_kind::S_string: // string
       case symbol_kind::S_primary: // primary
@@ -1643,6 +1653,7 @@ switch (yykind)
       case symbol_kind::S_ann_assignment_statement: // ann_assignment_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
+      case symbol_kind::S_for_statement: // for_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
       case symbol_kind::S_function_def: // function_def
       case symbol_kind::S_global_statement: // global_statement
@@ -1692,6 +1703,7 @@ switch (yykind)
       case symbol_kind::S_target_list: // target_list
       case symbol_kind::S_expr_list_opt: // expr_list_opt
       case symbol_kind::S_expr_list: // expr_list
+      case symbol_kind::S_expr_for_list: // expr_for_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
         value.template destroy< std::vector<Nonnull<Expression*>> > ();
         break;
@@ -3739,9 +3751,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 2183,     ///< Last index in yytable_.
-      yynnts_ = 61,  ///< Number of nonterminal symbols.
-      yyfinal_ = 102 ///< Termination state number.
+      yylast_ = 2390,     ///< Last index in yytable_.
+      yynnts_ = 64,  ///< Number of nonterminal symbols.
+      yyfinal_ = 108 ///< Termination state number.
     };
 
 
@@ -3833,6 +3845,7 @@ switch (yykind)
         break;
 
       case symbol_kind::S_tuple_item: // tuple_item
+      case symbol_kind::S_for_tuple_item: // for_tuple_item
       case symbol_kind::S_ternary_if_statement: // ternary_if_statement
       case symbol_kind::S_string: // string
       case symbol_kind::S_primary: // primary
@@ -3874,6 +3887,7 @@ switch (yykind)
       case symbol_kind::S_ann_assignment_statement: // ann_assignment_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
+      case symbol_kind::S_for_statement: // for_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
       case symbol_kind::S_function_def: // function_def
       case symbol_kind::S_global_statement: // global_statement
@@ -3923,6 +3937,7 @@ switch (yykind)
       case symbol_kind::S_target_list: // target_list
       case symbol_kind::S_expr_list_opt: // expr_list_opt
       case symbol_kind::S_expr_list: // expr_list
+      case symbol_kind::S_expr_for_list: // expr_for_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
         value.copy< std::vector<Nonnull<Expression*>> > (YY_MOVE (that.value));
         break;
@@ -3991,6 +4006,7 @@ switch (yykind)
         break;
 
       case symbol_kind::S_tuple_item: // tuple_item
+      case symbol_kind::S_for_tuple_item: // for_tuple_item
       case symbol_kind::S_ternary_if_statement: // ternary_if_statement
       case symbol_kind::S_string: // string
       case symbol_kind::S_primary: // primary
@@ -4032,6 +4048,7 @@ switch (yykind)
       case symbol_kind::S_ann_assignment_statement: // ann_assignment_statement
       case symbol_kind::S_single_line_statement: // single_line_statement
       case symbol_kind::S_import_statement: // import_statement
+      case symbol_kind::S_for_statement: // for_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
       case symbol_kind::S_function_def: // function_def
       case symbol_kind::S_global_statement: // global_statement
@@ -4081,6 +4098,7 @@ switch (yykind)
       case symbol_kind::S_target_list: // target_list
       case symbol_kind::S_expr_list_opt: // expr_list_opt
       case symbol_kind::S_expr_list: // expr_list
+      case symbol_kind::S_expr_for_list: // expr_for_list
       case symbol_kind::S_call_arguement_list: // call_arguement_list
         value.move< std::vector<Nonnull<Expression*>> > (YY_MOVE (s.value));
         break;
@@ -4170,7 +4188,7 @@ switch (yykind)
 
 #line 21 "parser.ypp"
 } //  PYJU 
-#line 4174 "./parser.h"
+#line 4192 "./parser.h"
 
 
 

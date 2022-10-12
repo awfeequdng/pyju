@@ -443,7 +443,16 @@ inline int dot_count(int inc = 0) {
 #define ASSERT_01(test, l) PYJU::Assert::make_Assert(arena, l, test, std::nullopt)
 #define ASSERT_02(test, msg, l) PYJU::Assert::make_Assert(arena, l, test, msg)
 
-#define TUPLE_01(elts, l) PYJU::Tuple::make_Tuple(arena, l, elts)
+static inline NonnullExpr TUPLE_02(NonnullArena &arena, PYJU::SourceLocation l,
+    std::vector<NonnullExpr> elts) {
+    if (elts.size() == 1) {
+        return elts[0];
+    }
+    return PYJU::Tuple::make_Tuple(arena, l, elts);
+}
+
+#define TUPLE_01(elts, l) TUPLE_02(arena, l, elts)
+#define TUPLE_03(elts, l) PYJU::Tuple::make_Tuple(arena, l, elts)
 #define TUPLE_EMPTY(l) PYJU::Tuple::make_Tuple(arena, l, {})
 inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, NonnullExpr y) {
     std::vector<NonnullExpr> v;
@@ -474,3 +483,8 @@ inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, Nonnul
 
 #define ANNASSIGN_01(x, y, l) PYJU::AnnAssign::make_AnnAssign(arena, l, x, y, std::nullopt)
 #define ANNASSIGN_02(x, y, val, l) PYJU::AnnAssign::make_AnnAssign(arena, l, x, y, val)
+
+#define FOR_01(target, iter, stmts, l) PYJU::For::make_For(arena, l,\
+        target, iter, stmts, {})
+#define FOR_02(target, iter, stmts, orelse, l) PYJU::For::make_For(arena, l,\
+        target, iter, stmts, orelse)

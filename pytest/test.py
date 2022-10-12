@@ -194,5 +194,16 @@ ax : bx
 ax : cx = dx
 ax : cx = 3
 
+for a, b in d, e:
+    print(a)
+    print(b)
+else:
+    print("exit for")
 
+for a in d, e:
+    print(a)
+else:
+    print("exit for")
 
+for a in d:
+    print(d)

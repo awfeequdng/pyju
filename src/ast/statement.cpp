@@ -217,6 +217,22 @@ void Statement::PrintDepth(int depth, llvm::raw_ostream& out) const {
         out << "\n";
         break;
       }
+      case StatementKind::For: {
+        auto &for_stmt = cast<For>(*this);
+        auto &target = for_stmt.target();
+        auto &iter = for_stmt.iter();
+        auto &body = for_stmt.body();
+        auto &orelse = for_stmt.orelse();
+        Space(depth, out) << "For:" << *target << " in " << *iter << ":\n";
+        for (auto &b: body)
+          cast<Statement>(*b).PrintDepth(depth+1, out);
+        if (orelse.size()) {
+          Space(depth, out) << "else:\n";
+          for (auto &b: orelse)
+            cast<Statement>(*b).PrintDepth(depth+1, out);
+        }
+        break;
+      }
       default:
         out << "unknown kind: ";
         break;
