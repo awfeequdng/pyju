@@ -291,6 +291,29 @@ void Statement::PrintDepth(int depth, llvm::raw_ostream& out) const {
         }
         break;
       }
+      case StatementKind::With: {
+        auto &with = cast<With>(*this);
+        auto &items = with.items();
+        auto &body = with.body();
+        Space(depth, out) << "with ";
+        for (size_t i = 0; i < items.size(); i++) {
+          if (i > 0) out << ", ";
+          out << *items[i];
+        }
+        out << ":\n";
+        for (auto &b: body) {
+          cast<Statement>(*b).PrintDepth(depth + 1, out);
+        }
+        break;
+      }
+      case StatementKind::WithItem: {
+        auto &with_item = cast<WithItem>(*this);
+        auto &expr = with_item.expr();
+        auto &vars = with_item.vars();
+        out << *expr;
+        if (vars) out << " as " << **vars;
+        break;
+      }
       default:
         out << "unknown kind: ";
         break;

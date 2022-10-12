@@ -684,6 +684,8 @@ namespace  PYJU  {
       // for_statement
       // except_statement
       // try_statement
+      // with_item
+      // with_statement
       // multi_line_statement
       // function_def
       // global_statement
@@ -740,6 +742,7 @@ namespace  PYJU  {
       // single_line_multi_statements
       // single_line_multi_statements_opt
       // except_list
+      // with_item_list
       char dummy20[sizeof (std::vector<Nonnull<Statement*>>)];
 
       // dict_list
@@ -1051,40 +1054,43 @@ namespace  PYJU  {
         S_except_statement = 135,                // except_statement
         S_except_list = 136,                     // except_list
         S_try_statement = 137,                   // try_statement
-        S_multi_line_statement = 138,            // multi_line_statement
-        S_decorators_opt = 139,                  // decorators_opt
-        S_decorators = 140,                      // decorators
-        S_parameter = 141,                       // parameter
-        S_parameter_list = 142,                  // parameter_list
-        S_parameter_list_no_posonly = 143,       // parameter_list_no_posonly
-        S_defparameter_list = 144,               // defparameter_list
-        S_parameter_list_starargs = 145,         // parameter_list_starargs
-        S_parameter_list_opt = 146,              // parameter_list_opt
-        S_comma_opt = 147,                       // comma_opt
-        S_function_def = 148,                    // function_def
-        S_global_statement = 149,                // global_statement
-        S_ternary_if_statement = 150,            // ternary_if_statement
-        S_nonlocal_statement = 151,              // nonlocal_statement
-        S_elif_statement = 152,                  // elif_statement
-        S_if_statement = 153,                    // if_statement
-        S_target_list = 154,                     // target_list
-        S_assignment_statement = 155,            // assignment_statement
-        S_expression_statment = 156,             // expression_statment
-        S_string = 157,                          // string
-        S_expr_list_opt = 158,                   // expr_list_opt
-        S_expr_list = 159,                       // expr_list
-        S_expr_for_list = 160,                   // expr_for_list
-        S_dict = 161,                            // dict
-        S_dict_list = 162,                       // dict_list
-        S_call_arguement_list = 163,             // call_arguement_list
-        S_keyword_item = 164,                    // keyword_item
-        S_keyword_items = 165,                   // keyword_items
-        S_primary = 166,                         // primary
-        S_function_call = 167,                   // function_call
-        S_expr = 168,                            // expr
-        S_id = 169,                              // id
-        S_sep = 170,                             // sep
-        S_sep_one = 171                          // sep_one
+        S_with_item = 138,                       // with_item
+        S_with_item_list = 139,                  // with_item_list
+        S_with_statement = 140,                  // with_statement
+        S_multi_line_statement = 141,            // multi_line_statement
+        S_decorators_opt = 142,                  // decorators_opt
+        S_decorators = 143,                      // decorators
+        S_parameter = 144,                       // parameter
+        S_parameter_list = 145,                  // parameter_list
+        S_parameter_list_no_posonly = 146,       // parameter_list_no_posonly
+        S_defparameter_list = 147,               // defparameter_list
+        S_parameter_list_starargs = 148,         // parameter_list_starargs
+        S_parameter_list_opt = 149,              // parameter_list_opt
+        S_comma_opt = 150,                       // comma_opt
+        S_function_def = 151,                    // function_def
+        S_global_statement = 152,                // global_statement
+        S_ternary_if_statement = 153,            // ternary_if_statement
+        S_nonlocal_statement = 154,              // nonlocal_statement
+        S_elif_statement = 155,                  // elif_statement
+        S_if_statement = 156,                    // if_statement
+        S_target_list = 157,                     // target_list
+        S_assignment_statement = 158,            // assignment_statement
+        S_expression_statment = 159,             // expression_statment
+        S_string = 160,                          // string
+        S_expr_list_opt = 161,                   // expr_list_opt
+        S_expr_list = 162,                       // expr_list
+        S_expr_for_list = 163,                   // expr_for_list
+        S_dict = 164,                            // dict
+        S_dict_list = 165,                       // dict_list
+        S_call_arguement_list = 166,             // call_arguement_list
+        S_keyword_item = 167,                    // keyword_item
+        S_keyword_items = 168,                   // keyword_items
+        S_primary = 169,                         // primary
+        S_function_call = 170,                   // function_call
+        S_expr = 171,                            // expr
+        S_id = 172,                              // id
+        S_sep = 173,                             // sep
+        S_sep_one = 174                          // sep_one
       };
     };
 
@@ -1180,6 +1186,8 @@ namespace  PYJU  {
       case symbol_kind::S_for_statement: // for_statement
       case symbol_kind::S_except_statement: // except_statement
       case symbol_kind::S_try_statement: // try_statement
+      case symbol_kind::S_with_item: // with_item
+      case symbol_kind::S_with_statement: // with_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
       case symbol_kind::S_function_def: // function_def
       case symbol_kind::S_global_statement: // global_statement
@@ -1246,6 +1254,7 @@ namespace  PYJU  {
       case symbol_kind::S_single_line_multi_statements: // single_line_multi_statements
       case symbol_kind::S_single_line_multi_statements_opt: // single_line_multi_statements_opt
       case symbol_kind::S_except_list: // except_list
+      case symbol_kind::S_with_item_list: // with_item_list
         value.move< std::vector<Nonnull<Statement*>> > (std::move (that.value));
         break;
 
@@ -1669,6 +1678,8 @@ switch (yykind)
       case symbol_kind::S_for_statement: // for_statement
       case symbol_kind::S_except_statement: // except_statement
       case symbol_kind::S_try_statement: // try_statement
+      case symbol_kind::S_with_item: // with_item
+      case symbol_kind::S_with_statement: // with_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
       case symbol_kind::S_function_def: // function_def
       case symbol_kind::S_global_statement: // global_statement
@@ -1735,6 +1746,7 @@ switch (yykind)
       case symbol_kind::S_single_line_multi_statements: // single_line_multi_statements
       case symbol_kind::S_single_line_multi_statements_opt: // single_line_multi_statements_opt
       case symbol_kind::S_except_list: // except_list
+      case symbol_kind::S_with_item_list: // with_item_list
         value.template destroy< std::vector<Nonnull<Statement*>> > ();
         break;
 
@@ -3767,9 +3779,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 2601,     ///< Last index in yytable_.
-      yynnts_ = 68,  ///< Number of nonterminal symbols.
-      yyfinal_ = 114 ///< Termination state number.
+      yylast_ = 2770,     ///< Last index in yytable_.
+      yynnts_ = 71,  ///< Number of nonterminal symbols.
+      yyfinal_ = 120 ///< Termination state number.
     };
 
 
@@ -3907,6 +3919,8 @@ switch (yykind)
       case symbol_kind::S_for_statement: // for_statement
       case symbol_kind::S_except_statement: // except_statement
       case symbol_kind::S_try_statement: // try_statement
+      case symbol_kind::S_with_item: // with_item
+      case symbol_kind::S_with_statement: // with_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
       case symbol_kind::S_function_def: // function_def
       case symbol_kind::S_global_statement: // global_statement
@@ -3973,6 +3987,7 @@ switch (yykind)
       case symbol_kind::S_single_line_multi_statements: // single_line_multi_statements
       case symbol_kind::S_single_line_multi_statements_opt: // single_line_multi_statements_opt
       case symbol_kind::S_except_list: // except_list
+      case symbol_kind::S_with_item_list: // with_item_list
         value.copy< std::vector<Nonnull<Statement*>> > (YY_MOVE (that.value));
         break;
 
@@ -4072,6 +4087,8 @@ switch (yykind)
       case symbol_kind::S_for_statement: // for_statement
       case symbol_kind::S_except_statement: // except_statement
       case symbol_kind::S_try_statement: // try_statement
+      case symbol_kind::S_with_item: // with_item
+      case symbol_kind::S_with_statement: // with_statement
       case symbol_kind::S_multi_line_statement: // multi_line_statement
       case symbol_kind::S_function_def: // function_def
       case symbol_kind::S_global_statement: // global_statement
@@ -4138,6 +4155,7 @@ switch (yykind)
       case symbol_kind::S_single_line_multi_statements: // single_line_multi_statements
       case symbol_kind::S_single_line_multi_statements_opt: // single_line_multi_statements_opt
       case symbol_kind::S_except_list: // except_list
+      case symbol_kind::S_with_item_list: // with_item_list
         value.move< std::vector<Nonnull<Statement*>> > (YY_MOVE (s.value));
         break;
 
@@ -4212,7 +4230,7 @@ switch (yykind)
 
 #line 21 "parser.ypp"
 } //  PYJU 
-#line 4216 "./parser.h"
+#line 4234 "./parser.h"
 
 
 

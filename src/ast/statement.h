@@ -691,4 +691,61 @@ protected:
     std::vector<Nonnull<Statement*>> finalbody_;
 };
 
+
+class WithItem : public Statement {
+public:
+    static PYJU::Nonnull<WithItem*> make_WithItem(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                Nonnull<Expression*> expr,
+                std::optional<Nonnull<Expression*>> vars) {
+        return arena->New<WithItem>(loc, expr, vars);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromWithItem(node->kind());
+    }
+
+    WithItem(const PYJU::SourceLocation& loc,
+              Nonnull<Expression*> expr,
+              std::optional<Nonnull<Expression*>> vars)
+      : Statement(AstNodeKind::WithItem, loc),
+        expr_(expr),
+        vars_(vars) {}
+    auto expr() const -> const Nonnull<Expression*>& { return expr_; }
+    auto vars() const -> const std::optional<Nonnull<Expression*>>& { return vars_; }
+
+protected:
+    Nonnull<Expression*> expr_;
+    std::optional<Nonnull<Expression*>> vars_;
+};
+
+class With : public Statement {
+public:
+    static PYJU::Nonnull<With*> make_With(
+                PYJU::Nonnull<PYJU::Arena*> arena,
+                const PYJU::SourceLocation& loc,
+                std::vector<Nonnull<Statement*>> items,
+                std::vector<Nonnull<Statement*>> body) {
+        return arena->New<With>(loc, items, body);
+    }
+
+    static auto classof(const AstNode* node) -> bool {
+        return InheritsFromWith(node->kind());
+    }
+
+    With(const PYJU::SourceLocation& loc,
+              std::vector<Nonnull<Statement*>> items,
+              std::vector<Nonnull<Statement*>> body)
+      : Statement(AstNodeKind::With, loc),
+        items_(items),
+        body_(body) {}
+    auto items() const -> const std::vector<Nonnull<Statement*>>& { return items_; }
+    auto body() const -> const std::vector<Nonnull<Statement*>>& { return body_; }
+
+protected:
+    std::vector<Nonnull<Statement*>> items_;
+    std::vector<Nonnull<Statement*>> body_;
+};
+
 } // namespace PYJU

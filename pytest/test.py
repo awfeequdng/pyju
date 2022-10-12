@@ -244,4 +244,8 @@ finally:
     print("finally2")
 
 
+with a, b, cxx as c:
+    print(a)
+    print(b)
+    print(c)
 

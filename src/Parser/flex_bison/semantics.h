@@ -502,3 +502,9 @@ inline std::vector<NonnullExpr> TUPLE_APPEND(std::vector<NonnullExpr> &x, Nonnul
 #define TRY_04(stmts, except, orelse, final, l) PYJU::Try::make_Try(arena, l, stmts, except, orelse, final)
 #define TRY_05(stmts, final, l) PYJU::Try::make_Try(arena, l, stmts, {}, {}, final)
 
+
+#define WITH_ITEM_01(expr, l) PYJU::WithItem::make_WithItem(arena, l, expr, std::nullopt)
+#define WITH_ITEM_02(expr, vars, l) PYJU::WithItem::make_WithItem(arena, l, expr, vars)
+#define WITH(items, body, l) PYJU::With::make_With(arena, l, items, body)
+
+
