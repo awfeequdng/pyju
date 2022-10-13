@@ -120,7 +120,7 @@ STATIC_INLINE uint64_t _pyju_timing_block_init(PyjuTimingBlock_t *block, int own
 
 STATIC_INLINE void _pyju_timing_block_ctor(PyjuTimingBlock_t *block, int owner) {
     uint64_t t = _pyju_timing_block_init(block, owner);
-    pyju_task_t *ct = pyju_current_task;
+    PyjuTask_t *ct = pyju_current_task;
     PyjuTimingBlock_t **prevp = &ct->ptls->timing_stack;
     block->prev = *prevp;
     if (block->prev)
@@ -130,7 +130,7 @@ STATIC_INLINE void _pyju_timing_block_ctor(PyjuTimingBlock_t *block, int owner) 
 
 STATIC_INLINE void _pyju_timing_block_destroy(PyjuTimingBlock_t *block) {
     uint64_t t = cycleclock();
-    pyju_task_t *ct = pyju_current_task;
+    PyjuTask_t *ct = pyju_current_task;
     _pyju_timing_block_stop(block, t);
     pyju_timing_data[block->owner] += block->total;
     PyjuTimingBlock_t **pcur = &ct->ptls->timing_stack;

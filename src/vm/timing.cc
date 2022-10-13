@@ -48,26 +48,26 @@ void pyju_init_timing(void)
 
 void pyju_destroy_timing(void)
 {
-    pyju_ptls_t ptls = pyju_current_task->ptls;
-    pyju_timing_block_t *stack = ptls->timing_stack;
+    PyjuPtls_t ptls = pyju_current_task->ptls;
+    PyjuTimingBlock_t *stack = ptls->timing_stack;
     while (stack) {
         _pyju_timing_block_destroy(stack);
         stack = stack->prev;
     }
 }
 
-pyju_timing_block_t *pyju_pop_timing_block(pyju_timing_block_t *cur_block)
+PyjuTimingBlock_t *pyju_pop_timing_block(PyjuTimingBlock_t *cur_block)
 {
     _pyju_timing_block_destroy(cur_block);
     return cur_block->prev;
 }
 
-void pyju_timing_block_start(pyju_timing_block_t *cur_block)
+void pyju_timing_block_start(PyjuTimingBlock_t *cur_block)
 {
     _pyju_timing_block_start(cur_block, cycleclock());
 }
 
-void pyju_timing_block_stop(pyju_timing_block_t *cur_block)
+void pyju_timing_block_stop(PyjuTimingBlock_t *cur_block)
 {
     _pyju_timing_block_stop(cur_block, cycleclock());
 }

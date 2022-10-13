@@ -9,7 +9,7 @@
 #include "pyju_atomics.h"
 #include "pyju_threads.h"
 #include "pyju_assert.h"
-
+#include "support/libsupport.h"
 
 
 // Define the largest size (bytes) of a properly aligned object that the
@@ -855,6 +855,85 @@ PYJU_DLLEXPORT void PYJU_NORETURN pyju_no_exc_handler(PyjuValue_t *e);
 PYJU_DLLEXPORT PYJU_CONST_FUNC PyjuGcFrame_t **(pyju_get_pgcstack)(void) PYJU_GLOBALLY_ROOTED PYJU_NOTSAFEPOINT;
 #define pyju_current_task (container_of(pyju_get_pgcstack(), PyjuTask_t, gcstack))
 
+
+// system information
+PYJU_DLLEXPORT int pyju_errno(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT void pyju_set_errno(int e) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT int32_t pyju_stat(const char *path, char *statbuf) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT int pyju_cpu_threads(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT int pyju_effective_threads(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT long pyju_getpagesize(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT long pyju_getallocationgranularity(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT int pyju_is_debugbuild(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT PyjuSym_t *pyju_get_UNAME(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT PyjuSym_t *pyju_get_ARCH(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT PyjuValue_t *pyju_get_libllvm(void) PYJU_NOTSAFEPOINT;
+
+
+// I/O system -----------------------------------------------------------------
+
+struct uv_loop_s;
+struct uv_handle_s;
+struct uv_stream_s;
+#ifdef _OS_WINDOWS_
+typedef HANDLE pyju_uv_os_fd_t;
+#else
+typedef int pyju_uv_os_fd_t;
+#endif
+#define PYJU_STREAM struct uv_stream_s
+#define PYJU_STDOUT pyju_uv_stdout
+#define PYJU_STDERR pyju_uv_stderr
+#define PYJU_STDIN  pyju_uv_stdin
+
+PYJU_DLLEXPORT int pyju_process_events(void);
+
+PYJU_DLLEXPORT struct uv_loop_s *pyju_global_event_loop(void);
+
+PYJU_DLLEXPORT void pyju_close_uv(struct uv_handle_s *handle);
+
+PYJU_DLLEXPORT PyjuArray_t *pyju_take_buffer(ios_t *s);
+
+typedef struct {
+    void *data;
+    struct uv_loop_s *loop;
+    int type; // enum uv_handle_type
+    pyju_uv_os_fd_t file;
+} pyju_uv_file_t;
+
+#ifdef __GNUC__
+#define _PYJU_FORMAT_ATTR(type, str, arg) \
+    __attribute__((format(type, str, arg)))
+#else
+#define _PYJU_FORMAT_ATTR(type, str, arg)
+#endif
+
+PYJU_DLLEXPORT void pyju_uv_puts(struct uv_stream_s *stream, const char *str, size_t n);
+PYJU_DLLEXPORT int pyju_printf(struct uv_stream_s *s, const char *format, ...)
+    _PYJU_FORMAT_ATTR(printf, 2, 3);
+PYJU_DLLEXPORT int pyju_vprintf(struct uv_stream_s *s, const char *format, va_list args)
+    _PYJU_FORMAT_ATTR(printf, 2, 0);
+PYJU_DLLEXPORT void pyju_safe_printf(const char *str, ...) PYJU_NOTSAFEPOINT
+    _PYJU_FORMAT_ATTR(printf, 1, 2);
+
+extern PYJU_DLLEXPORT PYJU_STREAM *PYJU_STDIN;
+extern PYJU_DLLEXPORT PYJU_STREAM *PYJU_STDOUT;
+extern PYJU_DLLEXPORT PYJU_STREAM *PYJU_STDERR;
+
+PYJU_DLLEXPORT PYJU_STREAM *pyju_stdout_stream(void);
+PYJU_DLLEXPORT PYJU_STREAM *pyju_stdin_stream(void);
+PYJU_DLLEXPORT PYJU_STREAM *pyju_stderr_stream(void);
+PYJU_DLLEXPORT int pyju_termios_size(void);
+
+// showing and std streams
+PYJU_DLLEXPORT void pyju_flush_cstdio(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT PyjuValue_t *pyju_stdout_obj(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT PyjuValue_t *pyju_stderr_obj(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT size_t pyju_static_show(PYJU_STREAM *out, PyjuValue_t *v) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT size_t pyju_static_show_func_sig(PYJU_STREAM *s, PyjuValue_t *type) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT void pyju_print_backtrace(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT void jlbacktrace(void) PYJU_NOTSAFEPOINT; // deprecated
+// Mainly for debugging, use `void*` so that no type cast is needed in C++.
+PYJU_DLLEXPORT void pyju_(void *pyju_value) PYJU_NOTSAFEPOINT;
 
 #ifdef __cplusplus
 }
