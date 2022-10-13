@@ -162,8 +162,6 @@ target_link_libraries(pyju_core
     ch_contrib::cpuid
     ch_contrib::llvm
     ch_contrib::utf8proc
-    pyju_vm
-    # ch_contrib::uv
 )
 
 if (OS_LINUX)
@@ -184,6 +182,7 @@ add_executable(pyju
 target_link_libraries(pyju
     PUBLIC
     pyju_core
+    pyju_vm
 )
 
 include (configure_config.cmake)
