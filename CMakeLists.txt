@@ -93,12 +93,33 @@ include_directories(
 file(GLOB_RECURSE
         PYJU_SRC
         CONFIGURE_DEPENDS  # Ask CMake to regenerate the build system if these files change.
-        ${PROJECT_SOURCE_DIR}/src/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/*.h
+        ${PROJECT_SOURCE_DIR}/src/ast/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/ast/*.h
+        ${PROJECT_SOURCE_DIR}/src/Client/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/Client/*.h
+        ${PROJECT_SOURCE_DIR}/src/Common/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/Common/*.h
+        ${PROJECT_SOURCE_DIR}/src/Compression/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/Compression/*.h
+        ${PROJECT_SOURCE_DIR}/src/Core/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/Core/*.h
+        ${PROJECT_SOURCE_DIR}/src/Disks/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/Disks/*.h
+        ${PROJECT_SOURCE_DIR}/src/Formats/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/Formats/*.h
+        ${PROJECT_SOURCE_DIR}/src/interpreter/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/interpreter/*.h
+        ${PROJECT_SOURCE_DIR}/src/IO/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/IO/*.h
+        ${PROJECT_SOURCE_DIR}/src/Parser/*.cpp
+        ${PROJECT_SOURCE_DIR}/src/Parser/*.h
         ${PROJECT_SOURCE_DIR}/base/loggers/*.cpp
         ${PROJECT_SOURCE_DIR}/base/loggers/*.h
         )
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/base)
+
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/vm)
 
 message(STATUS "PYJU_SRC " ${PYJU_SRC})
 
@@ -141,6 +162,8 @@ target_link_libraries(pyju_core
     ch_contrib::cpuid
     ch_contrib::llvm
     ch_contrib::utf8proc
+    pyju_vm
+    # ch_contrib::uv
 )
 
 if (OS_LINUX)

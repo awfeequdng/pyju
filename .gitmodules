@@ -86,3 +86,6 @@
 [submodule "contrib/bison"]
 	path = contrib/bison
 	url = https://github.com/akimd/bison
+[submodule "contrib/libuv"]
+	path = contrib/libuv
+	url = https://github.com/libuv/libuv.git

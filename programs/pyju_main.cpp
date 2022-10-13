@@ -13,7 +13,7 @@
 #include <filesystem>
 #include <fstream>
 
-#include "vm/run_ast.h"
+#include "interpreter/run_ast.h"
 
 #include <cstdlib>
 

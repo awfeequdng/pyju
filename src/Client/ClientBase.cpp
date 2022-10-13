@@ -6,7 +6,6 @@
 #include <filesystem>
 #include <map>
 #include <unordered_map>
-
 #include <base/argsToConfig.h>
 #include <Common/DateLUT.h>
 #include <Common/LocalDate.h>
