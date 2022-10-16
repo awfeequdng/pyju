@@ -507,7 +507,7 @@ struct PyjuWeakRef_t {
 };
 
 
-struct PyjuBindind_t {
+struct PyjuBinding_t {
     // not first-class
     PyjuSym_t *name;
     _Atomic(PyjuValue_t*) value;
@@ -868,7 +868,7 @@ PYJU_DLLEXPORT int pyju_is_debugbuild(void) PYJU_NOTSAFEPOINT;
 PYJU_DLLEXPORT PyjuSym_t *pyju_get_UNAME(void) PYJU_NOTSAFEPOINT;
 PYJU_DLLEXPORT PyjuSym_t *pyju_get_ARCH(void) PYJU_NOTSAFEPOINT;
 PYJU_DLLEXPORT PyjuValue_t *pyju_get_libllvm(void) PYJU_NOTSAFEPOINT;
-
+extern PYJU_DLLIMPORT int pyju_n_threads;
 
 // I/O system -----------------------------------------------------------------
 
@@ -934,6 +934,19 @@ PYJU_DLLEXPORT void pyju_print_backtrace(void) PYJU_NOTSAFEPOINT;
 PYJU_DLLEXPORT void jlbacktrace(void) PYJU_NOTSAFEPOINT; // deprecated
 // Mainly for debugging, use `void*` so that no type cast is needed in C++.
 PYJU_DLLEXPORT void pyju_(void *pyju_value) PYJU_NOTSAFEPOINT;
+
+
+PYJU_DLLEXPORT void pyju_init();
+
+
+// julia options -----------------------------------------------------------
+
+#include "pyju_options.h"
+
+extern PYJU_DLLIMPORT pyju_options_t pyju_options;
+
+PYJU_DLLEXPORT ssize_t pyju_sizeof_pyju_options(void);
+
 
 #ifdef __cplusplus
 }

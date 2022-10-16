@@ -12,6 +12,7 @@
 #include "pyju_object.h"
 #include "pyju_internal.h"
 #include "support/libsupport.h"
+#include "support/hashing.h"
 
 #include <unistd.h>
 #if !defined(_SC_NPROCESSORS_ONLN) || defined(_OS_FREEBSD_) || defined(_OS_DARWIN_)
@@ -534,43 +535,17 @@ PYJU_DLLEXPORT void pyju_native_alignment(uint_t *int8align, uint_t *int16align,
 
 // -- misc sysconf info --
 
-#ifdef _OS_WINDOWS_
-static long cachedPagesize = 0;
-PYJU_DLLEXPORT long pyju_getpagesize(void)
-{
-    if (!cachedPagesize) {
-        SYSTEM_INFO systemInfo;
-        GetSystemInfo (&systemInfo);
-        cachedPagesize = systemInfo.dwPageSize;
-    }
-    return cachedPagesize;
-}
-#else
 PYJU_DLLEXPORT long pyju_getpagesize(void)
 {
     long page_size = sysconf(_SC_PAGESIZE);
     assert(page_size != -1);
     return page_size;
 }
-#endif
 
-#ifdef _OS_WINDOWS_
-static long cachedAllocationGranularity = 0;
-PYJU_DLLEXPORT long pyju_getallocationgranularity(void) PYJU_NOTSAFEPOINT
-{
-    if (!cachedAllocationGranularity) {
-        SYSTEM_INFO systemInfo;
-        GetSystemInfo (&systemInfo);
-        cachedAllocationGranularity = systemInfo.dwAllocationGranularity;
-    }
-    return cachedAllocationGranularity;
-}
-#else
 PYJU_DLLEXPORT long pyju_getallocationgranularity(void) PYJU_NOTSAFEPOINT
 {
     return pyju_getpagesize();
 }
-#endif
 
 PYJU_DLLEXPORT long pyju_SC_CLK_TCK(void)
 {
@@ -722,37 +697,37 @@ PYJU_DLLEXPORT size_t pyju_maxrss(void)
 
 // Simple `rand()` like function, with global seed and added thread-safety
 // (but slow and insecure)
-// static _Atomic(uint64_t) g_rngseed;
-// PYJU_DLLEXPORT uint64_t pyju_rand(void) PYJU_NOTSAFEPOINT
-// {
-//     uint64_t max = UINT64_MAX;
-//     uint64_t unbias = UINT64_MAX;
-//     uint64_t rngseed0 = pyju_atomic_load_relaxed(&g_rngseed);
-//     uint64_t rngseed;
-//     uint64_t rnd;
-//     do {
-//         rngseed = rngseed0;
-//         rnd = cong(max, unbias, &rngseed);
-//     } while (!pyju_atomic_cmpswap_relaxed(&g_rngseed, &rngseed0, rngseed));
-//     return rnd;
-// }
+static _Atomic(uint64_t) g_rngseed;
+PYJU_DLLEXPORT uint64_t pyju_rand(void) PYJU_NOTSAFEPOINT
+{
+    uint64_t max = UINT64_MAX;
+    uint64_t unbias = UINT64_MAX;
+    uint64_t rngseed0 = pyju_atomic_load_relaxed(&g_rngseed);
+    uint64_t rngseed;
+    uint64_t rnd;
+    do {
+        rngseed = rngseed0;
+        rnd = cong(max, unbias, &rngseed);
+    } while (!pyju_atomic_cmpswap_relaxed(&g_rngseed, &rngseed0, rngseed));
+    return rnd;
+}
 
-// PYJU_DLLEXPORT void pyju_srand(uint64_t rngseed) PYJU_NOTSAFEPOINT
-// {
-//     pyju_atomic_store_relaxed(&g_rngseed, rngseed);
-// }
+PYJU_DLLEXPORT void pyju_srand(uint64_t rngseed) PYJU_NOTSAFEPOINT
+{
+    pyju_atomic_store_relaxed(&g_rngseed, rngseed);
+}
 
-// void pyju_init_rand(void) PYJU_NOTSAFEPOINT
-// {
-//     uint64_t rngseed;
-//     if (uv_random(NULL, NULL, &rngseed, sizeof(rngseed), 0, NULL)) {
-//         ios_puts("WARNING: Entropy pool not available to seed RNG; using ad-hoc entropy sources.\n", ios_stderr);
-//         rngseed = uv_hrtime();
-//         rngseed ^= int64hash(uv_os_getpid());
-//     }
-//     pyju_srand(rngseed);
-//     srand(rngseed);
-// }
+void pyju_init_rand(void) PYJU_NOTSAFEPOINT
+{
+    uint64_t rngseed;
+    if (uv_random(NULL, NULL, &rngseed, sizeof(rngseed), 0, NULL)) {
+        ios_puts("WARNING: Entropy pool not available to seed RNG; using ad-hoc entropy sources.\n", ios_stderr);
+        rngseed = uv_hrtime();
+        rngseed ^= int64hash(uv_os_getpid());
+    }
+    pyju_srand(rngseed);
+    srand(rngseed);
+}
 
 #ifdef __cplusplus
 } // extern "C"

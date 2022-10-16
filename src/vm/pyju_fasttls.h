@@ -14,12 +14,8 @@ extern "C" {
 #include "support/dirpath.h"
 
 struct PyjuGcFrame_t;
-#if defined(_OS_DARWIN_)
-#include <pthread.h>
-typedef void *(pyju_get_pgcstack_func)(pthread_key_t); // aka typeof(pthread_getspecific)
-#else
+
 typedef PyjuGcFrame_t **(pyju_get_pgcstack_func)(void);
-#endif
 
 #if !defined(_OS_DARWIN_) && !defined(_OS_WINDOWS_)
 #define PYJU_DEFINE_FAST_TLS                                                                   \

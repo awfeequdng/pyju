@@ -25,12 +25,12 @@ extern "C" {
 #include <unistd.h>
 
 // list of modules being deserialized with __init__ methods
-PyjuArray_t *jl_module_init_order;
+PyjuArray_t *pyju_module_init_order;
 
-PYJU_DLLEXPORT size_t jl_page_size;
+PYJU_DLLEXPORT size_t pyju_page_size;
 
 
-void jl_init_stack_limits(int ismaster, void **stack_lo, void **stack_hi)
+void pyju_init_stack_limits(int ismaster, void **stack_lo, void **stack_hi)
 {
     // Only use pthread_*_np functions to get stack address for non-master
     // threads since it seems to return bogus values for master thread on Linux
@@ -98,7 +98,9 @@ uv_loop_t *pyju_io_loop;
 
 
 PYJU_DLLEXPORT void pyju_init() {
-    libsupport_init();
+    // Make sure we finalize the tls callback before starting any threads.
+    (void)pyju_get_pgcstack();
+
     pyju_io_loop = uv_default_loop(); // this loop will internal events (spawning process etc.),
                                         // best to call this first, since it also initializes libuv
 }

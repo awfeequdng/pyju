@@ -38,7 +38,8 @@ namespace fs = std::filesystem;
 
 int pyju_main_script(std::string script_text);
 int pyju_main(int argc, char **argv);
-extern "C" void pyju_init();
+extern "C" int pyju_repl_entrypoint(int argc, char *argv[]);
+
 namespace PYJU
 {
 namespace ErrorCodes
@@ -70,7 +71,8 @@ try
     std::cout << std::endl;
     UseSSL use_ssl;
     setupSignalHandler();
-    pyju_init();    // 初始化pyju_vm
+    pyju_repl_entrypoint(argc_, argv_); // 初始化pyju_vm
+    // pyju_init();    // 初始化pyju_vm
 
     std::cout << std::fixed << std::setprecision(3);
     std::cerr << std::fixed << std::setprecision(3);

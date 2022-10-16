@@ -11,9 +11,9 @@ extern "C" {
 #include "pyju_object.h"
 #include <uv.h>
 
-#define PROFILE_JL_THREADING            0
+#define PROFILE_PYJU_THREADING            0
 
-extern PyjuTlsStates_t *pyju_all_tls_states PYJU_GLOBALLY_ROOTED; /* thread local storage */
+extern PyjuPtls_t *pyju_all_tls_states PYJU_GLOBALLY_ROOTED; /* thread local storage */
 
 struct PyjuThreadArg_t {
     int16_t tid;

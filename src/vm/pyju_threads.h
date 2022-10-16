@@ -149,16 +149,16 @@ struct PyjuThreadHeap_t {
 
     // variables for allocating objects from pools
 #ifdef _P64
-#  define JL_GC_N_POOLS 49
+#  define PYJU_GC_N_POOLS 49
 #elif MAX_ALIGN == 8
-#  define JL_GC_N_POOLS 50
+#  define PYJU_GC_N_POOLS 50
 #else
-#  define JL_GC_N_POOLS 51
+#  define PYJU_GC_N_POOLS 51
 #endif
-    PyjuGcPool_t norm_pools[JL_GC_N_POOLS];
+    PyjuGcPool_t norm_pools[PYJU_GC_N_POOLS];
 
-#define JL_N_STACK_POOLS 16
-    arraylist_t free_stacks[JL_N_STACK_POOLS];
+#define PYJU_N_STACK_POOLS 16
+    arraylist_t free_stacks[PYJU_N_STACK_POOLS];
 };
 
 // Cache of thread local change to global metadata during GC
@@ -197,7 +197,7 @@ struct PyjuGcMarkCache_t {
 
 struct PyjuBtElement_t;
 struct PyjuTimingBlock_t;
-
+#define PYJU_MAX_BT_SIZE 80000
 struct PyjuTlsStates_t {
     int16_t tid;
     int8_t threadpoolid;
@@ -238,7 +238,7 @@ struct PyjuTlsStates_t {
     // Temp storage for exception thrown in signal handler. Not rooted.
     PyjuValue_t *sig_exception;
     // Temporary backtrace buffer. Scanned for gc roots when bt_size > 0.
-    PyjuBtElement_t *bt_data; // JL_MAX_BT_SIZE + 1 elements long
+    PyjuBtElement_t *bt_data; // PYJU_MAX_BT_SIZE + 1 elements long
     size_t bt_size;    // Size for backtrace in transit in bt_data
     // Temporary backtrace buffer used only for allocations profiler.
     PyjuBtElement_t *profiling_bt_buffer;
@@ -280,19 +280,19 @@ struct PyjuTlsStates_t {
 #ifdef __MIC__
 #  define pyju_cpu_pause() _mm_delay_64(100)
 #  define pyju_cpu_wake() ((void)0)
-#  define JL_CPU_WAKE_NOOP 1
+#  define PYJU_CPU_WAKE_NOOP 1
 #elif defined(_CPU_X86_64_) || defined(_CPU_X86_)  /* !__MIC__ */
 #  define pyju_cpu_pause() _mm_pause()
 #  define pyju_cpu_wake() ((void)0)
-#  define JL_CPU_WAKE_NOOP 1
+#  define PYJU_CPU_WAKE_NOOP 1
 #elif defined(_CPU_AARCH64_) || (defined(_CPU_ARM_) && __ARM_ARCH >= 7)
 #  define pyju_cpu_pause() __asm__ volatile ("wfe" ::: "memory")
 #  define pyju_cpu_wake() __asm__ volatile ("sev" ::: "memory")
-#  define JL_CPU_WAKE_NOOP 0
+#  define PYJU_CPU_WAKE_NOOP 0
 #else
 #  define pyju_cpu_pause() ((void)0)
 #  define pyju_cpu_wake() ((void)0)
-#  define JL_CPU_WAKE_NOOP 1
+#  define PYJU_CPU_WAKE_NOOP 1
 #endif
 
 PYJU_DLLEXPORT void (pyju_cpu_pause)(void);
