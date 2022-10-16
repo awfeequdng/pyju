@@ -95,11 +95,11 @@ typedef struct {
 // handle to reference an OS thread
 typedef pthread_t PyjuThread_t;
 
-struct PyjuTast_t;
+struct PyjuTask_t;
 
 // Recursive spin lock
 struct PyjuMutex_t {
-    _Atomic(PyjuTast_t *) owner;
+    _Atomic(PyjuTask_t *) owner;
     uint32_t count;
 };
 

@@ -727,9 +727,6 @@ void pyju_init_rand(void) PYJU_NOTSAFEPOINT
     }
     pyju_srand(rngseed);
     srand(rngseed);
-
-    // pyju_init_tasks();
-    pyju_init_threading();
 }
 
 #ifdef __cplusplus

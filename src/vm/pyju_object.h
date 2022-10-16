@@ -939,6 +939,10 @@ PYJU_DLLEXPORT void pyju_(void *pyju_value) PYJU_NOTSAFEPOINT;
 PYJU_DLLEXPORT void pyju_init();
 
 
+
+// showing and std streams
+PYJU_DLLEXPORT void pyju_flush_cstdio(void) PYJU_NOTSAFEPOINT;
+
 // julia options -----------------------------------------------------------
 
 #include "pyju_options.h"
@@ -947,6 +951,74 @@ extern PYJU_DLLIMPORT pyju_options_t pyju_options;
 
 PYJU_DLLEXPORT ssize_t pyju_sizeof_pyju_options(void);
 
+
+// throwing common exceptions
+PYJU_DLLEXPORT void PYJU_NORETURN pyju_error(const char *str);
+PYJU_DLLEXPORT void PYJU_NORETURN pyju_errorf(const char *fmt, ...);
+
+// Parse an argc/argv pair to extract general julia options, passing back out
+// any arguments that should be passed on to the script.
+PYJU_DLLEXPORT void pyju_parse_opts(int *argcp, char ***argvp);
+
+// Settings for code_coverage and malloc_log
+// NOTE: if these numbers change, test/cmdlineargs.jl will have to be updated
+#define PYJU_LOG_NONE 0
+#define PYJU_LOG_USER 1
+#define PYJU_LOG_ALL  2
+#define PYJU_LOG_PATH 3
+
+#define PYJU_OPTIONS_CHECK_BOUNDS_DEFAULT 0
+#define PYJU_OPTIONS_CHECK_BOUNDS_ON 1
+#define PYJU_OPTIONS_CHECK_BOUNDS_OFF 2
+
+#define PYJU_OPTIONS_COMPILE_DEFAULT 1
+#define PYJU_OPTIONS_COMPILE_OFF 0
+#define PYJU_OPTIONS_COMPILE_ON  1
+#define PYJU_OPTIONS_COMPILE_ALL 2
+#define PYJU_OPTIONS_COMPILE_MIN 3
+
+#define PYJU_OPTIONS_COLOR_AUTO 0
+#define PYJU_OPTIONS_COLOR_ON 1
+#define PYJU_OPTIONS_COLOR_OFF 2
+
+#define PYJU_OPTIONS_HISTORYFILE_ON 1
+#define PYJU_OPTIONS_HISTORYFILE_OFF 0
+
+#define PYJU_OPTIONS_STARTUPFILE_ON 1
+#define PYJU_OPTIONS_STARTUPFILE_OFF 2
+
+#define PYJU_LOGLEVEL_BELOWMIN -1000001
+#define PYJU_LOGLEVEL_DEBUG    -1000
+#define PYJU_LOGLEVEL_INFO      0
+#define PYJU_LOGLEVEL_WARN      1000
+#define PYJU_LOGLEVEL_ERROR     2000
+#define PYJU_LOGLEVEL_ABOVEMAX  1000001
+
+#define PYJU_OPTIONS_DEPWARN_OFF 0
+#define PYJU_OPTIONS_DEPWARN_ON 1
+#define PYJU_OPTIONS_DEPWARN_ERROR 2
+
+#define PYJU_OPTIONS_WARN_OVERWRITE_OFF 0
+#define PYJU_OPTIONS_WARN_OVERWRITE_ON 1
+
+#define PYJU_OPTIONS_WARN_SCOPE_OFF 0
+#define PYJU_OPTIONS_WARN_SCOPE_ON 1
+
+#define PYJU_OPTIONS_POLLY_ON 1
+#define PYJU_OPTIONS_POLLY_OFF 0
+
+#define PYJU_OPTIONS_FAST_MATH_ON 1
+#define PYJU_OPTIONS_FAST_MATH_OFF 2
+#define PYJU_OPTIONS_FAST_MATH_DEFAULT 0
+
+#define PYJU_OPTIONS_HANDLE_SIGNALS_ON 1
+#define PYJU_OPTIONS_HANDLE_SIGNALS_OFF 0
+
+#define PYJU_OPTIONS_USE_SYSIMAGE_NATIVE_CODE_YES 1
+#define PYJU_OPTIONS_USE_SYSIMAGE_NATIVE_CODE_NO 0
+
+#define PYJU_OPTIONS_USE_COMPILED_MODULES_YES 1
+#define PYJU_OPTIONS_USE_COMPILED_MODULES_NO 0
 
 #ifdef __cplusplus
 }

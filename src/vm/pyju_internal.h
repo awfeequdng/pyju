@@ -2,7 +2,18 @@
 #include "pyju_object.h"
 #include "pyju_threads.h"
 #include "pyju_fasttls.h"
+#include "pyju_locks.h"
 #include <uv.h>
+
+#ifndef UV_STDIN_FD
+#define UV_STDIN_FD    (0)
+#endif
+#ifndef UV_STDOUT_FD
+#define UV_STDOUT_FD   (1)
+#endif
+#ifndef UV_STDERR_FD
+#define UV_STDERR_FD   (2)
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -187,6 +198,7 @@ static_assert(ARRAY_CACHE_ALIGN_THRESHOLD > GC_MAX_SZCLASS, "");
 // init.cc
 void pyju_init_thread_heap(PyjuPtls_t ptls);
 extern PYJU_DLLEXPORT size_t pyju_page_size;
+void pyju_init_uv(void);
 
 
 //--------------------------------------------------
@@ -356,9 +368,18 @@ STATIC_INLINE size_t pyju_bt_entry_size(PyjuBtElement_t *bt_entry) PYJU_NOTSAFEP
         1 : 2 + pyju_bt_num_jlvals(bt_entry) + pyju_bt_num_uintvals(bt_entry);
 }
 
+void pyju_init_tasks(void) PYJU_GC_DISABLED;
 
 void pyju_init_threading(void);
 void pyju_start_threads(void);
+
+extern htable_t pyju_current_modules PYJU_GLOBALLY_ROOTED;
+
+
+// uv
+extern uv_loop_t *pyju_io_loop;
+
+void restore_signals(void);
 
 #ifdef __cplusplus
 } // extern "C"

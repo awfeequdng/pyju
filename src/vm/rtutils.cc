@@ -37,9 +37,33 @@ PYJU_DLLEXPORT void PYJU_NORETURN pyju_error(const char *str)
     // pyju_value_t *msg = pyju_pchar_to_string((char*)str, strlen(str));
     // PYJU_GC_PUSH1(&msg);
     // pyju_throw(pyju_new_struct(pyju_errorexception_type, msg));
+
+    printf("not impl pyju_error\n");
+    abort();
 }
 
 extern int vasprintf(char **str, const char *fmt, va_list ap);
+
+
+PYJU_DLLEXPORT void PYJU_NORETURN pyju_errorf(const char *fmt, ...)
+{
+    // va_list args;
+    // va_start(args, fmt);
+    // pyju_value_t *e = pyju_vexceptionf(jl_errorexception_type, fmt, args);
+    // va_end(args);
+    // pyju_throw(e);
+
+    printf("not impl pyju_errorf\n");
+    abort();
+}
+
+// showing --------------------------------------------------------------------
+
+PYJU_DLLEXPORT void pyju_flush_cstdio(void) PYJU_NOTSAFEPOINT
+{
+    fflush(stdout);
+    fflush(stderr);
+}
 
 #ifdef __cplusplus
 }
