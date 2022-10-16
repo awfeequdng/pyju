@@ -49,6 +49,19 @@ void pyju_init_thread_heap(PyjuPtls_t ptls)
     pyju_atomic_store_relaxed(&ptls->gc_num.allocd, -(int64_t)gc_num.interval);
 }
 
+// finalization
+// `ptls->finalizers` and `finalizer_list_marked` might have tagged pointers.
+// If an object pointer has the lowest bit set, the next pointer is an unboxed
+// c function pointer.
+// `to_finalize` should not have tagged pointers.
+arraylist_t finalizer_list_marked;
+arraylist_t to_finalize;
+PYJU_DLLEXPORT _Atomic(int) pyju_gc_have_pending_finalizers = 0;
+
+PYJU_DLLEXPORT void pyju_gc_run_pending_finalizers(PyjuTask_t *ct)
+{
+    printf("not impl: pyju_gc_run_pending_finalizers");
+}
 
 #ifdef __cplusplus
 }

@@ -15,6 +15,7 @@
 #define UV_STDERR_FD   (2)
 #endif
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -81,6 +82,10 @@ static inline uint64_t cycleclock(void) PYJU_NOTSAFEPOINT
 // provided and with PYJU_UV_LOCK used around the calls
 static uv_loop_t *const unused_uv_loop_arg = (uv_loop_t *)0xBAD10;
 
+extern PyjuMutex_t pyju_uv_mutex;
+extern _Atomic(int) pyju_uv_n_waiters;
+void PYJU_UV_LOCK(void);
+#define PYJU_UV_UNLOCK() PYJU_UNLOCK(&pyju_uv_mutex)
 
 // pools are 16376 bytes large (GC_POOL_SZ - GC_PAGE_OFFSET)
 static const int pyju_gc_sizeclasses[] = {

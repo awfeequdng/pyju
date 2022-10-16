@@ -269,12 +269,14 @@ struct PyjuTlsStates_t {
         uint64_t sleep_enter;
         uint64_t sleep_leave;
     )
-    // some hidden state (usually just because we don't have the type's size declaration)
-#ifdef LIBRARY_EXPORTS
-    uv_mutex_t sleep_lock;
-    uv_cond_t wake_signal;
-#endif
 };
+
+typedef PyjuTlsStates_t *PyjuPtls_t;
+
+#ifndef LIBRARY_EXPORTS
+// deprecated (only for external consumers)
+PYJU_DLLEXPORT void *pyju_get_ptls_states(void);
+#endif
 
 // Update codegen version in `ccall.cpp` after changing either `pause` or `wake`
 #ifdef __MIC__
@@ -297,6 +299,58 @@ struct PyjuTlsStates_t {
 
 PYJU_DLLEXPORT void (pyju_cpu_pause)(void);
 PYJU_DLLEXPORT void (pyju_cpu_wake)(void);
+
+// gc safepoint and gc states
+// This triggers a SegFault when we are in GC
+// Assign it to a variable to make sure the compiler emit the load
+// and to avoid Clang warning for -Wunused-volatile-lvalue
+#define pyju_gc_safepoint_(ptls) do {                     \
+        pyju_signal_fence();                              \
+        size_t safepoint_load = *ptls->safepoint;       \
+        pyju_signal_fence();                              \
+        (void)safepoint_load;                           \
+    } while (0)
+#define pyju_sigint_safepoint(ptls) do {                  \
+        pyju_signal_fence();                              \
+        size_t safepoint_load = ptls->safepoint[-1];    \
+        pyju_signal_fence();                              \
+        (void)safepoint_load;                           \
+    } while (0)
+
+STATIC_INLINE int8_t pyju_gc_state_set(PyjuPtls_t ptls, int8_t state,
+                                     int8_t old_state)
+{
+    pyju_atomic_store_release(&ptls->gc_state, state);
+    // A safe point is required if we transition from GC-safe region to
+    // non GC-safe region.
+    if (old_state && !state)
+        pyju_gc_safepoint_(ptls);
+    return old_state;
+}
+STATIC_INLINE int8_t pyju_gc_state_save_and_set(PyjuPtls_t ptls,
+                                              int8_t state)
+{
+    return pyju_gc_state_set(ptls, state, pyju_atomic_load_relaxed(&ptls->gc_state));
+}
+#ifdef __clang_gcanalyzer__
+int8_t pyju_gc_unsafe_enter(PyjuPtls_t ptls); // Can be a safepoint
+int8_t pyju_gc_unsafe_leave(PyjuPtls_t ptls, int8_t state) PYJU_NOTSAFEPOINT;
+int8_t pyju_gc_safe_enter(PyjuPtls_t ptls) PYJU_NOTSAFEPOINT;
+int8_t pyju_gc_safe_leave(PyjuPtls_t ptls, int8_t state); // Can be a safepoint
+#else
+#define pyju_gc_unsafe_enter(ptls) pyju_gc_state_save_and_set(ptls, 0)
+#define pyju_gc_unsafe_leave(ptls, state) ((void)pyju_gc_state_set(ptls, (state), 0))
+#define pyju_gc_safe_enter(ptls) pyju_gc_state_save_and_set(ptls, PYJU_GC_STATE_SAFE)
+#define pyju_gc_safe_leave(ptls, state) ((void)pyju_gc_state_set(ptls, (state), PYJU_GC_STATE_SAFE))
+#endif
+
+PYJU_DLLEXPORT void pyju_gc_enable_finalizers(PyjuTask_t *ct, int on);
+PYJU_DLLEXPORT void pyju_gc_disable_finalizers_internal(void);
+PYJU_DLLEXPORT void pyju_gc_enable_finalizers_internal(void);
+PYJU_DLLEXPORT void pyju_gc_run_pending_finalizers(PyjuTask_t *ct);
+extern PYJU_DLLEXPORT _Atomic(int) pyju_gc_have_pending_finalizers;
+
+PYJU_DLLEXPORT void pyju_wakeup_thread(int16_t tid);
 
 #ifdef __cplusplus
 }

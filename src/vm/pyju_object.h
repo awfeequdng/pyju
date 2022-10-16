@@ -49,8 +49,6 @@ struct PyjuValue_t;
 // used to indicate which types below are subtypes of PyjuValue_t
 #define PYJU_DATA_TYPE PyjuValue_t __pyju_value_;
 
-struct PyjuTlsStates_t;
-typedef PyjuTlsStates_t * PyjuPtls_t;
 
 struct PyjuTaggedValueBits_t {
     uintptr_t gc:2;
@@ -955,6 +953,7 @@ PYJU_DLLEXPORT ssize_t pyju_sizeof_pyju_options(void);
 // throwing common exceptions
 PYJU_DLLEXPORT void PYJU_NORETURN pyju_error(const char *str);
 PYJU_DLLEXPORT void PYJU_NORETURN pyju_errorf(const char *fmt, ...);
+PYJU_DLLEXPORT void PYJU_NORETURN pyju_eof_error(void);
 
 // Parse an argc/argv pair to extract general julia options, passing back out
 // any arguments that should be passed on to the script.
@@ -1019,6 +1018,13 @@ PYJU_DLLEXPORT void pyju_parse_opts(int *argcp, char ***argvp);
 
 #define PYJU_OPTIONS_USE_COMPILED_MODULES_YES 1
 #define PYJU_OPTIONS_USE_COMPILED_MODULES_NO 0
+
+
+// TODO: we need to pin the task while using this (set pure bit)
+PYJU_DLLEXPORT pyju_jmp_buf *pyju_get_safe_restore(void) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT void pyju_set_safe_restore(pyju_jmp_buf *) PYJU_NOTSAFEPOINT;
+
+PYJU_DLLEXPORT PyjuTask_t *pyju_get_current_task(void) PYJU_NOTSAFEPOINT;
 
 #ifdef __cplusplus
 }

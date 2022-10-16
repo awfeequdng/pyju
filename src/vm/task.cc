@@ -48,6 +48,13 @@ void pyju_init_tasks(void) PYJU_GC_DISABLED
 #endif
 }
 
+// a version of jl_current_task safe for unmanaged threads
+PYJU_DLLEXPORT PyjuTask_t *pyju_get_current_task(void)
+{
+    PyjuGcFrame_t **pgcstack = pyju_get_pgcstack();
+    return pgcstack == NULL ? NULL : container_of(pgcstack, PyjuTask_t, gcstack);
+}
+
 #ifdef __cplusplus
 }
 #endif

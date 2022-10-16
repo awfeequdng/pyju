@@ -5,6 +5,7 @@
 */
 #include "support/platform.h"
 
+#include <cstdlib>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -54,6 +55,11 @@ PYJU_DLLEXPORT void PYJU_NORETURN pyju_errorf(const char *fmt, ...)
     // pyju_throw(e);
 
     printf("not impl pyju_errorf\n");
+    abort();
+}
+
+PYJU_DLLEXPORT void PYJU_NORETURN pyju_eof_error(void) {
+    printf("not impl pyju_eof_error\n");
     abort();
 }
 
