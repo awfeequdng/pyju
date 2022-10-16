@@ -100,9 +100,16 @@ uv_loop_t *pyju_io_loop;
 PYJU_DLLEXPORT void pyju_init() {
     // Make sure we finalize the tls callback before starting any threads.
     (void)pyju_get_pgcstack();
-
+    pyju_safepoint_init();
+    libsupport_init();
     pyju_io_loop = uv_default_loop(); // this loop will internal events (spawning process etc.),
                                         // best to call this first, since it also initializes libuv
+    pyju_page_size = pyju_getpagesize();
+    void *stack_lo, *stack_hi;
+    pyju_init_stack_limits(1, &stack_lo, &stack_hi);
+
+    pyju_init_rand();
+
 }
 
 #ifdef __cplusplus

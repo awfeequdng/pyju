@@ -357,6 +357,9 @@ STATIC_INLINE size_t pyju_bt_entry_size(PyjuBtElement_t *bt_entry) PYJU_NOTSAFEP
 }
 
 
+void pyju_init_threading(void);
+void pyju_start_threads(void);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
