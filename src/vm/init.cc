@@ -209,6 +209,7 @@ PYJU_DLLEXPORT void pyju_init() {
 
     pyju_init_uv();
     init_stdio();
+    pyju_printf(PYJU_STDOUT, "call pyju_init \n");
 
     pyju_page_size = pyju_getpagesize();
     void *stack_lo, *stack_hi;
@@ -219,7 +220,7 @@ PYJU_DLLEXPORT void pyju_init() {
     pyju_init_tasks();
     pyju_init_threading();
 
-    // pyju_gc_init();
+    pyju_gc_init();
     // PyjuPtls_t ptls = pyju_init_threadtls(0);
     // warning: this changes `pyju_current_task`, so be careful not to call that from this function
     // PyjuTask_t *ct = pyju_init_root_task(ptls, stack_lo, stack_hi);

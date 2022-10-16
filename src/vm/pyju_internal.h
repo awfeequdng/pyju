@@ -204,7 +204,7 @@ static_assert(ARRAY_CACHE_ALIGN_THRESHOLD > GC_MAX_SZCLASS, "");
 void pyju_init_thread_heap(PyjuPtls_t ptls);
 extern PYJU_DLLEXPORT size_t pyju_page_size;
 void pyju_init_uv(void);
-
+void pyju_gc_init(void);
 
 //--------------------------------------------------
 // congruential random number generator
@@ -385,6 +385,14 @@ extern htable_t pyju_current_modules PYJU_GLOBALLY_ROOTED;
 extern uv_loop_t *pyju_io_loop;
 
 void restore_signals(void);
+
+// -- gc.c -- //
+
+#define GC_CLEAN  0 // freshly allocated
+#define GC_MARKED 1 // reachable and young
+#define GC_OLD    2 // if it is reachable it will be marked as old
+#define GC_OLD_MARKED (GC_OLD | GC_MARKED) // reachable and old
+
 
 #ifdef __cplusplus
 } // extern "C"
