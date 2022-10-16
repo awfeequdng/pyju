@@ -19,6 +19,10 @@ PYJU_DLLEXPORT int pyju_repl_entrypoint(int argc, char *argv[])
 
     libsupport_init();
 
+    char **new_argv = argv;
+    pyju_parse_opts(&argc, (char***)&new_argv);
+
+
     pyju_init();
     int ret = true_main(argc, argv);
     return ret;
