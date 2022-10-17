@@ -240,8 +240,8 @@ static_assert(ARRAY_CACHE_ALIGN_THRESHOLD > GC_MAX_SZCLASS, "");
 STATIC_INLINE PyjuValue_t *pyju_gc_alloc_(PyjuPtls_t ptls, size_t sz, void *ty)
 {
     PyjuValue_t *v;
-    // const size_t allocsz = sz + sizeof(PyjuTaggedValue_t);
-    const size_t allocsz = sz;
+    const size_t allocsz = sz + sizeof(PyjuTaggedValue_t);
+    // const size_t allocsz = sz;
     if (sz <= GC_MAX_SZCLASS) {
         int pool_id = pyju_gc_szclass(allocsz);
         PyjuGcPool_t *p = &ptls->heap.norm_pools[pool_id];
@@ -293,8 +293,8 @@ STATIC_INLINE pyju_gc_tracked_buffer_t *pyju_gc_alloc_buf(PyjuPtls_t ptls, size_
 
 STATIC_INLINE PyjuValue_t *pyju_gc_permobj(size_t sz, void *ty) PYJU_NOTSAFEPOINT
 {
-    // const size_t allocsz = sz + sizeof(PyjuTaggedValue_t);
-    const size_t allocsz = sz;
+    const size_t allocsz = sz + sizeof(PyjuTaggedValue_t);
+    // const size_t allocsz = sz;
     unsigned align = (sz == 0 ? sizeof(void*) : (allocsz <= sizeof(void*) * 2 ?
                                                  sizeof(void*) * 2 : 16));
     PyjuTaggedValue_t *o = (PyjuTaggedValue_t*)pyju_gc_perm_alloc(allocsz, 0, align,

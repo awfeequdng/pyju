@@ -174,20 +174,11 @@ PyjuPtls_t pyju_init_threadtls(int16_t tid)
     PyjuPtls_t ptls = (PyjuPtls_t)calloc(1, sizeof(PyjuTlsStates_t));
     ptls->system_id = (PyjuThread_t)(uintptr_t)uv_thread_self();
     ptls->rngseed = pyju_rand();
-#ifdef _OS_WINDOWS_
-    if (tid == 0) {
-        if (!DuplicateHandle(GetCurrentProcess(), GetCurrentThread(),
-                             GetCurrentProcess(), &hMainThread, 0,
-                             FALSE, DUPLICATE_SAME_ACCESS)) {
-            pyju_printf(PYJU_STDERR, "WARNING: failed to access handle to main thread\n");
-            hMainThread = INVALID_HANDLE_VALUE;
-        }
-    }
-#endif
+
     ptls->tid = tid;
     pyju_atomic_store_relaxed(&ptls->gc_state, 0); // GC unsafe
     // Conditionally initialize the safepoint address. See comment in
-    // `safepoint.c`
+    // `safepoint.cc`
     if (tid == 0) {
         ptls->safepoint = (size_t*)(pyju_safepoint_pages + pyju_page_size);
     }

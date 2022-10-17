@@ -1,6 +1,7 @@
 #include "pyju_object.h"
 #include "pyju_internal.h"
 #include "pyju_assert.h"
+#include "threading.h"
 
 #include "support/libsupport.h"
 
@@ -221,7 +222,7 @@ PYJU_DLLEXPORT void pyju_init() {
     pyju_init_threading();
 
     pyju_gc_init();
-    // PyjuPtls_t ptls = pyju_init_threadtls(0);
+    PyjuPtls_t ptls = pyju_init_threadtls(0);
     // warning: this changes `pyju_current_task`, so be careful not to call that from this function
     // PyjuTask_t *ct = pyju_init_root_task(ptls, stack_lo, stack_hi);
     // PYJU_GC_PROMISE_ROOTED(ct);

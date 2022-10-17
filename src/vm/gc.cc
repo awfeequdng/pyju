@@ -13,6 +13,14 @@
 extern "C" {
 #endif
 
+#ifdef _P64
+#define default_collect_interval (5600*1024*sizeof(void*))
+static size_t max_collect_interval = 1250000000UL;
+#else
+#define default_collect_interval (3200*1024*sizeof(void*))
+static size_t max_collect_interval =  500000000UL;
+#endif
+
 // Linked list of callback functions
 typedef void (*pyju_gc_cb_func_t)(void);
 
@@ -543,6 +551,28 @@ void pyju_init_thread_heap(PyjuPtls_t ptls)
 void pyju_gc_init()
 {
     PYJU_MUTEX_INIT(&finalizers_lock);
+    uv_mutex_init(&gc_cache_lock);
+    uv_mutex_init(&gc_perm_lock);
+
+    pyju_gc_init_page();
+
+    arraylist_new(&finalizer_list_marked, 0);
+    arraylist_new(&to_finalize, 0);
+
+    gc_num.interval = default_collect_interval;
+    last_long_collect_interval = default_collect_interval;
+    gc_num.allocd = 0;
+
+    #ifdef _P64
+    // on a big memory machine, set max_collect_interval to totalmem / nthreads / 2
+    uint64_t total_mem = uv_get_total_memory();
+    uint64_t constrained_mem = uv_get_constrained_memory();
+    if (constrained_mem != 0)
+        total_mem = constrained_mem;
+    size_t maxmem = total_mem / pyju_n_threads / 2;
+    if (maxmem > max_collect_interval)
+        max_collect_interval = maxmem;
+    #endif
 }
 
 // Perm gen allocator

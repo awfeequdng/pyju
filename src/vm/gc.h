@@ -380,13 +380,6 @@ STATIC_INLINE unsigned ffs_u32(uint32_t bitvec)
 }
 #endif
 
-#ifdef _P64
-#define default_collect_interval (5600*1024*sizeof(void*))
-static size_t max_collect_interval = 1250000000UL;
-#else
-#define default_collect_interval (3200*1024*sizeof(void*))
-static size_t max_collect_interval =  500000000UL;
-#endif
 
 extern PyjuGcNum_t gc_num;
 extern pagetable_t memory_map;
