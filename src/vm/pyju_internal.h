@@ -3,6 +3,7 @@
 #include "pyju_threads.h"
 #include "pyju_fasttls.h"
 #include "pyju_locks.h"
+#include <cstdlib>
 #include <uv.h>
 
 #ifndef UV_STDIN_FD
@@ -86,6 +87,42 @@ extern PyjuMutex_t pyju_uv_mutex;
 extern _Atomic(int) pyju_uv_n_waiters;
 void PYJU_UV_LOCK(void);
 #define PYJU_UV_UNLOCK() PYJU_UNLOCK(&pyju_uv_mutex)
+
+
+// -- gc.c -- //
+
+#define GC_CLEAN  0 // freshly allocated
+#define GC_MARKED 1 // reachable and young
+#define GC_OLD    2 // if it is reachable it will be marked as old
+#define GC_OLD_MARKED (GC_OLD | GC_MARKED) // reachable and old
+
+
+STATIC_INLINE void *pyju_get_frame_addr(void)
+{
+#ifdef __GNUC__
+    return __builtin_frame_address(0);
+#else
+    void *dummy = NULL;
+    // The mask is to suppress the compiler warning about returning
+    // address of local variable
+    return (void*)((uintptr_t)&dummy & ~(uintptr_t)15);
+#endif
+}
+
+PYJU_DLLEXPORT extern int pyju_lineno;
+PYJU_DLLEXPORT extern const char *pyju_filename;
+
+PyjuValue_t *pyju_gc_pool_alloc_noinline(PyjuPtls_t ptls, int pool_offset,
+                                   int osize);
+PyjuValue_t *pyju_gc_big_alloc_noinline(PyjuPtls_t ptls, size_t allocsz);
+PYJU_DLLEXPORT int pyju_gc_classify_pools(size_t sz, int *osize);
+extern uv_mutex_t gc_perm_lock;
+void *pyju_gc_perm_alloc_nolock(size_t sz, int zero,
+    unsigned align, unsigned offset) PYJU_NOTSAFEPOINT;
+void *pyju_gc_perm_alloc(size_t sz, int zero,
+    unsigned align, unsigned offset) PYJU_NOTSAFEPOINT;
+void pyju_gc_force_mark_old(PyjuPtls_t ptls, PyjuValue_t *v);
+void gc_sweep_sysimg(void);
 
 // pools are 16376 bytes large (GC_POOL_SZ - GC_PAGE_OFFSET)
 static const int pyju_gc_sizeclasses[] = {
@@ -200,6 +237,79 @@ STATIC_INLINE uint8_t PYJU_CONST_FUNC pyju_gc_szclass_align8(unsigned sz)
 static_assert(ARRAY_CACHE_ALIGN_THRESHOLD > GC_MAX_SZCLASS, "");
 
 
+STATIC_INLINE PyjuValue_t *pyju_gc_alloc_(PyjuPtls_t ptls, size_t sz, void *ty)
+{
+    PyjuValue_t *v;
+    // const size_t allocsz = sz + sizeof(PyjuTaggedValue_t);
+    const size_t allocsz = sz;
+    if (sz <= GC_MAX_SZCLASS) {
+        int pool_id = pyju_gc_szclass(allocsz);
+        PyjuGcPool_t *p = &ptls->heap.norm_pools[pool_id];
+        int osize = pyju_gc_sizeclasses[pool_id];
+        // We call `pyju_gc_pool_alloc_noinline` instead of `pyju_gc_pool_alloc` to avoid double-counting in
+        // the Allocations Profiler. (See https://github.com/JuliaLang/julia/pull/43868 for more details.)
+        v = pyju_gc_pool_alloc_noinline(ptls, (char*)p - (char*)ptls, osize);
+    }
+    else {
+        if (allocsz < sz) // overflow in adding offs, size was "negative"
+        {
+            pyju_printf(PYJU_STDOUT, "not impl pyju_throw(pyju_memory_exception)");
+            abort();
+            // pyju_throw(pyju_memory_exception);
+        }
+        v = pyju_gc_big_alloc_noinline(ptls, allocsz);
+    }
+    pyju_set_typeof(v, ty);
+    // maybe_record_alloc_to_profile(v, sz, (PyjuDataType_t*)ty);
+    return v;
+}
+
+
+/* Programming style note: When using pyju_gc_alloc, do not PYJU_GC_PUSH it into a
+ * gc frame, until it has been fully initialized. An uninitialized value in a
+ * gc frame can crash upon encountering the first safepoint. By delaying use of
+ * the PYJU_GC_PUSH macro until the value has been initialized, any accidental
+ * safepoints will be caught by the GC analyzer.
+ */
+PYJU_DLLEXPORT PyjuValue_t *pyju_gc_alloc(PyjuPtls_t ptls, size_t sz, void *ty);
+// On GCC, only inline when sz is constant
+#ifdef __GNUC__
+#  define pyju_gc_alloc(ptls, sz, ty)  \
+    (__builtin_constant_p(sz) ?      \
+     pyju_gc_alloc_(ptls, sz, ty) :    \
+     (pyju_gc_alloc)(ptls, sz, ty))
+#else
+#  define pyju_gc_alloc(ptls, sz, ty) pyju_gc_alloc_(ptls, sz, ty)
+#endif
+
+// pyju_buff_tag must be a multiple of GC_PAGE_SZ so that it can't be
+// confused for an actual type reference.
+#define pyju_buff_tag ((uintptr_t)0x4eadc000)
+typedef void pyju_gc_tracked_buffer_t; // For the benefit of the static analyzer
+STATIC_INLINE pyju_gc_tracked_buffer_t *pyju_gc_alloc_buf(PyjuPtls_t ptls, size_t sz)
+{
+    return pyju_gc_alloc(ptls, sz, (void*)pyju_buff_tag);
+}
+
+STATIC_INLINE PyjuValue_t *pyju_gc_permobj(size_t sz, void *ty) PYJU_NOTSAFEPOINT
+{
+    // const size_t allocsz = sz + sizeof(PyjuTaggedValue_t);
+    const size_t allocsz = sz;
+    unsigned align = (sz == 0 ? sizeof(void*) : (allocsz <= sizeof(void*) * 2 ?
+                                                 sizeof(void*) * 2 : 16));
+    PyjuTaggedValue_t *o = (PyjuTaggedValue_t*)pyju_gc_perm_alloc(allocsz, 0, align,
+                                                              sizeof(void*) % align);
+    uintptr_t tag = (uintptr_t)ty;
+    o->header = tag | GC_OLD_MARKED;
+    return pyju_valueof(o);
+}
+
+PyjuValue_t *pyju_permbox8(PyjuDataType_t *t, int8_t x);
+PyjuValue_t *pyju_permbox16(PyjuDataType_t *t, int16_t x);
+PyjuValue_t *pyju_permbox32(PyjuDataType_t *t, int32_t x);
+PyjuValue_t *pyju_permbox64(PyjuDataType_t *t, int64_t x);
+PyjuSvec_t *pyju_perm_symsvec(size_t n, ...);
+
 // init.cc
 void pyju_init_thread_heap(PyjuPtls_t ptls);
 extern PYJU_DLLEXPORT size_t pyju_page_size;
@@ -267,7 +377,7 @@ void pyju_safepoint_defer_sigint(void);
 // Return `1` if the sigint should be delivered and `0` if there's no sigint
 // to be delivered.
 int pyju_safepoint_consume_sigint(void);
-// void pyju_wake_libuv(void);
+void pyju_wake_libuv(void);
 
 
 
@@ -385,13 +495,6 @@ extern htable_t pyju_current_modules PYJU_GLOBALLY_ROOTED;
 extern uv_loop_t *pyju_io_loop;
 
 void restore_signals(void);
-
-// -- gc.c -- //
-
-#define GC_CLEAN  0 // freshly allocated
-#define GC_MARKED 1 // reachable and young
-#define GC_OLD    2 // if it is reachable it will be marked as old
-#define GC_OLD_MARKED (GC_OLD | GC_MARKED) // reachable and old
 
 
 #ifdef __cplusplus
