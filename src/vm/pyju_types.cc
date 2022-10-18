@@ -32,8 +32,7 @@ void pyju_init_types(void) PYJU_GC_DISABLED {
     PyjuModule_t *core = nullptr;
 
     // create base objects
-    // pyju_datatype_type = pyju_new_uninilialized_datatype();
-    pyju_datatype_type = nullptr;
+    pyju_datatype_type = pyju_new_uninitialized_datatype();
 }
 
 #ifdef __cplusplus

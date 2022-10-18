@@ -688,25 +688,25 @@ PYJU_DLLEXPORT PyjuValue_t *pyju_gc_allocobj(size_t sz)
 PYJU_DLLEXPORT PyjuValue_t *pyju_gc_alloc_0w(void)
 {
     PyjuPtls_t ptls = pyju_current_task->ptls;
-    return pyju_gc_alloc(ptls, 0, NULL);
+    return pyju_gc_alloc(ptls, 0 + sizeof(PyjuTaggedValue_t), NULL);
 }
 
 PYJU_DLLEXPORT PyjuValue_t *pyju_gc_alloc_1w(void)
 {
     PyjuPtls_t ptls = pyju_current_task->ptls;
-    return pyju_gc_alloc(ptls, sizeof(void*), NULL);
+    return pyju_gc_alloc(ptls, sizeof(void*) + sizeof(PyjuTaggedValue_t), NULL);
 }
 
 PYJU_DLLEXPORT PyjuValue_t *pyju_gc_alloc_2w(void)
 {
     PyjuPtls_t ptls = pyju_current_task->ptls;
-    return pyju_gc_alloc(ptls, sizeof(void*) * 2, NULL);
+    return pyju_gc_alloc(ptls, sizeof(void*) * 2 + sizeof(PyjuTaggedValue_t), NULL);
 }
 
 PYJU_DLLEXPORT PyjuValue_t *pyju_gc_alloc_3w(void)
 {
     PyjuPtls_t ptls = pyju_current_task->ptls;
-    return pyju_gc_alloc(ptls, sizeof(void*) * 3, NULL);
+    return pyju_gc_alloc(ptls, sizeof(void*) * 3 + sizeof(PyjuTaggedValue_t), NULL);
 }
 
 

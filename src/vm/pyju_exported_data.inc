@@ -2,6 +2,12 @@
 
 // Pointers that are exposed through the public libjulia
 #define PYJU_EXPORTED_DATA_POINTERS(XX) \
+    XX(pyju_true) \
+    XX(pyju_false) \
+    XX(pyju_nothing) \
+    XX(pyju_nothing_type) \
+    XX(pyju_symbol_type) \
+    XX(pyju_task_type) \
     XX(pyju_datatype_type)
 
 

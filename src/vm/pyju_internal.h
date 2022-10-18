@@ -41,7 +41,7 @@ struct PyjuExcStack_t {
 
 typedef PyjuGcFrame_t ***(*pyju_pgcstack_key_t)(void) PYJU_NOTSAFEPOINT;
 PYJU_DLLEXPORT void pyju_pgcstack_getkey(pyju_get_pgcstack_func **f, pyju_pgcstack_key_t *k);
-
+void pyju_set_pgcstack(PyjuGcFrame_t **) PYJU_NOTSAFEPOINT;
 
 // number of cycles since power-on
 static inline uint64_t cycleclock(void) PYJU_NOTSAFEPOINT
@@ -240,8 +240,8 @@ static_assert(ARRAY_CACHE_ALIGN_THRESHOLD > GC_MAX_SZCLASS, "");
 STATIC_INLINE PyjuValue_t *pyju_gc_alloc_(PyjuPtls_t ptls, size_t sz, void *ty)
 {
     PyjuValue_t *v;
-    const size_t allocsz = sz + sizeof(PyjuTaggedValue_t);
-    // const size_t allocsz = sz;
+    // const size_t allocsz = sz + sizeof(PyjuTaggedValue_t);
+    const size_t allocsz = sz;
     if (sz <= GC_MAX_SZCLASS) {
         int pool_id = pyju_gc_szclass(allocsz);
         PyjuGcPool_t *p = &ptls->heap.norm_pools[pool_id];
@@ -293,8 +293,8 @@ STATIC_INLINE pyju_gc_tracked_buffer_t *pyju_gc_alloc_buf(PyjuPtls_t ptls, size_
 
 STATIC_INLINE PyjuValue_t *pyju_gc_permobj(size_t sz, void *ty) PYJU_NOTSAFEPOINT
 {
-    const size_t allocsz = sz + sizeof(PyjuTaggedValue_t);
-    // const size_t allocsz = sz;
+    // const size_t allocsz = sz + sizeof(PyjuTaggedValue_t);
+    const size_t allocsz = sz;
     unsigned align = (sz == 0 ? sizeof(void*) : (allocsz <= sizeof(void*) * 2 ?
                                                  sizeof(void*) * 2 : 16));
     PyjuTaggedValue_t *o = (PyjuTaggedValue_t*)pyju_gc_perm_alloc(allocsz, 0, align,
@@ -311,10 +311,12 @@ PyjuValue_t *pyju_permbox64(PyjuDataType_t *t, int64_t x);
 PyjuSvec_t *pyju_perm_symsvec(size_t n, ...);
 
 // init.cc
+void pyju_init_types(void) PYJU_GC_DISABLED;
 void pyju_init_thread_heap(PyjuPtls_t ptls);
 extern PYJU_DLLEXPORT size_t pyju_page_size;
 void pyju_init_uv(void);
 void pyju_gc_init(void);
+PyjuTask_t *pyju_init_root_task(PyjuPtls_t ptls, void *stack_lo, void *stack_hi);
 
 //--------------------------------------------------
 // congruential random number generator
@@ -496,6 +498,8 @@ extern uv_loop_t *pyju_io_loop;
 
 void restore_signals(void);
 
+// functions
+PyjuDataType_t *pyju_new_uninitialized_datatype(void);
 
 #ifdef __cplusplus
 } // extern "C"

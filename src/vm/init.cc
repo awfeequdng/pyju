@@ -195,7 +195,7 @@ static void pyju_set_io_wait(int v)
 extern PyjuMutex_t pyju_modules_mutex;
 
 
-
+static NOINLINE void _finish_pyju_init(PyjuPtls_t ptls, PyjuTask_t *ct);
 
 PYJU_DLLEXPORT void pyju_init() {
     pyju_init_timing();
@@ -224,9 +224,19 @@ PYJU_DLLEXPORT void pyju_init() {
     pyju_gc_init();
     PyjuPtls_t ptls = pyju_init_threadtls(0);
     // warning: this changes `pyju_current_task`, so be careful not to call that from this function
-    // PyjuTask_t *ct = pyju_init_root_task(ptls, stack_lo, stack_hi);
-    // PYJU_GC_PROMISE_ROOTED(ct);
-    // _finish_pyju_init(rel, ptls, ct);
+    PyjuTask_t *ct = pyju_init_root_task(ptls, stack_lo, stack_hi);
+    PYJU_GC_PROMISE_ROOTED(ct);
+    _finish_pyju_init(ptls, ct);
+
+    pyju_printf(PYJU_STDOUT, "pyju_init finished\n");
+}
+
+static NOINLINE void _finish_pyju_init(PyjuPtls_t ptls, PyjuTask_t *ct)
+{
+    pyju_init_types();
+
+
+
 }
 
 #ifdef __cplusplus

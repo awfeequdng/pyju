@@ -174,7 +174,6 @@ PyjuPtls_t pyju_init_threadtls(int16_t tid)
     PyjuPtls_t ptls = (PyjuPtls_t)calloc(1, sizeof(PyjuTlsStates_t));
     ptls->system_id = (PyjuThread_t)(uintptr_t)uv_thread_self();
     ptls->rngseed = pyju_rand();
-
     ptls->tid = tid;
     pyju_atomic_store_relaxed(&ptls->gc_state, 0); // GC unsafe
     // Conditionally initialize the safepoint address. See comment in
@@ -194,7 +193,6 @@ PyjuPtls_t pyju_init_threadtls(int16_t tid)
     pyju_init_thread_heap(ptls);
 
     pyju_all_tls_states[tid] = ptls;
-
     return ptls;
 }
 

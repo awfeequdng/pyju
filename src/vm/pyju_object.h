@@ -88,8 +88,8 @@ static inline void pyju_set_typeof(void *v, void *t)
 // The string data is nul-terminated and hangs off the end of the struct.
 struct PyjuSym_t {
     PYJU_DATA_TYPE
-    _Atomic(struct PyjuSym_t*) left;
-    _Atomic(struct PyjuSym_t*) right;
+    _Atomic(PyjuSym_t*) left;
+    _Atomic(PyjuSym_t*) right;
     uintptr_t hash;    // precomputed hash value
     // PYJU_ATTRIBUTE_ALIGN_PTRSIZE(char name[]);
 };
@@ -739,7 +739,7 @@ enum PyjuGcCollection_t {
 // constants and type objects -------------------------------------------------
 
 // kinds
-extern PYJU_DLLIMPORT PyjuDataType_t *pyju_datatype_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *PyjuDataType_type PYJU_GLOBALLY_ROOTED;
 
 
 // object accessors -----------------------------------------------------------
@@ -852,7 +852,6 @@ PYJU_DLLEXPORT void PYJU_NORETURN pyju_rethrow_other(PyjuValue_t *e PYJU_MAYBE_U
 PYJU_DLLEXPORT void PYJU_NORETURN pyju_no_exc_handler(PyjuValue_t *e);
 PYJU_DLLEXPORT PYJU_CONST_FUNC PyjuGcFrame_t **(pyju_get_pgcstack)(void) PYJU_GLOBALLY_ROOTED PYJU_NOTSAFEPOINT;
 #define pyju_current_task (container_of(pyju_get_pgcstack(), PyjuTask_t, gcstack))
-
 
 // system information
 PYJU_DLLEXPORT int pyju_errno(void) PYJU_NOTSAFEPOINT;
@@ -1025,6 +1024,149 @@ PYJU_DLLEXPORT pyju_jmp_buf *pyju_get_safe_restore(void) PYJU_NOTSAFEPOINT;
 PYJU_DLLEXPORT void pyju_set_safe_restore(pyju_jmp_buf *) PYJU_NOTSAFEPOINT;
 
 PYJU_DLLEXPORT PyjuTask_t *pyju_get_current_task(void) PYJU_NOTSAFEPOINT;
+
+// constants and type objects -------------------------------------------------
+
+// kinds
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_typeofbottom_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_datatype_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_uniontype_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *PyjuUnionAll_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_tvar_type PYJU_GLOBALLY_ROOTED;
+
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_any_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuUnionAll_t *pyju_type_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *PyjuTypeName_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuTypeName_t *pyju_type_typename PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_symbol_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_ssavalue_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_abstractslot_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_slotnumber_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_typedslot_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_argument_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_const_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_partial_struct_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_partial_opaque_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_interconditional_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_method_match_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_simplevector_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuTypeName_t *pyju_tuple_typename PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuTypeName_t *pyju_vecelement_typename PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_anytuple_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_emptytuple_type PYJU_GLOBALLY_ROOTED;
+#define pyju_tuple_type pyju_anytuple_type
+extern PYJU_DLLIMPORT PyjuUnionAll_t *pyju_anytuple_type_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_vararg_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_function_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_builtin_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuUnionAll_t *pyju_opaque_closure_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuTypeName_t *pyju_opaque_closure_typename PYJU_GLOBALLY_ROOTED;
+
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_bottom_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_method_instance_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_code_instance_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_code_info_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_method_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_module_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuUnionAll_t *pyju_abstractarray_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuUnionAll_t *pyju_densearray_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuUnionAll_t *pyju_array_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuTypeName_t *pyju_array_typename PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_weakref_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_abstractstring_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_string_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_errorexception_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_argumenterror_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_loaderror_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_initerror_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_typeerror_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_methoderror_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_undefvarerror_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_atomicerror_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_lineinfonode_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_stackovf_exception PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_memory_exception PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_readonlymemory_exception PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_diverror_exception PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_undefref_exception PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_interrupt_exception PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_boundserror_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_an_empty_vec_any PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_an_empty_string PYJU_GLOBALLY_ROOTED;
+
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_bool_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_char_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_int8_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_uint8_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_int16_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_uint16_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_int32_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_uint32_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_int64_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_uint64_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_float16_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_float32_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_float64_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_floatingpoint_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_number_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_void_type PYJU_GLOBALLY_ROOTED;  // deprecated
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_nothing_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_signed_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_voidpointer_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_uint8pointer_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuUnionAll_t *pyju_pointer_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuUnionAll_t *pyju_llvmpointer_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuUnionAll_t *pyju_ref_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuTypeName_t *pyju_pointer_typename PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuTypeName_t *pyju_llvmpointer_typename PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuTypeName_t *pyju_namedtuple_typename PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuUnionAll_t *pyju_namedtuple_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_task_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_pair_type PYJU_GLOBALLY_ROOTED;
+
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_array_uint8_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_array_any_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_array_symbol_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_array_int32_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_array_uint64_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_expr_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_globalref_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_linenumbernode_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_gotonode_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_gotoifnot_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_returnnode_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_phinode_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_pinode_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_phicnode_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_upsilonnode_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_quotenode_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_newvarnode_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_intrinsic_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_methtable_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_typemap_level_type PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuDataType_t *pyju_typemap_entry_type PYJU_GLOBALLY_ROOTED;
+
+extern PYJU_DLLIMPORT PyjuSvec_t *pyju_emptysvec PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_emptytuple PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_true PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_false PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLIMPORT PyjuValue_t *pyju_nothing PYJU_GLOBALLY_ROOTED;
+
+
+#define pyju_datatype_size(t)       (((PyjuDataType_t*)t)->size)
+#define pyju_datatype_align(t)      (((PyjuDataType_t*)t)->layout->alignment)
+#define pyju_datatype_nbits(t)      ((((PyjuDataType_t*)t)->size) * 8)
+#define pyju_datatype_nfields(t)    (((PyjuDataType_t*)t)->layout->nfields)
+
+PYJU_DLLEXPORT void *pyju_symbol_name(PyjuSym_t *s);
+// inline version with strong type check to detect typos in a `->name` chain
+STATIC_INLINE char *pyju_symbol_name_(PyjuSym_t* s) PYJU_NOTSAFEPOINT
+{
+    return (char*)s + LLT_ALIGN(sizeof(PyjuSym_t), sizeof(void*));
+}
+#define pyju_symbol_name(s) pyju_symbol_name_(s)
+
+
 
 #ifdef __cplusplus
 }
