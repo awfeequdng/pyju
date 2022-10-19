@@ -141,7 +141,7 @@ struct PyjuThreadHeap_t {
 
     // variables for tracking "remembered set"
     arraylist_t rem_bindings;
-    arraylist_t _remset[2]; // contains pyju_value_t*
+    arraylist_t _remset[2]; // contains PyjuValue_t*
     // lower bound of the number of pointers inside remembered values
     int remset_nptr;
     arraylist_t *remset;

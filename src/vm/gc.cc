@@ -4,7 +4,9 @@
 #include "pyju_object.h"
 #include "pyju_threads.h"
 #include "support/dtypes.h"
+#include <cstdint>
 #include <cstdlib>
+#include <sys/types.h>
 #ifdef __GLIBC__
 #include <malloc.h> // for malloc_trim
 #endif
@@ -278,6 +280,65 @@ static void schedule_finalization(void *o, void *f) PYJU_NOTSAFEPOINT
 //     }
 // }
 
+// mark phase
+
+PYJU_DLLEXPORT void pyju_gc_queue_root(const PyjuValue_t *ptr)
+{
+    PyjuPtls_t ptls = pyju_current_task->ptls;
+    PyjuTaggedValue_t *o = pyju_astaggedvalue(ptr);
+    // The modification of the `gc_bits` is not atomic but it
+    // should be safe here since GC is not allowed to run here and we only
+    // write GC_OLD to the GC bits outside GC. This could cause
+    // duplicated objects in the remset but that shouldn't be a problem.
+    o->bits.gc = GC_MARKED;
+    arraylist_push(ptls->heap.remset, (PyjuValue_t*)ptr);
+    ptls->heap.remset_nptr++; // conservative
+}
+
+void pyju_gc_queue_multiroot(const PyjuValue_t *parent, const PyjuValue_t* ptr) PYJU_NOTSAFEPOINT
+{
+    // first check if this is really necessary
+    // TODO: should we store this info in one of the extra gc bits?
+    PyjuDataType_t *dt = (PyjuDataType_t *)pyju_typeof(ptr);
+    const PyjuDataTypeLayout_t *ly = dt->layout;
+    uint32_t npointers = ly->npointers;
+    // if (npointers = 0)   // this was checked by the caller
+    //     return;
+
+    PyjuValue_t *ptrf = ((PyjuValue_t**)ptr)[ly->first_ptr];
+    if (ptrf && (pyju_astaggedvalue(ptrf)->bits.gc & 1) == 0) {
+        // this pointer was young, move the barrier back now
+        pyju_gc_wb_back(parent);
+    }
+
+    const uint8_t *ptrs8 = (const uint8_t *)pyju_dt_layout_ptrs(ly);
+    const uint16_t *ptrs16 = (const uint16_t *)pyju_dt_layout_ptrs(ly);
+    const uint32_t *ptrs32 = (const uint32_t *)pyju_dt_layout_ptrs(ly);
+    for (size_t i = 1; i < npointers; i++) {
+        uint32_t fld;
+        if (ly->fielddesc_type == 0) {
+            fld = ptrs8[i];
+        } else if (ly->fielddesc_type == 1) {
+            fld = ptrs16[i];
+        } else {
+            assert(ly->fielddesc_type == 2);
+            fld = ptrs32[i];
+        }
+        PyjuValue_t *ptrf = ((PyjuValue_t **)ptr)[fld];
+        if (ptrf && (pyju_astaggedvalue(ptrf)->bits.gc & 1) == 0) {
+            // this pointer was young, move the barrier back now
+            pyju_gc_wb_back(parent);
+        }
+    }
+}
+
+void gc_queue_binding(PyjuBinding_t *bnd)
+{
+    PyjuPtls_t ptls = pyju_current_task->ptls;
+    PyjuTaggedValue_t *buf = pyju_astaggedvalue(bnd);
+    buf->bits.gc = GC_MARKED;
+    arraylist_push(&ptls->heap.rem_bindings, bnd);
+}
 
 
 // big value list

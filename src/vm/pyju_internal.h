@@ -96,6 +96,10 @@ void PYJU_UV_LOCK(void);
 #define GC_OLD    2 // if it is reachable it will be marked as old
 #define GC_OLD_MARKED (GC_OLD | GC_MARKED) // reachable and old
 
+// useful constants
+extern PyjuMethTable_t *pyju_type_type_mt PYJU_GLOBALLY_ROOTED;
+extern PyjuMethTable_t *pyju_nonfunction_mt PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLEXPORT _Atomic(size_t) pyju_world_counter;
 
 STATIC_INLINE void *pyju_get_frame_addr(void)
 {
@@ -500,6 +504,8 @@ void restore_signals(void);
 
 // functions
 PyjuDataType_t *pyju_new_uninitialized_datatype(void);
+
+PyjuSym_t *_pyju_symbol(const char *str, size_t len) PYJU_NOTSAFEPOINT;
 
 #ifdef __cplusplus
 } // extern "C"
