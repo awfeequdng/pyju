@@ -64,6 +64,8 @@ struct PyjuTaggedValue_t {
     };
 };
 
+#define PYJU_TV_SIZE  sizeof(PyjuTaggedValue_t)
+
 struct PyjuValue_t {
     PyjuTaggedValue_t tag;
 };
@@ -737,7 +739,8 @@ PYJU_DLLEXPORT void *pyju_gc_managed_realloc(void *d, size_t sz, size_t oldsz,
                                          int isaligned, PyjuValue_t *owner);
 PYJU_DLLEXPORT void pyju_gc_safepoint(void);
 
-
+// get a pointer to the data in a datatype
+#define pyju_data_ptr(v)  ((PyjuValue_t**)((char*)v + PYJU_TV_SIZE))
 
 // constants and type objects -------------------------------------------------
 
@@ -1004,15 +1007,15 @@ extern int had_exception;
 #define JL_CATCH if (0)
 
 // #define JL_TRY                                                    \
-//     int i__tr, i__ca; jl_handler_t __eh;                          \
-//     size_t __excstack_state = jl_excstack_state();                \
-//     jl_enter_handler(&__eh);                                      \
-//     if (!jl_setjmp(__eh.eh_ctx,0))                                \
-//         for (i__tr=1; i__tr; i__tr=0, jl_eh_restore_state(&__eh))
+//     int i__tr, i__ca; pyju_handler_t __eh;                          \
+//     size_t __excstack_state = pyju_excstack_state();                \
+//     pyju_enter_handler(&__eh);                                      \
+//     if (!pyju_setjmp(__eh.eh_ctx,0))                                \
+//         for (i__tr=1; i__tr; i__tr=0, pyju_eh_restore_state(&__eh))
 
 // #define JL_CATCH                                                \
 //     else                                                        \
-//         for (i__ca=1, jl_eh_restore_state(&__eh); i__ca; i__ca=0, jl_restore_excstack(__excstack_state))
+//         for (i__ca=1, pyju_eh_restore_state(&__eh); i__ca; i__ca=0, pyju_restore_excstack(__excstack_state))
 
 #endif
 
@@ -1189,15 +1192,25 @@ PYJU_DLLEXPORT void pyju_set_safe_restore(pyju_jmp_buf *) PYJU_NOTSAFEPOINT;
 
 PYJU_DLLEXPORT PyjuTask_t *pyju_get_current_task(void) PYJU_NOTSAFEPOINT;
 
-
-// basic predicates -----------------------------------------------------------
-#define pyju_is_typename(v)    pyju_typeis(v, pyju_typename_type)
-
-
 #define pyju_datatype_size(t)       (((PyjuDataType_t*)t)->size)
 #define pyju_datatype_align(t)      (((PyjuDataType_t*)t)->layout->alignment)
 #define pyju_datatype_nbits(t)      ((((PyjuDataType_t*)t)->size) * 8)
 #define pyju_datatype_nfields(t)    (((PyjuDataType_t*)t)->layout->nfields)
+
+// basic predicates -----------------------------------------------------------
+#define pyju_is_typename(v)    pyju_typeis(v, pyju_typename_type)
+#define pyju_is_datatype(v)    pyju_typeis(v, pyju_datatype_type)
+#define pyju_is_mutable_datatype(t) (pyju_is_datatype(t) && (((PyjuDataType_t*)t)->name->mutabl))
+#define pyju_is_immutable(t)   (!((PyjuDataType_t*)t)->name->mutabl)
+#define pyju_is_immutable_datatype(t) (pyju_is_datatype(t) && (!((PyjuDataType_t*)t)->name->mutabl))
+
+STATIC_INLINE int pyju_is_primitivetype(void *v) PYJU_NOTSAFEPOINT
+{
+    return (pyju_is_datatype(v) && pyju_is_immutable(v) &&
+            ((PyjuDataType_t*)(v))->layout &&
+            pyju_datatype_nfields(v) == 0 &&
+            pyju_datatype_size(v) > 0);
+}
 
 PYJU_DLLEXPORT void *pyju_symbol_name(PyjuSym_t *s);
 // inline version with strong type check to detect typos in a `->name` chain
