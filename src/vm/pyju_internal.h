@@ -89,6 +89,28 @@ void PYJU_UV_LOCK(void);
 #define PYJU_UV_UNLOCK() PYJU_UNLOCK(&pyju_uv_mutex)
 
 
+// this is a version of memcpy that preserves atomic memory ordering
+// which makes it safe to use for objects that can contain memory references
+// without risk of creating pointers out of thin air
+// TODO: replace with LLVM's llvm.memmove.element.unordered.atomic.p0i8.p0i8.i32
+//       aka `__llvm_memmove_element_unordered_atomic_8` (for 64 bit)
+static inline void memmove_refs(void **dstp, void *const *srcp, size_t n) PYJU_NOTSAFEPOINT
+{
+    size_t i;
+    _Atomic(void*) *srcpa = (_Atomic(void*)*)srcp;
+    _Atomic(void*) *dstpa = (_Atomic(void*)*)dstp;
+    if (dstp < srcp || dstp > srcp + n) {
+        for (i = 0; i < n; i++) {
+            pyju_atomic_store_relaxed(dstpa + i, pyju_atomic_load_relaxed(srcpa + i));
+        }
+    }
+    else {
+        for (i = 0; i < n; i++) {
+            pyju_atomic_store_relaxed(dstpa + n - i - 1, pyju_atomic_load_relaxed(srcpa + n - i - 1));
+        }
+    }
+}
+
 // -- gc.c -- //
 
 #define GC_CLEAN  0 // freshly allocated
@@ -506,6 +528,120 @@ void restore_signals(void);
 PyjuDataType_t *pyju_new_uninitialized_datatype(void);
 
 PyjuSym_t *_pyju_symbol(const char *str, size_t len) PYJU_NOTSAFEPOINT;
+
+
+
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_call_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_invoke_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_invoke_modify_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_empty_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_top_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_module_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_slot_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_export_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_import_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_toplevel_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_quote_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_line_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_incomplete_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_goto_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_goto_ifnot_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_return_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_lineinfo_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_lambda_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_assign_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_globalref_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_do_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_method_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_core_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_enter_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_leave_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_pop_exception_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_exc_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_error_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_new_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_using_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_splatnew_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_block_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_new_opaque_closure_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_opaque_closure_method_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_const_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_thunk_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_foreigncall_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_as_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_global_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_list_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_dot_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_newvar_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_boundscheck_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_inbounds_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_copyast_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_cfunction_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_pure_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_loopinfo_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_meta_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_inert_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_polly_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_unused_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_static_parameter_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_inline_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_noinline_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_generated_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_generated_only_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_isdefined_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_propagate_inbounds_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_specialize_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_aggressive_constprop_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_no_constprop_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_purity_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_nospecialize_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_macrocall_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_colon_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_hygienicscope_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_throw_undef_if_not_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_getfield_undefref_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_gc_preserve_begin_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_gc_preserve_end_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_coverageeffect_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_escape_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_aliasscope_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_popaliasscope_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_optlevel_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_thismodule_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_atom_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_statement_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_all_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_compile_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_force_compile_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_infer_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_max_methods_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_atomic_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_not_atomic_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_unordered_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_monotonic_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_acquire_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_release_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_acquire_release_sym;
+extern PYJU_DLLEXPORT PyjuSym_t *pyju_sequentially_consistent_sym;
+
+void set_nth_field(PyjuDataType_t *st, PyjuValue_t *v, size_t i, PyjuValue_t *rhs, int isatomic) PYJU_NOTSAFEPOINT;
+PyjuValue_t *swap_nth_field(PyjuDataType_t *st, PyjuValue_t *v, size_t i, PyjuValue_t *rhs, int isatomic);
+PyjuValue_t *modify_nth_field(PyjuDataType_t *st, PyjuValue_t *v, size_t i, PyjuValue_t *op, PyjuValue_t *rhs, int isatomic);
+PyjuValue_t *replace_nth_field(PyjuDataType_t *st, PyjuValue_t *v, size_t i, PyjuValue_t *expected, PyjuValue_t *rhs, int isatomic);
+int pyju_find_union_component(PyjuValue_t *haystack, PyjuValue_t *needle, unsigned *nth) PYJU_NOTSAFEPOINT;
+void pyju_precompute_memoized_dt(PyjuDataType_t *dt, int cacheable);
+STATIC_INLINE int pyju_is_vararg(PyjuValue_t *v) PYJU_NOTSAFEPOINT
+{
+    return pyju_typeof(v) == (PyjuValue_t*)pyju_vararg_type;
+}
+void pyju_compute_field_offsets(PyjuDataType_t *st);
+PYJU_DLLEXPORT PyjuValue_t *pyju_unwrap_unionall(PyjuValue_t *v PYJU_PROPAGATES_ROOT) PYJU_NOTSAFEPOINT;
+int pyju_has_fixed_layout(PyjuDataType_t *t);
+PYJU_DLLEXPORT unsigned pyju_special_vector_alignment(size_t nfields, PyjuValue_t *field_type);
+
+int pyju_count_union_components(PyjuValue_t *v);
+PYJU_DLLEXPORT PyjuValue_t *pyju_nth_union_component(PyjuValue_t *v PYJU_PROPAGATES_ROOT, int i) PYJU_NOTSAFEPOINT;
+int pyju_find_union_component(PyjuValue_t *haystack, PyjuValue_t *needle, unsigned *nth) PYJU_NOTSAFEPOINT;
 
 #ifdef __cplusplus
 } // extern "C"

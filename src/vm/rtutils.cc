@@ -58,8 +58,18 @@ PYJU_DLLEXPORT void PYJU_NORETURN pyju_errorf(const char *fmt, ...)
     abort();
 }
 
+
 PYJU_DLLEXPORT void PYJU_NORETURN pyju_eof_error(void) {
     printf("not impl pyju_eof_error\n");
+    abort();
+}
+
+// with function name or description only
+PYJU_DLLEXPORT void PYJU_NORETURN pyju_type_error(const char *fname,
+                                            PyjuValue_t *expected PYJU_MAYBE_UNROOTED,
+                                            PyjuValue_t *got PYJU_MAYBE_UNROOTED)
+{
+    printf("not impl pyju_type_error\n");
     abort();
 }
 

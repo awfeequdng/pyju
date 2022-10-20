@@ -8,6 +8,10 @@
     XX(pyju_an_empty_vec_any) \
     XX(pyju_emptysvec) \
     XX(pyju_nonfunction_mt) \
+    XX(pyju_type_typename) \
+    XX(pyju_tuple_typename) \
+    XX(pyju_namedtuple_typename) \
+    XX(pyju_vecelement_typename) \
     XX(pyju_float32_type) \
     XX(pyju_voidpointer_type) \
     XX(pyju_uint8pointer_type) \
@@ -31,6 +35,19 @@
     XX(pyju_function_type) \
     XX(pyju_builtin_type) \
     XX(pyju_simplevector_type) \
+    XX(pyju_unionall_type) \
+    XX(pyju_any_type) \
+    XX(pyju_vararg_type) \
+    XX(pyju_uniontype_type) \
+    XX(pyju_tvar_type) \
+    XX(pyju_bool_type) \
+    XX(pyju_string_type) \
+    XX(pyju_typeofbottom_type) \
+    XX(pyju_type_type) \
+    XX(pyju_compute_fieldtypes) \
+    XX(pyju_array_typename) \
+    XX(pyju_module_type) \
+    XX(pyju_bottom_type) \
     XX(pyju_datatype_type)
 
 

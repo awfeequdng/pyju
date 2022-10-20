@@ -117,6 +117,20 @@ PyjuTask_t *pyju_init_root_task(PyjuPtls_t ptls, void *stack_lo, void *stack_hi)
     return ct;
 }
 
+// record backtrace and raise an error
+PYJU_DLLEXPORT void pyju_throw(PyjuValue_t *e PYJU_MAYBE_UNROOTED)
+{
+    pyju_printf(PYJU_STDERR, "pyju_throw not impl\n");
+    abort();
+}
+
+// rethrow with current excstack state
+PYJU_DLLEXPORT void pyju_rethrow(void)
+{
+    pyju_printf(PYJU_STDERR, "pyju_rethrow not impl\n");
+    abort();
+}
+
 #ifdef __cplusplus
 }
 #endif
