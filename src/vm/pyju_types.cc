@@ -1,9 +1,11 @@
 #include <cstddef>
+#include <cstdint>
 #include <stdlib.h>
 #include <string.h>
 
 #include "pyju_object.h"
 #include "pyju_internal.h"
+#include "pyju_threads.h"
 #include "support/hashing.h"
 
 #ifdef __cplusplus
@@ -314,6 +316,121 @@ void pyju_init_types(void) PYJU_GC_DISABLED {
 
     // create base objects
     pyju_datatype_type = pyju_new_uninitialized_datatype();
+    pyju_set_typeof(pyju_datatype_type, pyju_datatype_type);
+    pyju_typename_type = pyju_new_uninitialized_datatype();
+    pyju_symbol_type = pyju_new_uninitialized_datatype();
+    pyju_simplevector_type = pyju_new_uninitialized_datatype();
+    pyju_methtable_type = pyju_new_uninitialized_datatype();
+
+    pyju_emptysvec = (PyjuSvec_t*)pyju_gc_permobj(sizeof(void*) + PYJU_TV_SIZE, pyju_simplevector_type);
+    pyju_svec_set_len_unsafe(pyju_emptysvec, 0);
+
+    pyju_any_type = (PyjuDataType_t*)pyju_new_abstracttype((PyjuValue_t*)pyju_symbol("Any"), core, NULL, pyju_emptysvec);
+    pyju_any_type->super = pyju_any_type;
+    // 在pyju_new_abstracttype中pyju_any_type->name->mt的值就是pyju_nonfunction_mt, 这样赋值不自相矛盾吗？
+    pyju_nonfunction_mt = pyju_any_type->name->mt;
+    pyju_any_type->name->mt = NULL;
+
+    pyju_type_type = (PyjuUnionAll_t*)pyju_new_abstracttype((PyjuValue_t*)pyju_symbol("Type"), core, pyju_any_type, pyju_emptysvec);
+    pyju_type_typename = ((PyjuDataType_t*)pyju_type_type)->name;
+    pyju_type_type_mt = pyju_new_method_table(pyju_type_typename->name, core);
+    pyju_type_typename->mt = pyju_type_type_mt;
+
+    // initialize them. lots of cycles.
+    // NOTE: types are not actually mutable, but we want to ensure they are heap-allocated with stable address
+    pyju_datatype_type->name = pyju_new_typename_in(pyju_symbol("DataType"), core, 0, 1);
+    pyju_datatype_type->name->wrapper = (PyjuValue_t*)pyju_datatype_type;
+    pyju_datatype_type->super = (PyjuDataType_t*)pyju_type_type;
+    pyju_datatype_type->parameters = pyju_emptysvec;
+    pyju_datatype_type->name->n_uninitialized = 9 - 3;
+    pyju_datatype_type->name->names = pyju_perm_symsvec(9,
+        "name",
+        "super",
+        "parameters",
+        "types",
+        "instance",
+        "layout",
+        "size",
+        "hash",
+        "flags"); // "hasfreetypevars", "isconcretetype", "isdispatchtuple", "isbitstype", "zeroinit", "has_concrete_subtype", "cached_by_hash"
+    pyju_datatype_type->types = pyju_svec(9,
+        pyju_typename_type,
+        pyju_datatype_type,
+        pyju_simplevector_type,
+        pyju_simplevector_type,
+        pyju_any_type, // instance
+        pyju_any_type, // pyju_voidpointer_type
+        pyju_any_type, // pyju_int32_type
+        pyju_any_type, // pyju_int32_type
+        pyju_any_type // pyju_uint8_type
+        );
+    const static uint32_t datatype_constfields[1] = { 0x00000097 }; // (1<<0)|(1<<1)|(1<<2)|(1<<4)|(1<<7)
+    pyju_datatype_type->name->constfields = datatype_constfields;
+    pyju_precompute_memoized_dt(pyju_datatype_type, 1);
+
+    pyju_typename_type->name = pyju_new_typename_in(pyju_symbol("TypeName"), core, 0, 1);
+    pyju_typename_type->name->wrapper = (PyjuValue_t*)pyju_typename_type;
+    pyju_typename_type->name->mt = pyju_nonfunction_mt;
+    pyju_typename_type->super = pyju_any_type;
+    pyju_typename_type->parameters = pyju_emptysvec;
+    pyju_typename_type->name->n_uninitialized = 13 - 2;
+    pyju_typename_type->name->names = pyju_perm_symsvec(13, "name", "module",
+                                                        "names", "atomicfields", "constfields",
+                                                        "wrapper", "cache", "linearcache",
+                                                        "mt", "partial",
+                                                        "hash", "n_uninitialized",
+                                                        "flags"); // "abstract", "mutable", "mayinlinealloc"
+    pyju_typename_type->types = pyju_svec(13, pyju_symbol_type, pyju_any_type /*pyju_module_type*/,
+                                          pyju_simplevector_type, pyju_any_type /*pyju_voidpointer_type*/, pyju_any_type /*pyju_voidpointer_type*/,
+                                          pyju_type_type, pyju_simplevector_type, pyju_simplevector_type,
+                                          pyju_methtable_type, pyju_any_type,
+                                          pyju_any_type /*pyju_long_type*/, pyju_any_type /*pyju_int32_type*/,
+                                          pyju_any_type /*pyju_uint8_type*/);
+    const static uint32_t typename_constfields[1] = { 0x00001d3f }; // (1<<0)|(1<<1)|(1<<2)|(1<<3)|(1<<4)|(1<<5)|(1<<8)|(1<<10)|(1<<11)|(1<<12)
+    pyju_typename_type->name->constfields = typename_constfields;
+    pyju_precompute_memoized_dt(pyju_typename_type, 1);
+
+    pyju_methtable_type->name = pyju_new_typename_in(pyju_symbol("MethodTable"), core, 0, 1);
+    pyju_methtable_type->name->wrapper = (PyjuValue_t*)pyju_methtable_type;
+    pyju_methtable_type->name->mt = pyju_nonfunction_mt;
+    pyju_methtable_type->super = pyju_any_type;
+    pyju_methtable_type->parameters = pyju_emptysvec;
+    pyju_methtable_type->name->n_uninitialized = 12 - 5;
+    pyju_methtable_type->name->names = pyju_perm_symsvec(12, "name", "defs",
+                                                         "leafcache", "cache", "max_args",
+                                                         "kwsorter", "module",
+                                                         "backedges", "", "", "offs", "");
+    pyju_methtable_type->types = pyju_svec(12, pyju_symbol_type, pyju_any_type, pyju_any_type,
+                                           pyju_any_type, pyju_any_type /*pyju_long*/,
+                                           pyju_any_type, pyju_any_type /*module*/,
+                                           pyju_any_type /*any vector*/, pyju_any_type /*voidpointer*/, pyju_any_type/*int32*/,
+                                           pyju_any_type /*uint8*/, pyju_any_type/*uint8*/);
+    const static uint32_t methtable_constfields[1] = { 0x00000040 }; // (1<<6)
+    pyju_methtable_type->name->constfields = methtable_constfields;
+    pyju_precompute_memoized_dt(pyju_methtable_type, 1);
+
+    pyju_symbol_type->name = pyju_new_typename_in(pyju_symbol("Symbol"), core, 0, 1);
+    pyju_symbol_type->name->wrapper = (PyjuValue_t*)pyju_symbol_type;
+    pyju_symbol_type->name->mt = pyju_nonfunction_mt;
+    pyju_symbol_type->super = pyju_any_type;
+    pyju_symbol_type->parameters = pyju_emptysvec;
+    pyju_symbol_type->name->n_uninitialized = 0;
+    pyju_symbol_type->name->names = pyju_emptysvec;
+    pyju_symbol_type->types = pyju_emptysvec;
+    pyju_symbol_type->size = 0;
+    pyju_precompute_memoized_dt(pyju_symbol_type, 1);
+
+    pyju_simplevector_type->name = pyju_new_typename_in(pyju_symbol("SimpleVector"), core, 0, 1);
+    pyju_simplevector_type->name->wrapper = (PyjuValue_t*)pyju_simplevector_type;
+    pyju_simplevector_type->name->mt = pyju_nonfunction_mt;
+    pyju_simplevector_type->super = pyju_any_type;
+    pyju_simplevector_type->parameters = pyju_emptysvec;
+    pyju_simplevector_type->name->n_uninitialized = 0;
+    pyju_simplevector_type->name->names = pyju_emptysvec;
+    pyju_simplevector_type->types = pyju_emptysvec;
+    pyju_precompute_memoized_dt(pyju_simplevector_type, 1);
+
+
 }
 
 #ifdef __cplusplus

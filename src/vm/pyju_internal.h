@@ -336,6 +336,38 @@ PyjuValue_t *pyju_permbox32(PyjuDataType_t *t, int32_t x);
 PyjuValue_t *pyju_permbox64(PyjuDataType_t *t, int64_t x);
 PyjuSvec_t *pyju_perm_symsvec(size_t n, ...);
 
+
+// this sizeof(__VA_ARGS__) trick can't be computed until C11, but that only matters to Clang in some situations
+#if !defined(__clang_analyzer__) && !(defined(_COMPILER_ASAN_ENABLED_) || defined(_COMPILER_TSAN_ENABLED_))
+#ifdef _COMPILER_GCC_
+#define pyjuperm_symsvec(n, ...) \
+    (pyjuperm_symsvec)(__extension__({                                         \
+            static_assert(                                                    \
+                n == sizeof((char *[]){ __VA_ARGS__ })/sizeof(char *),        \
+                "Number of passed arguments does not match expected number"); \
+            n;                                                                \
+        }), __VA_ARGS__)
+#ifdef pyjusvec
+#undef pyjusvec
+#define pyjusvec(n, ...) \
+    (ipyjusvec)(__extension__({                                                \
+            static_assert(                                                    \
+                n == sizeof((void *[]){ __VA_ARGS__ })/sizeof(void *),        \
+                "Number of passed arguments does not match expected number"); \
+            n;                                                                \
+        }), __VA_ARGS__)
+#else
+#define pyjusvec(n, ...) \
+    (pyjusvec)(__extension__({                                                 \
+            static_assert(                                                    \
+                n == sizeof((void *[]){ __VA_ARGS__ })/sizeof(void *),        \
+                "Number of passed arguments does not match expected number"); \
+            n;                                                                \
+        }), __VA_ARGS__)
+#endif
+#endif
+#endif
+
 // init.cc
 void pyju_init_types(void) PYJU_GC_DISABLED;
 void pyju_init_thread_heap(PyjuPtls_t ptls);
@@ -529,8 +561,6 @@ PyjuDataType_t *pyju_new_uninitialized_datatype(void);
 
 PyjuSym_t *_pyju_symbol(const char *str, size_t len) PYJU_NOTSAFEPOINT;
 
-
-
 extern PYJU_DLLEXPORT PyjuSym_t *pyju_call_sym;
 extern PYJU_DLLEXPORT PyjuSym_t *pyju_invoke_sym;
 extern PYJU_DLLEXPORT PyjuSym_t *pyju_invoke_modify_sym;
@@ -642,6 +672,9 @@ PYJU_DLLEXPORT unsigned pyju_special_vector_alignment(size_t nfields, PyjuValue_
 int pyju_count_union_components(PyjuValue_t *v);
 PYJU_DLLEXPORT PyjuValue_t *pyju_nth_union_component(PyjuValue_t *v PYJU_PROPAGATES_ROOT, int i) PYJU_NOTSAFEPOINT;
 int pyju_find_union_component(PyjuValue_t *haystack, PyjuValue_t *needle, unsigned *nth) PYJU_NOTSAFEPOINT;
+PyjuDataType_t *pyju_new_abstracttype(PyjuValue_t *name, PyjuModule_t *module,
+                                   PyjuDataType_t *super, PyjuSvec_t *parameters);
+PYJU_DLLEXPORT PyjuMethTable_t *pyju_new_method_table(PyjuSym_t *name, PyjuModule_t *module);
 
 #ifdef __cplusplus
 } // extern "C"

@@ -12,6 +12,8 @@
 #include <string.h>
 #include <stdarg.h>
 #include <sys/types.h>
+#include "pyju_atomics.h"
+#include "pyju_locks.h"
 #include "pyju_object.h"
 #include "pyju_internal.h"
 #include "pyju_assert.h"
@@ -138,6 +140,7 @@ PYJU_DLLEXPORT PyjuMethTable_t *pyju_new_method_table(PyjuSym_t *name, PyjuModul
     mt->name = pyju_demangle_typename(name);
     mt->module = module;
     pyju_atomic_store_relaxed(&mt->defs, pyju_nothing);
+    // pyju_an_empty_vec_any可能还没有初始化
     pyju_atomic_store_relaxed(&mt->leafcache, (PyjuArray_t*)pyju_an_empty_vec_any);
     pyju_atomic_store_relaxed(&mt->cache, pyju_nothing);
     mt->max_args = 0;

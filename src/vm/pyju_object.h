@@ -419,7 +419,6 @@ struct PyjuTypeName_t {
     // `wrapper` is either the only instantiation of the type (if no parameters)
     // or a UnionAll accepting parameters to make an instantiation.
     PyjuValue_t *wrapper;
-    _Atomic(PyjuValue_t*) Typeofwrapper;  // cache for Type{wrapper}
     _Atomic(PyjuSvec_t*) cache;        // sorted array
     _Atomic(PyjuSvec_t*) linearcache;  // unsorted array
     PyjuMethTable_t *mt;
@@ -430,7 +429,6 @@ struct PyjuTypeName_t {
     uint8_t abstract:1;
     uint8_t mutabl:1;
     uint8_t mayinlinealloc:1;
-    uint8_t max_methods; // override for inference's max_methods setting (0 = no additional limit or relaxation)
 };
 
 struct PyjuUnionType_t {
@@ -1370,6 +1368,13 @@ STATIC_INLINE int pyju_is_array_zeroinit(PyjuArray_t *a) PYJU_NOTSAFEPOINT
     return pyju_is_datatype(elty) && ((PyjuDataType_t*)elty)->zeroinit;
 }
 
+PYJU_DLLEXPORT PyjuSym_t *pyju_symbol(const char *str) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT PyjuSym_t *pyju_symbol_lookup(const char *str) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT PyjuSym_t *pyju_symbol_n(const char *str, size_t len) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT PyjuSym_t *pyju_gensym(void);
+PYJU_DLLEXPORT PyjuSym_t *pyju_tagged_gensym(const char *str, size_t len);
+PYJU_DLLEXPORT PyjuSym_t *pyju_get_root_symbol(void);
+
 PYJU_DLLEXPORT void *pyju_symbol_name(PyjuSym_t *s);
 // inline version with strong type check to detect typos in a `->name` chain
 STATIC_INLINE char *pyju_symbol_name_(PyjuSym_t* s) PYJU_NOTSAFEPOINT
@@ -1561,9 +1566,20 @@ PYJU_DLLEXPORT PyjuValue_t *pyju_new_struct(PyjuDataType_t *type, ...);
 PYJU_DLLEXPORT PyjuValue_t *pyju_new_structv(PyjuDataType_t *type, PyjuValue_t **args, uint32_t na);
 PYJU_DLLEXPORT PyjuValue_t *pyju_new_structt(PyjuDataType_t *type, PyjuValue_t *tup);
 PYJU_DLLEXPORT PyjuValue_t *pyju_new_struct_uninit(PyjuDataType_t *type);
+PYJU_DLLEXPORT PyjuSvec_t *pyju_svec(size_t n, ...) PYJU_MAYBE_UNROOTED;
+PYJU_DLLEXPORT PyjuSvec_t *pyju_svec1(void *a);
+PYJU_DLLEXPORT PyjuSvec_t *pyju_svec2(void *a, void *b);
+PYJU_DLLEXPORT PyjuSvec_t *pyju_alloc_svec(size_t n);
+PYJU_DLLEXPORT PyjuSvec_t *pyju_alloc_svec_uninit(size_t n);
+PYJU_DLLEXPORT PyjuSvec_t *pyju_svec_copy(PyjuSvec_t *a);
+PYJU_DLLEXPORT PyjuSvec_t *pyju_svec_fill(size_t n, PyjuValue_t *x);
 
 
 PYJU_DLLEXPORT uintptr_t pyju_object_id(PyjuValue_t *v) PYJU_NOTSAFEPOINT;
+
+// type constructors
+PYJU_DLLEXPORT PyjuTypeName_t *pyju_new_typename_in(PyjuSym_t *name, PyjuModule_t *inmodule, int abstract, int mutabl);
+
 
 #ifdef __cplusplus
 }

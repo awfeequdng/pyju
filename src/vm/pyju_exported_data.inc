@@ -2,12 +2,14 @@
 
 // Pointers that are exposed through the public libjulia
 #define PYJU_EXPORTED_DATA_POINTERS(XX) \
+    XX(pyju_undefref_exception) \
     XX(pyju_true) \
     XX(pyju_false) \
     XX(pyju_nothing) \
     XX(pyju_an_empty_vec_any) \
     XX(pyju_emptysvec) \
     XX(pyju_nonfunction_mt) \
+    XX(pyju_type_type_mt) \
     XX(pyju_type_typename) \
     XX(pyju_tuple_typename) \
     XX(pyju_namedtuple_typename) \
