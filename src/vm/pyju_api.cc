@@ -28,6 +28,21 @@ PYJU_DLLEXPORT int pyju_repl_entrypoint(int argc, char *argv[])
     return ret;
 }
 
+// get the name of a type as a string
+PYJU_DLLEXPORT const char *pyju_typename_str(PyjuValue_t *v)
+{
+    if (!pyju_is_datatype(v))
+        return NULL;
+    return pyju_symbol_name(((PyjuDataType_t*)v)->name->name);
+}
+
+// get the name of typeof(v) as a string
+PYJU_DLLEXPORT const char *pyju_typeof_str(PyjuValue_t *v)
+{
+    return pyju_typename_str((PyjuValue_t*)pyju_typeof(v));
+}
+
+
 #ifdef __cplusplus
 }
 #endif

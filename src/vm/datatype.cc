@@ -797,7 +797,7 @@ PYJU_DLLEXPORT PyjuValue_t *pyju_box_char(uint32_t x)
 }
 
 PYJU_DLLEXPORT PyjuValue_t *pyju_boxed_int8_cache[256];
-PYJU_DLLEXPORT PyjuValue_t *pyju_boxed_int8(int8_t x)
+PYJU_DLLEXPORT PyjuValue_t *pyju_box_int8(int8_t x)
 {
     return pyju_boxed_int8_cache[(uint8_t)x];
 }
@@ -871,7 +871,16 @@ PYJU_DLLEXPORT PyjuValue_t *pyju_new_struct(PyjuDataType_t *type, ...)
     return pv;
 }
 
-
+PYJU_DLLEXPORT PyjuValue_t *pyju_new_struct_uninit(PyjuDataType_t *type)
+{
+    PyjuTask_t *ct = pyju_current_task;
+    if (type->instance != NULL) return type->instance;
+    size_t size = pyju_datatype_size(type);
+    PyjuValue_t *jv = pyju_gc_alloc(ct->ptls, size + PYJU_TV_SIZE, type);
+    if (size > 0)
+        memset(pyju_data_ptr(jv), 0, size);
+    return jv;
+}
 // field access ---------------------------------------------------------------
 
 PYJU_DLLEXPORT void pyju_lock_value(PyjuValue_t *v) PYJU_NOTSAFEPOINT
@@ -884,7 +893,86 @@ PYJU_DLLEXPORT void pyju_unlock_value(PyjuValue_t *v) PYJU_NOTSAFEPOINT
     PYJU_UNLOCK_NOGC((PyjuMutex_t*)v);
 }
 
+PYJU_DLLEXPORT int pyju_field_index(PyjuDataType_t *t, PyjuSym_t *fld, int err)
+{
+    if (pyju_is_namedtuple_type(t)) {
+        PyjuValue_t *ns = pyju_tparam0(t);
+        if (pyju_is_tuple(ns)) {
+            size_t i, n = pyju_nfields(ns);
+            for (i = 0; i < n; i++) {
+                if (pyju_get_nth_field(ns, i) == (PyjuValue_t*)fld) {
+                    return (int)i;
+                }
+            }
+        }
+    } else {
+        PyjuSvec_t *fn = pyju_field_names(t);
+        size_t i, n = pyju_svec_len(fn);
+        for (i = 0; i < n; i++) {
+            if (pyju_svecref(fn, i) == (PyjuValue_t *)fld) {
+                return (int)i;
+            }
+        }
+    }
+    if (err)
+        pyju_errorf("type %s has no field %s", pyju_symbol_name(t->name->name), pyju_symbol_name(fld));
+    return -1;
+}
 
+PYJU_DLLEXPORT PyjuValue_t *pyju_get_nth_field(PyjuValue_t *v, size_t i)
+{
+    PyjuDataType_t *st = (PyjuDataType_t*)pyju_typeof(v);
+    if (i >= pyju_datatype_nfields(st))
+        pyju_bounds_error_int(v, i + 1);
+    size_t offs = pyju_field_offset(st, i);
+    if (pyju_field_isptr(st, i)) {
+        return pyju_atomic_load_relaxed((_Atomic(PyjuValue_t*)*)((char*)v + PYJU_TV_SIZE + offs));
+    }
+    PyjuValue_t *ty = pyju_field_type_concrete(st, i);
+    int isatomic = pyju_field_isatomic(st, i);
+    if (pyju_is_uniontype(ty)) {
+        assert(!isatomic);
+        size_t fsz = pyju_field_size(st, i);
+        uint8_t sel = ((uint8_t*)v)[offs + fsz - 1];
+        ty = pyju_nth_union_component(ty, sel);
+        if (pyju_is_datatype_singleton((PyjuDataType_t*)ty))
+            return ((PyjuDataType_t*)ty)->instance;
+    }
+    PyjuValue_t *r;
+    size_t fsz = pyju_datatype_size(ty);
+    int needlock = (isatomic && fsz > MAX_ATOMIC_SIZE);
+    if (isatomic && !needlock) {
+        r = pyju_atomic_new_bits(ty, (char*)v + offs);
+    }
+    else if (needlock) {
+        PyjuTask_t *ct = pyju_current_task;
+        r = pyju_gc_alloc(ct->ptls, fsz + PYJU_TV_SIZE, ty);
+        pyju_lock_value(v);
+        memcpy((char*)r, (char*)v + offs, fsz);
+        pyju_unlock_value(v);
+    }
+    else {
+        r = pyju_new_bits(ty, (char*)v + offs);
+    }
+    return undefref_check((PyjuDataType_t*)ty, r);
+}
+
+PYJU_DLLEXPORT PyjuValue_t *pyju_get_nth_field_noalloc(PyjuValue_t *v PYJU_PROPAGATES_ROOT, size_t i) PYJU_NOTSAFEPOINT
+{
+    PyjuDataType_t *st = (PyjuDataType_t*)pyju_typeof(v);
+    assert(i < pyju_datatype_nfields(st));
+    size_t offs = pyju_field_offset(st,i);
+    assert(pyju_field_isptr(st,i));
+    return pyju_atomic_load_relaxed((_Atomic(PyjuValue_t*)*)((char*)v + offs));
+}
+
+PYJU_DLLEXPORT PyjuValue_t *pyju_get_nth_field_checked(PyjuValue_t *v, size_t i)
+{
+    PyjuValue_t *r = pyju_get_nth_field(v, i);
+    if (__unlikely(r == NULL))
+        pyju_throw(pyju_undefref_exception);
+    return r;
+}
 
 static inline void memassign_safe(int hasptr, PyjuValue_t *parent, char *dst, const PyjuValue_t *src, size_t nb) PYJU_NOTSAFEPOINT
 {
@@ -906,6 +994,8 @@ static inline void memassign_safe(int hasptr, PyjuValue_t *parent, char *dst, co
             memcpy(dst, pyju_assume_aligned(pyju_data_ptr(src), 16), nb);
             return;
         }
+        // src此时应该指向真是的缓存地址，而不是指向数据头
+        src = (PyjuValue_t*)pyju_data_ptr(src);
     }
     memcpy(dst, pyju_assume_aligned(src, sizeof(void*)), nb);
 }
@@ -955,7 +1045,6 @@ void set_nth_field(PyjuDataType_t *st, PyjuValue_t *v, size_t i, PyjuValue_t *rh
         }
     }
 }
-
 
 // bits constructors ----------------------------------------------------------
 
@@ -1015,6 +1104,73 @@ static inline pyju_uint128_t zext_read128(const void *x, size_t nb) PYJU_NOTSAFE
 }
 #endif
 
+PYJU_DLLEXPORT PyjuValue_t *pyju_new_bits(PyjuValue_t *dt, const void *data)
+{
+    // data may not have the alignment required by the size
+    // but will always have the alignment required by the datatype
+    assert(pyju_is_datatype(dt));
+    PyjuDataType_t *bt = (PyjuDataType_t*)dt;
+    size_t nb = pyju_datatype_size(bt);
+    // some types have special pools to minimize allocations
+    if (nb == 0)               return pyju_new_struct_uninit(bt); // returns bt->instance
+    if (bt == pyju_bool_type)    return (1 & *(int8_t*)data) ? pyju_true : pyju_false;
+    if (bt == pyju_uint8_type)   return pyju_box_uint8(*(uint8_t*)data);
+    if (bt == pyju_int64_type)   return pyju_box_int64(*(int64_t*)data);
+    if (bt == pyju_int32_type)   return pyju_box_int32(*(int32_t*)data);
+    if (bt == pyju_int8_type)    return pyju_box_int8(*(int8_t*)data);
+    if (bt == pyju_int16_type)   return pyju_box_int16(*(int16_t*)data);
+    if (bt == pyju_uint64_type)  return pyju_box_uint64(*(uint64_t*)data);
+    if (bt == pyju_uint32_type)  return pyju_box_uint32(*(uint32_t*)data);
+    if (bt == pyju_uint16_type)  return pyju_box_uint16(*(uint16_t*)data);
+    if (bt == pyju_char_type)    return pyju_box_char(*(uint32_t*)data);
+
+    PyjuTask_t *ct = pyju_current_task;
+    PyjuValue_t *v = pyju_gc_alloc(ct->ptls, nb + PYJU_TV_SIZE, bt);
+    memcpy(pyju_assume_aligned(pyju_data_ptr(v), sizeof(void*)), data, nb);
+    return v;
+}
+
+PYJU_DLLEXPORT PyjuValue_t *pyju_atomic_new_bits(PyjuValue_t *dt, const char *data)
+{
+    // data must have the required alignment for an atomic of the given size
+    assert(pyju_is_datatype(dt));
+    PyjuDataType_t *bt = (PyjuDataType_t*)dt;
+    size_t nb = pyju_datatype_size(bt);
+    // some types have special pools to minimize allocations
+    if (nb == 0)               return pyju_new_struct_uninit(bt); // returns bt->instance
+    if (bt == pyju_bool_type)    return (1 & pyju_atomic_load((_Atomic(int8_t)*)data)) ? pyju_true : pyju_false;
+    if (bt == pyju_uint8_type)   return pyju_box_uint8(pyju_atomic_load((_Atomic(uint8_t)*)data));
+    if (bt == pyju_int64_type)   return pyju_box_int64(pyju_atomic_load((_Atomic(int64_t)*)data));
+    if (bt == pyju_int32_type)   return pyju_box_int32(pyju_atomic_load((_Atomic(int32_t)*)data));
+    if (bt == pyju_int8_type)    return pyju_box_int8(pyju_atomic_load((_Atomic(int8_t)*)data));
+    if (bt == pyju_int16_type)   return pyju_box_int16(pyju_atomic_load((_Atomic(int16_t)*)data));
+    if (bt == pyju_uint64_type)  return pyju_box_uint64(pyju_atomic_load((_Atomic(uint64_t)*)data));
+    if (bt == pyju_uint32_type)  return pyju_box_uint32(pyju_atomic_load((_Atomic(uint32_t)*)data));
+    if (bt == pyju_uint16_type)  return pyju_box_uint16(pyju_atomic_load((_Atomic(uint16_t)*)data));
+    if (bt == pyju_char_type)    return pyju_box_char(pyju_atomic_load((_Atomic(uint32_t)*)data));
+
+    PyjuTask_t *ct = pyju_current_task;
+    PyjuValue_t *v = pyju_gc_alloc(ct->ptls, nb + PYJU_TV_SIZE, bt);
+    // data is aligned to the power of two,
+    // we will write too much of v, but the padding should exist
+    if (nb == 1)
+        *(uint8_t*)pyju_data_ptr(v) = pyju_atomic_load((_Atomic(uint8_t)*)data);
+    else if (nb <= 2)
+        *(uint16_t*)pyju_data_ptr(v) = pyju_atomic_load((_Atomic(uint16_t)*)data);
+    else if (nb <= 4)
+        *(uint32_t*)pyju_data_ptr(v) = pyju_atomic_load((_Atomic(uint32_t)*)data);
+#if MAX_POINTERATOMIC_SIZE >= 8
+    else if (nb <= 8)
+        *(uint64_t*)pyju_data_ptr(v) = pyju_atomic_load((_Atomic(uint64_t)*)data);
+#endif
+#if MAX_POINTERATOMIC_SIZE >= 16
+    else if (nb <= 16)
+        *(jl_uint128_t*)pyju_data_ptr(v) = jl_atomic_load((_Atomic(jl_uint128_t)*)data);
+#endif
+    else
+        abort();
+    return v;
+}
 PYJU_DLLEXPORT void pyju_atomic_store_bits(char *dst, const PyjuValue_t *src, int nb)
 {
     // dst must have the required alignment for an atomic of the given size

@@ -25,6 +25,7 @@ PyjuSvec_t *(pyju_perm_symsvec)(size_t n, ...)
 {
     if (n == 0) return pyju_emptysvec;
     PyjuSvec_t *v = (PyjuSvec_t*)pyju_gc_permobj((n + 1) * sizeof(void*) + PYJU_TV_SIZE, pyju_simplevector_type);
+    assert(pyju_typeis(v, pyju_simplevector_type));
     pyju_svec_set_len_unsafe(v, n);
     va_list args;
     va_start(args, n);

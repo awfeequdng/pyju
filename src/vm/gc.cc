@@ -46,6 +46,23 @@ static PyjuGcCallbackList_t *gc_cblist_notify_external_free;
         }   \
     } while (0)
 
+
+void gc_setmark_buf(PyjuPtls_t ptls, void *buf, uint8_t, size_t)
+{
+    printf("not impl: gc_setmark_buf\n");
+}
+
+static inline void maybe_collect(PyjuPtls_t ptls)
+{
+    printf("not impl maybe_collect\n");
+    // if (pyju_atomic_load_relaxed(&ptls->gc_num.allocd) >= 0 || pyju_gc_debug_check_other()) {
+    //     pyju_gc_collect(PYJU_GC_AUTO);
+    // }
+    // else {
+    //     pyju_gc_safepoint_(ptls);
+    // }
+}
+
 static void pyju_gc_register_callback(PyjuGcCallbackList_t **list,
         pyju_gc_cb_func_t func)
 {
@@ -117,6 +134,17 @@ PYJU_DLLEXPORT void pyju_gc_set_cb_notify_external_free(pyju_gc_cb_notify_extern
     else
         pyju_gc_deregister_callback(&gc_cblist_notify_external_free, (pyju_gc_cb_func_t)cb);
 }
+
+// Full collection heuristics
+static int64_t live_bytes = 0;
+static int64_t promoted_bytes = 0;
+static int64_t last_full_live = 0;  // live_bytes after last full collection
+static int64_t last_live_bytes = 0; // live_bytes at last collection
+static int64_t grown_heap_age = 0;  // # of collects since live_bytes grew and remained
+#ifdef __GLIBC__
+// maxrss at last malloc_trim
+static int64_t last_trim_maxrss = 0;
+#endif
 
 // Save/restore local mark stack to/from thread-local storage.
 
@@ -340,25 +368,95 @@ void gc_queue_binding(PyjuBinding_t *bnd)
     arraylist_push(&ptls->heap.rem_bindings, bnd);
 }
 
+// allocating blocks for Arrays and Strings
+
+PYJU_DLLEXPORT void *pyju_gc_managed_malloc(size_t sz)
+{
+    PyjuPtls_t ptls = pyju_current_task->ptls;
+    maybe_collect(ptls);
+    size_t allocsz = LLT_ALIGN(sz, PYJU_CACHE_BYTE_ALIGNMENT);
+    if (allocsz < sz)  // overflow in adding offs, size was "negative"
+        pyju_throw(pyju_memory_exception);
+    pyju_atomic_store_relaxed(&ptls->gc_num.allocd,
+        pyju_atomic_load_relaxed(&ptls->gc_num.allocd) + allocsz);
+    pyju_atomic_store_relaxed(&ptls->gc_num.malloc,
+        pyju_atomic_load_relaxed(&ptls->gc_num.malloc) + 1);
+    int last_errno = errno;
+
+    void *b = malloc_cache_align(allocsz);
+    if (b == NULL)
+        pyju_throw(pyju_memory_exception);
+
+    errno = last_errno;
+    // jl_gc_managed_malloc is currently always used for allocating array buffers.
+    // maybe_record_alloc_to_profile(b, sz, (PyjuDataType_t*)pyju_buff_tag);
+    return b;
+}
+
+
+static void *gc_managed_realloc_(PyjuPtls_t ptls, void *d, size_t sz, size_t oldsz,
+                                 int isaligned, PyjuValue_t *owner, int8_t can_collect)
+{
+    if (can_collect)
+        maybe_collect(ptls);
+
+    size_t allocsz = LLT_ALIGN(sz, PYJU_CACHE_BYTE_ALIGNMENT);
+    if (allocsz < sz)  // overflow in adding offs, size was "negative"
+        pyju_throw(pyju_memory_exception);
+
+    if (pyju_astaggedvalue(owner)->bits.gc == GC_OLD_MARKED) {
+        ptls->gc_cache.perm_scanned_bytes += allocsz - oldsz;
+        live_bytes += allocsz - oldsz;
+    }
+    else if (allocsz < oldsz)
+        pyju_atomic_store_relaxed(&ptls->gc_num.freed,
+            pyju_atomic_load_relaxed(&ptls->gc_num.freed) + (oldsz - allocsz));
+    else
+        pyju_atomic_store_relaxed(&ptls->gc_num.allocd,
+            pyju_atomic_load_relaxed(&ptls->gc_num.allocd) + (allocsz - oldsz));
+    pyju_atomic_store_relaxed(&ptls->gc_num.realloc,
+        pyju_atomic_load_relaxed(&ptls->gc_num.realloc) + 1);
+
+    int last_errno = errno;
+
+    void *b;
+    if (isaligned)
+        b = realloc_cache_align(d, allocsz, oldsz);
+    else
+        b = realloc(d, allocsz);
+    if (b == NULL)
+        pyju_throw(pyju_memory_exception);
+
+    errno = last_errno;
+    // maybe_record_alloc_to_profile(b, sz, pyju_gc_unknown_type_tag);
+    return b;
+}
+
+PYJU_DLLEXPORT void *pyju_gc_managed_realloc(void *d, size_t sz, size_t oldsz,
+                                         int isaligned, PyjuValue_t *owner)
+{
+    PyjuPtls_t ptls = pyju_current_task->ptls;
+    return gc_managed_realloc_(ptls, d, sz, oldsz, isaligned, owner, 1);
+}
 
 // big value list
 
 // Size includes the tag and the tag is not cleared!!
 static inline PyjuValue_t *pyju_gc_big_alloc_inner(PyjuPtls_t ptls, size_t sz)
 {
-    // maybe_collect(ptls);
+    maybe_collect(ptls);
     size_t offs = offsetof(bigval_t, header);
     assert(sz >= sizeof(PyjuTaggedValue_t) && "sz must include tag");
     static_assert(offsetof(bigval_t, header) >= sizeof(void*), "Empty bigval header?");
     static_assert(sizeof(bigval_t) % PYJU_HEAP_ALIGNMENT == 0, "");
     size_t allocsz = LLT_ALIGN(sz + offs, PYJU_CACHE_BYTE_ALIGNMENT);
     if (allocsz < sz)  // overflow in adding offs, size was "negative"
-        // jl_throw(pyju_memory_exception);
+        // pyju_throw(pyju_memory_exception);
         abort();
 
     bigval_t *v = (bigval_t*)malloc_cache_align(allocsz);
     if (v == NULL)
-        // jl_throw(pyju_memory_exception);
+        // pyju_throw(pyju_memory_exception);
         abort();
 
     gc_invoke_callbacks(pyju_gc_cb_notify_external_alloc_t,
@@ -376,7 +474,7 @@ static inline PyjuValue_t *pyju_gc_big_alloc_inner(PyjuPtls_t ptls, size_t sz)
     return pyju_valueof(&v->header);
 }
 
-// Instrumented version of jl_gc_big_alloc_inner, called into by LLVM-generated code.
+// Instrumented version of pyju_gc_big_alloc_inner, called into by LLVM-generated code.
 PYJU_DLLEXPORT PyjuValue_t *pyju_gc_big_alloc(PyjuPtls_t ptls, size_t sz)
 {
     PyjuValue_t *val = pyju_gc_big_alloc_inner(ptls, sz);
@@ -385,8 +483,8 @@ PYJU_DLLEXPORT PyjuValue_t *pyju_gc_big_alloc(PyjuPtls_t ptls, size_t sz)
     return val;
 }
 
-// This wrapper exists only to prevent `jl_gc_big_alloc_inner` from being inlined into
-// its callers. We provide an external-facing interface for callers, and inline `jl_gc_big_alloc_inner`
+// This wrapper exists only to prevent `pyju_gc_big_alloc_inner` from being inlined into
+// its callers. We provide an external-facing interface for callers, and inline `pyju_gc_big_alloc_inner`
 // into this. (See https://github.com/JuliaLang/julia/pull/43868 for more details.)
 PyjuValue_t *pyju_gc_big_alloc_noinline(PyjuPtls_t ptls, size_t sz) {
     return pyju_gc_big_alloc_inner(ptls, sz);
@@ -450,9 +548,9 @@ static inline PyjuValue_t *pyju_gc_pool_alloc_inner(PyjuPtls_t ptls, int pool_of
     PyjuGcPool_t *p = (PyjuGcPool_t*)((char*)ptls + pool_offset);
     assert(pyju_atomic_load_relaxed(&ptls->gc_state) == 0);
     #ifdef MEMDEBUG
-    return jl_gc_big_alloc(ptls, osize);
+    return pyju_gc_big_alloc(ptls, osize);
     #endif
-    // maybe_collect(ptls);
+    maybe_collect(ptls);
     pyju_atomic_store_relaxed(&ptls->gc_num.allocd,
         pyju_atomic_load_relaxed(&ptls->gc_num.allocd) + osize);
     pyju_atomic_store_relaxed(&ptls->gc_num.poolalloc,
@@ -498,8 +596,8 @@ static inline PyjuValue_t *pyju_gc_pool_alloc_inner(PyjuPtls_t ptls, int pool_of
     return pyju_valueof(v);
 }
 
-// Instrumented version of jl_gc_pool_alloc_inner, called into by LLVM-generated code.
-PYJU_DLLEXPORT PyjuValue_t *jl_gc_pool_alloc(PyjuPtls_t ptls, int pool_offset,
+// Instrumented version of pyju_gc_pool_alloc_inner, called into by LLVM-generated code.
+PYJU_DLLEXPORT PyjuValue_t *pyju_gc_pool_alloc(PyjuPtls_t ptls, int pool_offset,
                                           int osize)
 {
     PyjuValue_t *val = pyju_gc_pool_alloc_inner(ptls, pool_offset, osize);
@@ -508,8 +606,8 @@ PYJU_DLLEXPORT PyjuValue_t *jl_gc_pool_alloc(PyjuPtls_t ptls, int pool_offset,
     return val;
 }
 
-// This wrapper exists only to prevent `jl_gc_pool_alloc_inner` from being inlined into
-// its callers. We provide an external-facing interface for callers, and inline `jl_gc_pool_alloc_inner`
+// This wrapper exists only to prevent `pyju_gc_pool_alloc_inner` from being inlined into
+// its callers. We provide an external-facing interface for callers, and inline `pyju_gc_pool_alloc_inner`
 // into this. (See https://github.com/JuliaLang/julia/pull/43868 for more details.)
 PyjuValue_t *pyju_gc_pool_alloc_noinline(PyjuPtls_t ptls, int pool_offset, int osize) {
     return pyju_gc_pool_alloc_inner(ptls, pool_offset, osize);
@@ -725,7 +823,7 @@ void *pyju_gc_perm_alloc(size_t sz, int zero, unsigned align, unsigned offset)
 
 // PYJU_DLLEXPORT void pyju_gc_add_finalizer(pyju_value_t *v, pyju_function_t *f)
 // {
-//     pyju_ptls_t ptls = pyju_current_task->ptls;
+//     PyjuPtls_t ptls = pyju_current_task->ptls;
 //     pyju_gc_add_finalizer_th(ptls, v, f);
 // }
 
@@ -736,7 +834,7 @@ void *pyju_gc_perm_alloc(size_t sz, int zero, unsigned align, unsigned offset)
 
 // PYJU_DLLEXPORT pyju_weakref_t *pyju_gc_new_weakref(pyju_value_t *value)
 // {
-//     pyju_ptls_t ptls = pyju_current_task->ptls;
+//     PyjuPtls_t ptls = pyju_current_task->ptls;
 //     return pyju_gc_new_weakref_th(ptls, value);
 // }
 
@@ -784,6 +882,69 @@ PYJU_DLLEXPORT size_t pyju_gc_external_obj_hdr_size(void)
 PYJU_DLLEXPORT void * pyju_gc_alloc_typed(PyjuPtls_t ptls, size_t sz, void *ty)
 {
     return pyju_gc_alloc(ptls, sz, ty);
+}
+
+
+// tracking Arrays with malloc'd storage
+
+void pyju_gc_track_malloced_array(PyjuPtls_t ptls, PyjuArray_t *a) PYJU_NOTSAFEPOINT
+{
+    // This is **NOT** a GC safe point.
+    mallocarray_t *ma;
+    if (ptls->heap.mafreelist == NULL) {
+        ma = (mallocarray_t*)malloc_s(sizeof(mallocarray_t));
+    }
+    else {
+        ma = ptls->heap.mafreelist;
+        ptls->heap.mafreelist = ma->next;
+    }
+    ma->a = a;
+    ma->next = ptls->heap.mallocarrays;
+    ptls->heap.mallocarrays = ma;
+}
+
+void pyju_gc_count_allocd(size_t sz) PYJU_NOTSAFEPOINT
+{
+    PyjuPtls_t ptls = pyju_current_task->ptls;
+    pyju_atomic_store_relaxed(&ptls->gc_num.allocd,
+        pyju_atomic_load_relaxed(&ptls->gc_num.allocd) + sz);
+}
+
+PyjuValue_t *pyju_gc_realloc_string(PyjuValue_t *s, size_t sz)
+{
+    size_t len = pyju_string_len(s);
+    if (sz <= len) return s;
+    PyjuTaggedValue_t *v = pyju_astaggedvalue(s);
+    size_t strsz = len + sizeof(size_t) + 1;
+    if (strsz <= GC_MAX_SZCLASS ||
+        // TODO: because of issue #17971 we can't resize old objects
+        gc_marked(v->bits.gc)) {
+        // pool allocated; can't be grown in place so allocate a new object.
+        PyjuValue_t *snew = pyju_alloc_string(sz);
+        memcpy(pyju_string_data(snew), pyju_string_data(s), len);
+        return snew;
+    }
+    size_t newsz = sz + sizeof(size_t) + 1;
+    size_t offs = sizeof(bigval_t);
+    size_t oldsz = LLT_ALIGN(strsz + offs, PYJU_CACHE_BYTE_ALIGNMENT);
+    size_t allocsz = LLT_ALIGN(newsz + offs, PYJU_CACHE_BYTE_ALIGNMENT);
+    if (allocsz < sz)  // overflow in adding offs, size was "negative"
+        pyju_throw(pyju_memory_exception);
+    bigval_t *hdr = bigval_header(v);
+    PyjuPtls_t ptls = pyju_current_task->ptls;
+    maybe_collect(ptls); // don't want this to happen during pyju_gc_managed_realloc
+    gc_big_object_unlink(hdr);
+    // TODO: this is not safe since it frees the old pointer. ideally we'd like
+    // the old pointer to be left alone if we can't grow in place.
+    // for now it's up to the caller to make sure there are no references to the
+    // old pointer.
+    bigval_t *newbig = (bigval_t*)gc_managed_realloc_(ptls, hdr, allocsz, oldsz, 1, s, 0);
+    newbig->sz = allocsz;
+    newbig->age = 0;
+    gc_big_object_link(newbig, &ptls->heap.big_objects);
+    PyjuValue_t *snew = pyju_valueof(&newbig->header);
+    pyju_string_len(snew) = sz;
+    return snew;
 }
 
 #ifdef __cplusplus

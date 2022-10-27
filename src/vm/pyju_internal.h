@@ -314,7 +314,7 @@ PYJU_DLLEXPORT PyjuValue_t *pyju_gc_alloc(PyjuPtls_t ptls, size_t sz, void *ty);
 typedef void pyju_gc_tracked_buffer_t; // For the benefit of the static analyzer
 STATIC_INLINE pyju_gc_tracked_buffer_t *pyju_gc_alloc_buf(PyjuPtls_t ptls, size_t sz)
 {
-    return pyju_gc_alloc(ptls, sz, (void*)pyju_buff_tag);
+    return pyju_data_ptr(pyju_gc_alloc(ptls, sz + PYJU_TV_SIZE, (void*)pyju_buff_tag));
 }
 
 STATIC_INLINE PyjuValue_t *pyju_gc_permobj(size_t sz, void *ty) PYJU_NOTSAFEPOINT
@@ -367,6 +367,29 @@ PyjuSvec_t *pyju_perm_symsvec(size_t n, ...);
 #endif
 #endif
 #endif
+
+void pyju_gc_track_malloced_array(PyjuPtls_t ptls, PyjuArray_t *a) PYJU_NOTSAFEPOINT;
+void pyju_gc_count_allocd(size_t sz) PYJU_NOTSAFEPOINT;
+PyjuValue_t *pyju_gc_realloc_string(PyjuValue_t *s, size_t sz);
+
+void gc_queue_binding(PyjuBinding_t *bnd) PYJU_NOTSAFEPOINT;
+void gc_setmark_buf(PyjuPtls_t ptls, void *buf, uint8_t, size_t) PYJU_NOTSAFEPOINT;
+
+STATIC_INLINE void pyju_gc_wb_binding(PyjuBinding_t *bnd, void *val) PYJU_NOTSAFEPOINT // val isa jl_value_t*
+{
+    if (__unlikely(pyju_astaggedvalue(bnd)->bits.gc == 3 &&
+                   (pyju_astaggedvalue(val)->bits.gc & 1) == 0))
+        gc_queue_binding(bnd);
+}
+
+STATIC_INLINE void pyju_gc_wb_buf(void *parent, void *bufptr, size_t minsz) PYJU_NOTSAFEPOINT // parent isa jl_value_t*
+{
+    // if parent is marked and buf is not
+    if (__unlikely(pyju_astaggedvalue(parent)->bits.gc & 1)) {
+        PyjuTask_t *ct = pyju_current_task;
+        gc_setmark_buf(ct->ptls, bufptr, 3, minsz);
+    }
+}
 
 // init.cc
 void pyju_init_types(void) PYJU_GC_DISABLED;
@@ -660,10 +683,7 @@ PyjuValue_t *modify_nth_field(PyjuDataType_t *st, PyjuValue_t *v, size_t i, Pyju
 PyjuValue_t *replace_nth_field(PyjuDataType_t *st, PyjuValue_t *v, size_t i, PyjuValue_t *expected, PyjuValue_t *rhs, int isatomic);
 int pyju_find_union_component(PyjuValue_t *haystack, PyjuValue_t *needle, unsigned *nth) PYJU_NOTSAFEPOINT;
 void pyju_precompute_memoized_dt(PyjuDataType_t *dt, int cacheable);
-STATIC_INLINE int pyju_is_vararg(PyjuValue_t *v) PYJU_NOTSAFEPOINT
-{
-    return pyju_typeof(v) == (PyjuValue_t*)pyju_vararg_type;
-}
+
 void pyju_compute_field_offsets(PyjuDataType_t *st);
 PYJU_DLLEXPORT PyjuValue_t *pyju_unwrap_unionall(PyjuValue_t *v PYJU_PROPAGATES_ROOT) PYJU_NOTSAFEPOINT;
 int pyju_has_fixed_layout(PyjuDataType_t *t);
@@ -675,6 +695,98 @@ int pyju_find_union_component(PyjuValue_t *haystack, PyjuValue_t *needle, unsign
 PyjuDataType_t *pyju_new_abstracttype(PyjuValue_t *name, PyjuModule_t *module,
                                    PyjuDataType_t *super, PyjuSvec_t *parameters);
 PYJU_DLLEXPORT PyjuMethTable_t *pyju_new_method_table(PyjuSym_t *name, PyjuModule_t *module);
+
+int pyju_valid_type_param(PyjuValue_t *v);
+PyjuVararg_t *pyju_wrap_vararg(PyjuValue_t *t, PyjuValue_t *n);
+
+// Each tuple can exist in one of 4 Vararg states:
+//   NONE: no vararg                            Tuple{Int,Float32}
+//   INT: vararg with integer length            Tuple{Int,Vararg{Float32,2}}
+//   BOUND: vararg with bound TypeVar length    Tuple{Int,Vararg{Float32,N}}
+//   UNBOUND: vararg with unbound length        Tuple{Int,Vararg{Float32}}
+typedef enum {
+    PYJU_VARARG_NONE    = 0,
+    PYJU_VARARG_INT     = 1,
+    PYJU_VARARG_BOUND   = 2,
+    PYJU_VARARG_UNBOUND = 3
+} pyju_vararg_kind_t;
+
+STATIC_INLINE int pyju_is_vararg(PyjuValue_t *v) PYJU_NOTSAFEPOINT
+{
+    return pyju_typeof(v) == (PyjuValue_t *)pyju_vararg_type;
+}
+
+STATIC_INLINE PyjuValue_t *pyju_unwrap_vararg(PyjuVararg_t *v PYJU_PROPAGATES_ROOT) PYJU_NOTSAFEPOINT
+{
+    assert(pyju_is_vararg((PyjuValue_t*)v));
+    PyjuValue_t *T = ((PyjuVararg_t*)v)->T;
+    return T ? T : (PyjuValue_t*)pyju_any_type;
+}
+
+#define pyju_unwrap_vararg(v) (pyju_unwrap_vararg)((PyjuVararg_t*)v)
+
+STATIC_INLINE PyjuValue_t *pyju_unwrap_vararg_num(PyjuVararg_t *v PYJU_PROPAGATES_ROOT) PYJU_NOTSAFEPOINT
+{
+    assert(pyju_is_vararg((PyjuValue_t *)v));
+    return ((PyjuVararg_t*)v)->N;
+}
+#define pyju_unwrap_vararg_num(v) (pyju_unwrap_vararg_num)((PyjuVararg_t*)v)
+
+STATIC_INLINE pyju_vararg_kind_t pyju_vararg_kind(PyjuValue_t *v) PYJU_NOTSAFEPOINT
+{
+    if (!pyju_is_vararg(v))
+        return PYJU_VARARG_NONE;
+    PyjuVararg_t *vm = (PyjuVararg_t*)v;
+    if (!vm->N)
+        return PYJU_VARARG_UNBOUND;
+    if (pyju_is_long(vm->N))
+        return PYJU_VARARG_INT;
+    return PYJU_VARARG_BOUND;
+}
+
+STATIC_INLINE int pyju_is_va_tuple(PyjuDataType_t *t) PYJU_NOTSAFEPOINT
+{
+    assert(pyju_is_tuple_type(t));
+    size_t l = pyju_svec_len(t->parameters);
+    return (l>0 && pyju_is_vararg(pyju_tparam(t,l-1)));
+}
+
+STATIC_INLINE size_t pyju_vararg_length(PyjuValue_t *v) PYJU_NOTSAFEPOINT
+{
+    assert(pyju_is_vararg(v));
+    PyjuValue_t *len = pyju_unwrap_vararg_num(v);
+    assert(pyju_is_long(len));
+    return pyju_unbox_long(len);
+}
+
+STATIC_INLINE pyju_vararg_kind_t pyju_va_tuple_kind(PyjuDataType_t *t) PYJU_NOTSAFEPOINT
+{
+    t = (PyjuDataType_t*)pyju_unwrap_unionall((PyjuValue_t*)t);
+    assert(pyju_is_tuple_type(t));
+    size_t l = pyju_svec_len(t->parameters);
+    if (l == 0)
+        return PYJU_VARARG_NONE;
+    return pyju_vararg_kind(pyju_tparam(t,l-1));
+}
+
+STATIC_INLINE PyjuValue_t *undefref_check(PyjuDataType_t *dt, PyjuValue_t *v) PYJU_NOTSAFEPOINT
+{
+     if (dt->layout->first_ptr >= 0) {
+        PyjuValue_t *nullp = ((PyjuValue_t**)pyju_data_ptr(v))[dt->layout->first_ptr];
+        if (__unlikely(nullp == NULL))
+            return NULL;
+    }
+    return v;
+}
+
+// -- synchronization utilities -- //
+
+extern PyjuMutex_t typecache_lock;
+extern PYJU_DLLEXPORT PyjuMutex_t pyju_codegen_lock;
+extern uv_mutex_t safepoint_lock;
+
+
+PYJU_DLLEXPORT int pyju_stored_inline(PyjuValue_t *el_type);
 
 #ifdef __cplusplus
 } // extern "C"

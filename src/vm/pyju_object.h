@@ -13,6 +13,18 @@
 #include "support/libsupport.h"
 
 
+#define DEBUG_FUNC \
+    printf("func: %s, line: %d ---------------------------------------------\n",\
+            __FUNCTION__, __LINE__);
+
+#define DEBUG_FUNC_STR(str) \
+    printf("func: %s, line: %d, %s -----------------------------------------\n",\
+           __FUNCTION__, __LINE__, str);
+
+#define DEBUG_FUNC_INT(i) \
+    printf("func: %s, line: %d, %d -----------------------------------------\n",\
+            __FUNCTION__, __LINE__, i);
+
 // Define the largest size (bytes) of a properly aligned object that the
 // processor family and compiler typically supports without a lock
 // (assumed to be at least a pointer size). Since C is bad at handling 16-byte
@@ -78,7 +90,7 @@ struct PyjuValue_t {
     ((PyjuValue_t*)v)
 
 #define pyju_typeof(v)                                                    \
-    ((PyjuValue_t*)(pyju_astaggedvalue(v)->header & ~(uintptr_t)15))
+    ((PyjuValue_t*)(pyju_astaggedvalue(v)->header & ~(uintptr_t)7))
 
 static inline void pyju_set_typeof(void *v, void *t)
 {
@@ -150,7 +162,7 @@ PYJU_EXTENSION struct PyjuArray_t {
     // followed by alignment padding and inline data, or owner pointer
 };
 
-STATIC_INLINE int pyju_arrary_ndimwords(uint32_t ndims) {
+STATIC_INLINE int pyju_array_ndimwords(uint32_t ndims) {
     return (ndims < 3 ? 0 : ndims - 2);
 }
 
@@ -672,6 +684,7 @@ struct PyjuGcFrame_t {
   memset((void*)rts_var, 0, (n)*sizeof(PyjuValue_t*));                                                   \
   pyju_pgcstack = (PyjuGcFrame_t*)&(((void**)rts_var)[-2])
 
+
 #define PYJU_GC_POP() (pyju_pgcstack = pyju_pgcstack->prev)
 
 PYJU_DLLEXPORT int pyju_gc_enable(int on);
@@ -914,7 +927,99 @@ STATIC_INLINE PyjuValue_t *pyju_svecset(
 #define pyju_array_data_owner(a) (*((PyjuValue_t**)((char*)a + pyju_array_data_owner_offset(pyju_array_ndims(a)))))
 
 
+PYJU_DLLEXPORT char *pyju_array_typetagdata(PyjuArray_t *a) PYJU_NOTSAFEPOINT;
 
+#ifdef __clang_gcanalyzer__
+PyjuValue_t **pyju_array_ptr_data(PyjuArray_t *a PYJU_PROPAGATES_ROOT) PYJU_NOTSAFEPOINT;
+STATIC_INLINE PyjuValue_t *pyju_array_ptr_ref(void *a PYJU_PROPAGATES_ROOT, size_t i) PYJU_NOTSAFEPOINT;
+STATIC_INLINE PyjuValue_t *pyju_array_ptr_set(
+    void *a PYJU_ROOTING_ARGUMENT, size_t i,
+    void *x PYJU_ROOTED_ARGUMENT) PYJU_NOTSAFEPOINT;
+#else
+#define pyju_array_ptr_data(a)  ((PyjuValue_t**)((PyjuArray_t*)(a))->data)
+STATIC_INLINE PyjuValue_t *pyju_array_ptr_ref(void *a PYJU_PROPAGATES_ROOT, size_t i) PYJU_NOTSAFEPOINT
+{
+    assert(((PyjuArray_t*)a)->flags.ptrarray);
+    assert(i < pyju_array_len(a));
+    return pyju_atomic_load_relaxed(((_Atomic(PyjuValue_t*)*)(pyju_array_data(a))) + i);
+}
+STATIC_INLINE PyjuValue_t *pyju_array_ptr_set(
+    void *a PYJU_ROOTING_ARGUMENT, size_t i,
+    void *x PYJU_ROOTED_ARGUMENT) PYJU_NOTSAFEPOINT
+{
+    assert(((PyjuArray_t*)a)->flags.ptrarray);
+    assert(i < pyju_array_len(a));
+    pyju_atomic_store_relaxed(((_Atomic(PyjuValue_t*)*)(pyju_array_data(a))) + i, (PyjuValue_t*)x);
+    if (x) {
+        if (((PyjuArray_t*)a)->flags.how == 3) {
+            a = pyju_array_data_owner(a);
+        }
+        pyju_gc_wb(a, x);
+    }
+    return (PyjuValue_t*)x;
+}
+#endif
+
+STATIC_INLINE uint8_t pyju_array_uint8_ref(void *a, size_t i) PYJU_NOTSAFEPOINT
+{
+    assert(i < pyju_array_len(a));
+    assert(pyju_typeis(a, pyju_array_uint8_type));
+    return ((uint8_t*)(pyju_array_data(a)))[i];
+}
+STATIC_INLINE void pyju_array_uint8_set(void *a, size_t i, uint8_t x) PYJU_NOTSAFEPOINT
+{
+    assert(i < pyju_array_len(a));
+    assert(pyju_typeis(a, pyju_array_uint8_type));
+    ((uint8_t*)(pyju_array_data(a)))[i] = x;
+}
+
+#define pyju_exprarg(e,n) pyju_array_ptr_ref(((pyju_expr_t*)(e))->args, n)
+#define pyju_exprargset(e, n, v) pyju_array_ptr_set(((pyju_expr_t*)(e))->args, n, v)
+#define pyju_expr_nargs(e) pyju_array_len(((pyju_expr_t*)(e))->args)
+
+#define pyju_fieldref(s,i) pyju_get_nth_field(((PyjuValue_t*)(s)),i)
+#define pyju_fieldref_noalloc(s,i) pyju_get_nth_field_noalloc(((PyjuValue_t*)(s)),i)
+#define pyju_nfields(v)    pyju_datatype_nfields(pyju_typeof(v))
+
+// arrays
+PYJU_DLLEXPORT PyjuArray_t *pyju_new_array(PyjuValue_t *atype, PyjuValue_t *dims);
+PYJU_DLLEXPORT PyjuArray_t *pyju_reshape_array(PyjuValue_t *atype, PyjuArray_t *data,
+                                          PyjuValue_t *dims);
+PYJU_DLLEXPORT PyjuArray_t *pyju_ptr_to_array_1d(PyjuValue_t *atype, void *data,
+                                            size_t nel, int own_buffer);
+PYJU_DLLEXPORT PyjuArray_t *pyju_ptr_to_array(PyjuValue_t *atype, void *data,
+                                         PyjuValue_t *dims, int own_buffer);
+
+PYJU_DLLEXPORT PyjuArray_t *pyju_alloc_array_1d(PyjuValue_t *atype, size_t nr);
+PYJU_DLLEXPORT PyjuArray_t *pyju_alloc_array_2d(PyjuValue_t *atype, size_t nr,
+                                           size_t nc);
+PYJU_DLLEXPORT PyjuArray_t *pyju_alloc_array_3d(PyjuValue_t *atype, size_t nr,
+                                           size_t nc, size_t z);
+PYJU_DLLEXPORT PyjuArray_t *pyju_pchar_to_array(const char *str, size_t len);
+PYJU_DLLEXPORT PyjuValue_t *pyju_pchar_to_string(const char *str, size_t len);
+PYJU_DLLEXPORT PyjuValue_t *pyju_cstr_to_string(const char *str);
+PYJU_DLLEXPORT PyjuValue_t *pyju_alloc_string(size_t len);
+PYJU_DLLEXPORT PyjuValue_t *PyjuArray_to_string(PyjuArray_t *a);
+PYJU_DLLEXPORT PyjuArray_t *pyju_alloc_vec_any(size_t n);
+PYJU_DLLEXPORT PyjuValue_t *pyju_arrayref(PyjuArray_t *a, size_t i);  // 0-indexed
+PYJU_DLLEXPORT PyjuValue_t *pyju_ptrarrayref(PyjuArray_t *a PYJU_PROPAGATES_ROOT, size_t i) PYJU_NOTSAFEPOINT;  // 0-indexed
+PYJU_DLLEXPORT void pyju_arrayset(PyjuArray_t *a PYJU_ROOTING_ARGUMENT, PyjuValue_t *v PYJU_ROOTED_ARGUMENT PYJU_MAYBE_UNROOTED, size_t i);  // 0-indexed
+PYJU_DLLEXPORT void pyju_arrayunset(PyjuArray_t *a, size_t i);  // 0-indexed
+PYJU_DLLEXPORT int pyju_array_isassigned(PyjuArray_t *a, size_t i);  // 0-indexed
+PYJU_DLLEXPORT void pyju_array_grow_end(PyjuArray_t *a, size_t inc);
+PYJU_DLLEXPORT void pyju_array_del_end(PyjuArray_t *a, size_t dec);
+PYJU_DLLEXPORT void pyju_array_grow_beg(PyjuArray_t *a, size_t inc);
+PYJU_DLLEXPORT void pyju_array_del_beg(PyjuArray_t *a, size_t dec);
+PYJU_DLLEXPORT void pyju_array_sizehint(PyjuArray_t *a, size_t sz);
+PYJU_DLLEXPORT void pyju_array_ptr_1d_push(PyjuArray_t *a, PyjuValue_t *item);
+PYJU_DLLEXPORT void pyju_array_ptr_1d_append(PyjuArray_t *a, PyjuArray_t *a2);
+PYJU_DLLEXPORT PyjuValue_t *pyju_apply_array_type(PyjuValue_t *type, size_t dim);
+PYJU_DLLEXPORT int pyju_array_validate_dims(size_t *nel, size_t *tot, uint32_t ndims, size_t *dims, size_t elsz);
+// property access
+PYJU_DLLEXPORT void *pyju_array_ptr(PyjuArray_t *a);
+PYJU_DLLEXPORT void *pyju_array_eltype(PyjuValue_t *a);
+PYJU_DLLEXPORT int pyju_array_rank(PyjuValue_t *a);
+PYJU_DLLEXPORT size_t pyju_array_size(PyjuValue_t *a, int d);
 
 // tasks and exceptions -------------------------------------------------------
 
@@ -1126,10 +1231,15 @@ PYJU_DLLEXPORT ssize_t pyju_sizeof_pyju_options(void);
 // throwing common exceptions
 PYJU_DLLEXPORT void PYJU_NORETURN pyju_error(const char *str);
 PYJU_DLLEXPORT void PYJU_NORETURN pyju_errorf(const char *fmt, ...);
+PYJU_DLLEXPORT void PYJU_NORETURN pyju_exceptionf(PyjuDataType_t *ty,
+                                            const char *fmt, ...);
 PYJU_DLLEXPORT void PYJU_NORETURN pyju_eof_error(void);
 PYJU_DLLEXPORT void PYJU_NORETURN pyju_type_error(const char *fname,
                                             PyjuValue_t *expected PYJU_MAYBE_UNROOTED,
                                             PyjuValue_t *got PYJU_MAYBE_UNROOTED);
+PYJU_DLLEXPORT void PYJU_NORETURN pyju_type_error_rt(const char *fname, const char *context,
+                                               PyjuValue_t *expected PYJU_MAYBE_UNROOTED,
+                                               PyjuValue_t *got PYJU_MAYBE_UNROOTED);
 
 // Parse an argc/argv pair to extract general julia options, passing back out
 // any arguments that should be passed on to the script.
@@ -1252,6 +1362,11 @@ STATIC_INLINE PyjuValue_t *pyju_field_type_concrete(PyjuDataType_t *st PYJU_PROP
 #define pyju_is_symbol(v)      pyju_typeis(v, pyju_symbol_type)
 #define pyju_is_ssavalue(v)    pyju_typeis(v, pyju_ssavalue_type)
 
+#define pyju_is_string(v)      pyju_typeis(v, pyju_string_type)
+#define pyju_array_isbitsunion(a) (!(((PyjuArray_t*)(a))->flags.ptrarray) && pyju_is_uniontype(pyju_tparam0(pyju_typeof(a))))
+
+
+PYJU_DLLEXPORT int pyju_subtype(PyjuValue_t *a, PyjuValue_t *b);
 
 STATIC_INLINE int pyju_is_kind(PyjuValue_t *v) PYJU_NOTSAFEPOINT
 {
@@ -1300,7 +1415,7 @@ STATIC_INLINE int pyju_is_array_type(void *t) PYJU_NOTSAFEPOINT
             ((PyjuDataType_t*)(t))->name == pyju_array_typename);
 }
 
-STATIC_INLINE int jl_is_array(void *v) PYJU_NOTSAFEPOINT
+STATIC_INLINE int pyju_is_array(void *v) PYJU_NOTSAFEPOINT
 {
     PyjuValue_t *t = pyju_typeof(v);
     return pyju_is_array_type(t);
@@ -1574,12 +1689,79 @@ PYJU_DLLEXPORT PyjuSvec_t *pyju_alloc_svec_uninit(size_t n);
 PYJU_DLLEXPORT PyjuSvec_t *pyju_svec_copy(PyjuSvec_t *a);
 PYJU_DLLEXPORT PyjuSvec_t *pyju_svec_fill(size_t n, PyjuValue_t *x);
 
-
-PYJU_DLLEXPORT uintptr_t pyju_object_id(PyjuValue_t *v) PYJU_NOTSAFEPOINT;
-
 // type constructors
 PYJU_DLLEXPORT PyjuTypeName_t *pyju_new_typename_in(PyjuSym_t *name, PyjuModule_t *inmodule, int abstract, int mutabl);
+PYJU_DLLEXPORT PyjuValue_t *pyju_apply_type(PyjuValue_t *tc, PyjuValue_t **params, size_t n);
+PYJU_DLLEXPORT PyjuValue_t *pyju_apply_type1(PyjuValue_t *tc, PyjuValue_t *p1);
+PYJU_DLLEXPORT PyjuValue_t *pyju_apply_type2(PyjuValue_t *tc, PyjuValue_t *p1, PyjuValue_t *p2);
+PYJU_DLLEXPORT PyjuDataType_t *pyju_apply_modify_type(PyjuValue_t *dt);
+PYJU_DLLEXPORT PyjuDataType_t *pyju_new_datatype(PyjuSym_t *name,
+                                            PyjuModule_t *module,
+                                            PyjuDataType_t *super,
+                                            PyjuSvec_t *parameters,
+                                            PyjuSvec_t *fnames,
+                                            PyjuSvec_t *ftypes,
+                                            PyjuSvec_t *fattrs,
+                                            int abstract, int mutabl,
+                                            int ninitialized);
+PYJU_DLLEXPORT PyjuTVar_t *pyju_new_typevar(PyjuSym_t *name, PyjuValue_t *lb, PyjuValue_t *ub);
+PYJU_DLLEXPORT const char *pyju_typename_str(PyjuValue_t *v) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT const char *pyju_typeof_str(PyjuValue_t *v) PYJU_NOTSAFEPOINT;
 
+STATIC_INLINE int pyju_is_concrete_type(PyjuValue_t *v) PYJU_NOTSAFEPOINT
+{
+    return pyju_is_datatype(v) && ((PyjuDataType_t*)v)->isconcretetype;
+}
+PYJU_DLLEXPORT PyjuTupleType_t *pyju_apply_tuple_type(PyjuSvec_t *params);
+PYJU_DLLEXPORT PyjuValue_t *pyju_tupletype_fill(size_t n, PyjuValue_t *v);
+
+// object identity
+PYJU_DLLEXPORT int pyju_egal(const PyjuValue_t *a PYJU_MAYBE_UNROOTED, const PyjuValue_t *b PYJU_MAYBE_UNROOTED) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT int pyju_egal__bits(const PyjuValue_t *a PYJU_MAYBE_UNROOTED, const PyjuValue_t *b PYJU_MAYBE_UNROOTED, PyjuDataType_t *dt) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT int pyju_egal__special(const PyjuValue_t *a PYJU_MAYBE_UNROOTED, const PyjuValue_t *b PYJU_MAYBE_UNROOTED, PyjuDataType_t *dt) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT int pyju_egal__unboxed(const PyjuValue_t *a PYJU_MAYBE_UNROOTED, const PyjuValue_t *b PYJU_MAYBE_UNROOTED, PyjuDataType_t *dt) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT uintptr_t pyju_object_id(PyjuValue_t *v) PYJU_NOTSAFEPOINT;
+
+STATIC_INLINE int pyju_egal__unboxed_(const PyjuValue_t *a PYJU_MAYBE_UNROOTED, const PyjuValue_t *b PYJU_MAYBE_UNROOTED, PyjuDataType_t *dt) PYJU_NOTSAFEPOINT
+{
+    if (dt->name->mutabl) {
+        if (dt == pyju_simplevector_type || dt == pyju_string_type || dt == pyju_datatype_type)
+            return pyju_egal__special(a, b, dt);
+        return 0;
+    }
+    return pyju_egal__bits(a, b, dt);
+}
+
+STATIC_INLINE int pyju_egal_(const PyjuValue_t *a PYJU_MAYBE_UNROOTED, const PyjuValue_t *b PYJU_MAYBE_UNROOTED) PYJU_NOTSAFEPOINT
+{
+    if (a == b)
+        return 1;
+    PyjuDataType_t *dt = (PyjuDataType_t*)pyju_typeof(a);
+    if (dt != (PyjuDataType_t*)pyju_typeof(b))
+        return 0;
+    return pyju_egal__unboxed_(a, b, dt);
+}
+#define pyju_egal(a, b) pyju_egal_((a), (b))
+
+// type predicates and basic operations
+PYJU_DLLEXPORT int pyju_types_equal(PyjuValue_t *a, PyjuValue_t *b);
+PYJU_DLLEXPORT int pyju_isa(PyjuValue_t *x, PyjuValue_t *t);
+PYJU_DLLEXPORT int pyju_type_equality_is_identity(PyjuValue_t *t1, PyjuValue_t *t2);
+
+
+#define pyju_fieldref(s,i) pyju_get_nth_field(((PyjuValue_t*)(s)),i)
+#define pyju_fieldref_noalloc(s,i) pyju_get_nth_field_noalloc(((PyjuValue_t*)(s)),i)
+#define pyju_nfields(v)    pyju_datatype_nfields(pyju_typeof(v))
+
+
+PYJU_DLLEXPORT void PYJU_NORETURN pyju_bounds_error_int(PyjuValue_t *v PYJU_MAYBE_UNROOTED,
+                                                  size_t i);
+
+PYJU_DLLEXPORT PyjuArray_t *pyju_alloc_vec_any(size_t n);
+
+
+PYJU_DLLEXPORT int pyju_has_free_typevars(PyjuValue_t *v) PYJU_NOTSAFEPOINT;
+PyjuDataType_t *pyju_wrap_Type(PyjuValue_t *t);
 
 #ifdef __cplusplus
 }

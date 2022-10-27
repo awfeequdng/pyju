@@ -12,8 +12,12 @@
     XX(pyju_type_type_mt) \
     XX(pyju_type_typename) \
     XX(pyju_tuple_typename) \
+    XX(pyju_emptytuple) \
+    XX(pyju_an_empty_string) \
+    XX(pyju_memory_exception) \
     XX(pyju_namedtuple_typename) \
     XX(pyju_vecelement_typename) \
+    XX(pyju_void_type) \
     XX(pyju_float32_type) \
     XX(pyju_voidpointer_type) \
     XX(pyju_uint8pointer_type) \
@@ -50,6 +54,14 @@
     XX(pyju_array_typename) \
     XX(pyju_module_type) \
     XX(pyju_bottom_type) \
+    XX(pyju_anytuple_type) \
+    XX(pyju_emptytuple_type) \
+    XX(pyju_pair_type) \
+    XX(pyju_boundserror_type) \
+    XX(pyju_argumenterror_type) \
+    XX(pyju_array_uint8_type) \
+    XX(pyju_array_any_type) \
+    XX(pyju_array_type) \
     XX(pyju_datatype_type)
 
 

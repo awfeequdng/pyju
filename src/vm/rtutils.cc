@@ -46,6 +46,32 @@ PYJU_DLLEXPORT void PYJU_NORETURN pyju_error(const char *str)
 extern int vasprintf(char **str, const char *fmt, va_list ap);
 
 
+PyjuValue_t *pyju_vexceptionf(PyjuDataType_t *exception_type,
+                           const char *fmt, va_list args)
+{
+    if (exception_type == NULL) {
+        pyju_printf(PYJU_STDERR, "ERROR: ");
+        pyju_vprintf(PYJU_STDERR, fmt, args);
+        pyju_printf(PYJU_STDERR, "\n");
+        // pyju_exit(1);
+        exit(1);
+    }
+    char *str = NULL;
+    int ok = vasprintf(&str, fmt, args);
+    PyjuValue_t *msg;
+    if (ok < 0) {  // vasprintf failed
+        msg = pyju_cstr_to_string("internal error: could not display error message");
+    }
+    else {
+        msg = pyju_pchar_to_string(str, strlen(str));
+        free(str);
+    }
+    PYJU_GC_PUSH1(&msg);
+    PyjuValue_t *e = pyju_new_struct(exception_type, msg);
+    PYJU_GC_POP();
+    return e;
+}
+
 PYJU_DLLEXPORT void PYJU_NORETURN pyju_errorf(const char *fmt, ...)
 {
     // va_list args;
@@ -64,6 +90,16 @@ PYJU_DLLEXPORT void PYJU_NORETURN pyju_eof_error(void) {
     abort();
 }
 
+PYJU_DLLEXPORT void PYJU_NORETURN pyju_exceptionf(PyjuDataType_t *exception_type,
+                                            const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    PyjuValue_t *e = pyju_vexceptionf(exception_type, fmt, args);
+    va_end(args);
+    pyju_throw(e);
+}
+
 // with function name or description only
 PYJU_DLLEXPORT void PYJU_NORETURN pyju_type_error(const char *fname,
                                             PyjuValue_t *expected PYJU_MAYBE_UNROOTED,
@@ -80,6 +116,30 @@ PYJU_DLLEXPORT void pyju_flush_cstdio(void) PYJU_NOTSAFEPOINT
     fflush(stdout);
     fflush(stderr);
 }
+
+
+// with function name / location description, plus extra context
+PYJU_DLLEXPORT void PYJU_NORETURN pyju_type_error_rt(const char *fname, const char *context,
+                                               PyjuValue_t *expected PYJU_MAYBE_UNROOTED,
+                                               PyjuValue_t *got PYJU_MAYBE_UNROOTED)
+{
+    printf("pyju_type_error_rt not impl\n");
+    abort();
+    // PyjuValue_t *ctxt=NULL;
+    // PYJU_GC_PUSH3(&ctxt, &expected, &got);
+    // ctxt = pyju_pchar_to_string((char*)context, strlen(context));
+    // PyjuValue_t *ex = pyju_new_struct(pyju_typeerror_type, pyju_symbol(fname), ctxt, expected, got);
+    // pyju_throw(ex);
+}
+
+PYJU_DLLEXPORT void PYJU_NORETURN pyju_bounds_error_int(PyjuValue_t *v PYJU_MAYBE_UNROOTED, size_t i)
+{
+    PyjuValue_t *t = NULL;
+    PYJU_GC_PUSH2(&v, &t); // root arguments so the caller doesn't need to
+    t = pyju_box_long(i);
+    pyju_throw(pyju_new_struct((PyjuDataType_t*)pyju_boundserror_type, v, t));
+}
+
 
 #ifdef __cplusplus
 }
