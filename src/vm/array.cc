@@ -129,7 +129,8 @@ static PyjuArray_t *_new_array_(PyjuValue_t *atype, uint32_t ndims, size_t *dims
         tsz += tot;
         // PyjuArray_t is large enough that objects will always be aligned 16
         a = (PyjuArray_t*)pyju_gc_alloc(ct->ptls, tsz, atype);
-        assert(((size_t)a & 15) == 0);
+        // 数据字段按16字节对其
+        assert((((size_t)a + PYJU_TV_SIZE) & 15) == 0);
         // No allocation or safepoint allowed after this
         a->flags.how = 0;
         data = (char*)a + doffs;

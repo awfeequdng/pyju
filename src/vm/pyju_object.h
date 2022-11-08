@@ -1763,6 +1763,9 @@ PYJU_DLLEXPORT PyjuArray_t *pyju_alloc_vec_any(size_t n);
 PYJU_DLLEXPORT int pyju_has_free_typevars(PyjuValue_t *v) PYJU_NOTSAFEPOINT;
 PyjuDataType_t *pyju_wrap_Type(PyjuValue_t *t);
 
+PYJU_DLLEXPORT PyjuDataType_t *pyju_new_primitivetype(PyjuValue_t *name, PyjuModule_t *module,
+                                                 PyjuDataType_t *super,
+                                                 PyjuSvec_t *parameters, size_t nbits);
 #ifdef __cplusplus
 }
 #endif

@@ -924,6 +924,7 @@ static int within_typevar(PyjuValue_t *t, PyjuValue_t *vlb, PyjuValue_t *vub)
 
 static void check_datatype_parameters(PyjuTypeName_t *tn, PyjuValue_t **params, size_t np)
 {
+    DEBUG_FUNC
     PyjuValue_t *wrapper = tn->wrapper;
     PyjuValue_t **bounds;
     PYJU_GC_PUSHARGS(bounds, np*2);
@@ -962,6 +963,14 @@ static PyjuValue_t *extract_wrapper(PyjuValue_t *t PYJU_PROPAGATES_ROOT) PYJU_GL
     t = pyju_unwrap_unionall(t);
     if (pyju_is_datatype(t))
         return ((PyjuDataType_t*)t)->name->wrapper;
+    if (pyju_is_uniontype(t)) {
+        PyjuValue_t *n1 = extract_wrapper(((PyjuUnionType_t*)t)->a);
+        if (n1 != NULL) return n1;
+        return extract_wrapper(((PyjuUnionType_t*)t)->b);
+    }
+    if (pyju_is_typevar(t))
+        return extract_wrapper(((PyjuTVar_t*)t)->ub);
+    return NULL;
 }
 
 int _may_substitute_ub(PyjuValue_t *v, PyjuTVar_t *var, int inside_inv, int *cov_count) PYJU_NOTSAFEPOINT
@@ -1060,6 +1069,7 @@ PyjuValue_t *normalize_unionalls(PyjuValue_t *t)
 static PyjuValue_t *inst_datatype_inner(PyjuDataType_t *dt, PyjuSvec_t *p, PyjuValue_t **iparams, size_t ntp,
                                        pyju_typestack_t *stack, PyjuTypeEnv_t *env)
 {
+    DEBUG_FUNC
     pyju_typestack_t top;
     PyjuTypeName_t *tn = dt->name;
     int istuple = (tn == pyju_tuple_typename);
@@ -1069,6 +1079,7 @@ static PyjuValue_t *inst_datatype_inner(PyjuDataType_t *dt, PyjuSvec_t *p, PyjuV
         for (i = 0; i < ntp; i++)
             iparams[i] = normalize_unionalls(iparams[i]);
     }
+    DEBUG_FUNC
 
     // check type cache, if applicable
     int cacheable = 1;
@@ -1084,39 +1095,52 @@ static PyjuValue_t *inst_datatype_inner(PyjuDataType_t *dt, PyjuSvec_t *p, PyjuV
             if (pyju_has_free_typevars(iparams[i]))
                 cacheable = 0;
     }
+    DEBUG_FUNC
     if (cacheable) {
+        DEBUG_FUNC
         size_t i;
         for (i = 0; i < ntp; i++) {
+        DEBUG_FUNC
             PyjuValue_t *pi = iparams[i];
             if (pi == pyju_bottom_type)
                 continue;
             if (pyju_is_datatype(pi))
                 continue;
+        DEBUG_FUNC
             if (pyju_is_vararg(pi)) {
+        DEBUG_FUNC
                 pi = pyju_unwrap_vararg(pi);
                 if (pyju_has_free_typevars(pi))
                     continue;
             }
+        DEBUG_FUNC
             // normalize types equal to wrappers (prepare for wrapper_id)
             PyjuValue_t *tw = extract_wrapper(pi);
+        DEBUG_FUNC
             if (tw && tw != pi && (tn != pyju_type_typename || pyju_typeof(pi) == pyju_typeof(tw)) &&
                     pyju_types_equal(pi, tw)) {
+        DEBUG_FUNC
                 // This would require some special handling, but is never used at
                 // the moment.
                 assert(!pyju_is_vararg(iparams[i]));
                 iparams[i] = tw;
+        DEBUG_FUNC
                 if (p) pyju_gc_wb(p, tw);
             }
         }
+        DEBUG_FUNC
         PyjuValue_t *lkup = (PyjuValue_t*)lookup_type(tn, iparams, ntp);
         if (lkup != NULL)
             return lkup;
     }
+        DEBUG_FUNC
     PyjuValue_t *stack_lkup = lookup_type_stack(stack, dt, ntp, iparams);
     if (stack_lkup)
         return stack_lkup;
 
+        DEBUG_FUNC
     if (!istuple) {
+        DEBUG_FUNC
         // check parameters against bounds in type definition
         check_datatype_parameters(tn, iparams, ntp);
     }
@@ -1489,36 +1513,49 @@ PYJU_DLLEXPORT PyjuTupleType_t *pyju_apply_tuple_type(PyjuSvec_t *params)
 static PyjuValue_t *inst_datatype_env(PyjuValue_t *dt, PyjuSvec_t *p, PyjuValue_t **iparams, size_t ntp,
                                      pyju_typestack_t *stack, PyjuTypeEnv_t *env, int c)
 {
+    DEBUG_FUNC
     if (pyju_is_datatype(dt))
         return inst_datatype_inner((PyjuDataType_t*)dt, p, iparams, ntp, stack, env);
+    DEBUG_FUNC
     assert(pyju_is_unionall(dt));
+    DEBUG_FUNC
     PyjuUnionAll_t *ua = (PyjuUnionAll_t*)dt;
+    DEBUG_FUNC
     PyjuTypeEnv_t e = { ua->var, iparams[c], env };
+    DEBUG_FUNC
     return inst_datatype_env(ua->body, p, iparams, ntp, stack, &e, c + 1);
 }
 
 PyjuValue_t *pyju_apply_type(PyjuValue_t *tc, PyjuValue_t **params, size_t n)
 {
+    DEBUG_FUNC
     if (tc == (PyjuValue_t*)pyju_anytuple_type)
         return (PyjuValue_t*)pyju_apply_tuple_type_v(params, n);
     if (tc == (PyjuValue_t*)pyju_uniontype_type)
         return (PyjuValue_t*)pyju_type_union(params, n);
     size_t i;
+    DEBUG_FUNC
     if (n > 1) {
+        DEBUG_FUNC
         // detect common case of applying a wrapper, where we know that all parameters will
         // end up as direct parameters of a certain datatype, which can be optimized.
         PyjuValue_t *u = pyju_unwrap_unionall(tc);
         if (pyju_is_datatype(u) && n == pyju_nparams((PyjuDataType_t*)u) &&
             ((PyjuDataType_t*)u)->name->wrapper == tc) {
+            DEBUG_FUNC
             return inst_datatype_env(tc, NULL, params, n, NULL, NULL, 0);
         }
+        DEBUG_FUNC
     }
+    DEBUG_FUNC
     PYJU_GC_PUSH1(&tc);
     PyjuValue_t *tc0 = tc;
     for (i=0; i < n; i++) {
+        DEBUG_FUNC
         if (!pyju_is_unionall(tc0))
             pyju_error("too many parameters for type");
         PyjuValue_t *pi = params[i];
+        DEBUG_FUNC
 
         tc0 = ((PyjuUnionAll_t*)tc0)->body;
         // doing a substitution can cause later UnionAlls to be dropped,
@@ -1528,10 +1565,12 @@ PyjuValue_t *pyju_apply_type(PyjuValue_t *tc, PyjuValue_t **params, size_t n)
         // S = Tuple{Vararg{T,N}} where T<:NTuple{N} where N
         // S{0,Int}
         if (!pyju_is_unionall(tc)) continue;
+        DEBUG_FUNC
 
         PyjuUnionAll_t *ua = (PyjuUnionAll_t*)tc;
         if (!pyju_has_free_typevars(ua->var->lb) && !pyju_has_free_typevars(ua->var->ub) &&
             !within_typevar(pi, ua->var->lb, ua->var->ub)) {
+            DEBUG_FUNC
             PyjuDataType_t *inner = (PyjuDataType_t*)pyju_unwrap_unionall(tc);
             int iswrapper = 0;
             if (pyju_is_datatype(inner)) {
@@ -1549,9 +1588,10 @@ PyjuValue_t *pyju_apply_type(PyjuValue_t *tc, PyjuValue_t **params, size_t n)
                 pyju_type_error_rt(pyju_is_datatype(inner) ? pyju_symbol_name(inner->name->name) : "Type",
                                  pyju_symbol_name(ua->var->name), (PyjuValue_t*)ua->var, pi);
         }
-
+        DEBUG_FUNC
         tc = pyju_instantiate_unionall(ua, pi);
     }
+    DEBUG_FUNC
     PYJU_GC_POP();
     return tc;
 }
@@ -1608,7 +1648,6 @@ void pyju_init_types(void) PYJU_GC_DISABLED {
     pyju_datatype_type->super = (PyjuDataType_t*)pyju_type_type;
     pyju_datatype_type->parameters = pyju_emptysvec;
     pyju_datatype_type->name->n_uninitialized = 9 - 3;
-    DEBUG_FUNC
     pyju_datatype_type->name->names = pyju_perm_symsvec(9,
         "name",
         "super",
@@ -1656,7 +1695,6 @@ void pyju_init_types(void) PYJU_GC_DISABLED {
     pyju_typename_type->name->constfields = typename_constfields;
     pyju_precompute_memoized_dt(pyju_typename_type, 1);
 
-    DEBUG_FUNC
     pyju_methtable_type->name = pyju_new_typename_in(pyju_symbol("MethodTable"), core, 0, 1);
     pyju_methtable_type->name->wrapper = (PyjuValue_t*)pyju_methtable_type;
     pyju_methtable_type->name->mt = pyju_nonfunction_mt;
@@ -1687,7 +1725,6 @@ void pyju_init_types(void) PYJU_GC_DISABLED {
     pyju_symbol_type->size = 0;
     pyju_precompute_memoized_dt(pyju_symbol_type, 1);
 
-    DEBUG_FUNC
     pyju_simplevector_type->name = pyju_new_typename_in(pyju_symbol("SimpleVector"), core, 0, 1);
     pyju_simplevector_type->name->wrapper = (PyjuValue_t*)pyju_simplevector_type;
     pyju_simplevector_type->name->mt = pyju_nonfunction_mt;
@@ -1715,7 +1752,6 @@ void pyju_init_types(void) PYJU_GC_DISABLED {
                                         pyju_perm_symsvec(2, "a", "b"),
                                         pyju_svec(2, pyju_any_type, pyju_any_type),
                                         pyju_emptysvec, 0, 0, 2);
-    DEBUG_FUNC
     pyju_tvar_type = pyju_new_datatype(pyju_symbol("TypeVar"), core, pyju_any_type, pyju_emptysvec,
                                    pyju_perm_symsvec(3, "name", "lb", "ub"),
                                    pyju_svec(3, pyju_symbol_type, pyju_any_type, pyju_any_type),
@@ -1742,23 +1778,158 @@ void pyju_init_types(void) PYJU_GC_DISABLED {
     pyju_anytuple_type->size = 0;
     pyju_anytuple_type->cached_by_hash = 0;
 
-    DEBUG_FUNC
     PyjuTVar_t *tttvar = tvar("T");
     ((PyjuDataType_t*)pyju_type_type)->parameters = pyju_svec(1, tttvar);
     ((PyjuDataType_t*)pyju_type_type)->hasfreetypevars = 1;
     ((PyjuDataType_t*)pyju_type_type)->cached_by_hash = 0;
     pyju_type_typename->wrapper = pyju_new_struct(pyju_unionall_type, tttvar, (PyjuValue_t*)pyju_type_type);
     pyju_type_type = (PyjuUnionAll_t*)pyju_type_typename->wrapper;
-    DEBUG_FUNC
 
     pyju_typeofbottom_type->super = pyju_wrap_Type(pyju_bottom_type);
 
-    DEBUG_FUNC
     pyju_emptytuple_type = (PyjuDataType_t*)pyju_apply_tuple_type(pyju_emptysvec);
-    DEBUG_FUNC
     pyju_emptytuple = pyju_gc_permobj(0 + PYJU_TV_SIZE, pyju_emptytuple_type);
-    DEBUG_FUNC
     pyju_emptytuple_type->instance = pyju_emptytuple;
+
+    // non-primitive definitions follow
+    pyju_int32_type = pyju_new_primitivetype((PyjuValue_t*)pyju_symbol("Int32"), core,
+                                         pyju_any_type, pyju_emptysvec, 32);
+    pyju_int64_type = pyju_new_primitivetype((PyjuValue_t*)pyju_symbol("Int64"), core,
+                                         pyju_any_type, pyju_emptysvec, 64);
+    pyju_uint32_type = pyju_new_primitivetype((PyjuValue_t*)pyju_symbol("UInt32"), core,
+                                          pyju_any_type, pyju_emptysvec, 32);
+    pyju_uint64_type = pyju_new_primitivetype((PyjuValue_t*)pyju_symbol("UInt64"), core,
+                                          pyju_any_type, pyju_emptysvec, 64);
+    pyju_uint8_type = pyju_new_primitivetype((PyjuValue_t*)pyju_symbol("UInt8"), core,
+                                         pyju_any_type, pyju_emptysvec, 8);
+
+    pyju_ssavalue_type = pyju_new_datatype(pyju_symbol("SSAValue"), core, pyju_any_type, pyju_emptysvec,
+                                       pyju_perm_symsvec(1, "id"),
+                                       pyju_svec1(pyju_long_type),
+                                       pyju_emptysvec, 0, 0, 1);
+
+    pyju_abstractslot_type = pyju_new_abstracttype((PyjuValue_t*)pyju_symbol("Slot"), core, pyju_any_type,
+                                               pyju_emptysvec);
+
+    pyju_slotnumber_type = pyju_new_datatype(pyju_symbol("SlotNumber"), core, pyju_abstractslot_type, pyju_emptysvec,
+                                         pyju_perm_symsvec(1, "id"),
+                                         pyju_svec1(pyju_long_type),
+                                         pyju_emptysvec, 0, 0, 1);
+    pyju_typedslot_type = pyju_new_datatype(pyju_symbol("TypedSlot"), core, pyju_abstractslot_type, pyju_emptysvec,
+                                        pyju_perm_symsvec(2, "id", "typ"),
+                                        pyju_svec(2, pyju_long_type, pyju_any_type),
+                                        pyju_emptysvec, 0, 0, 2);
+
+    pyju_argument_type = pyju_new_datatype(pyju_symbol("Argument"), core, pyju_any_type, pyju_emptysvec,
+                                       pyju_perm_symsvec(1, "n"),
+                                       pyju_svec1(pyju_long_type),
+                                       pyju_emptysvec, 0, 0, 1);
+
+    pyju_init_int32_int64_cache();
+
+    pyju_bool_type = pyju_new_primitivetype((PyjuValue_t*)pyju_symbol("Bool"), core,
+                                        pyju_any_type, pyju_emptysvec, 8);
+    pyju_false = pyju_permbox8(pyju_bool_type, 0);
+    pyju_true  = pyju_permbox8(pyju_bool_type, 1);
+
+    pyju_abstractstring_type = pyju_new_abstracttype((PyjuValue_t*)pyju_symbol("AbstractString"), core, pyju_any_type, pyju_emptysvec);
+    pyju_string_type = pyju_new_datatype(pyju_symbol("String"), core, pyju_abstractstring_type, pyju_emptysvec,
+                                     pyju_emptysvec, pyju_emptysvec, pyju_emptysvec, 0, 1, 0);
+    pyju_string_type->instance = NULL;
+    pyju_compute_field_offsets(pyju_string_type);
+    pyju_an_empty_string = pyju_pchar_to_string("\0", 1);
+    // *(size_t*)pyju_an_empty_string = 0;
+    pyju_string_len(pyju_an_empty_string) = 0;
+
+    pyju_typemap_level_type =
+        pyju_new_datatype(pyju_symbol("TypeMapLevel"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(6,
+                            "arg1",
+                            "targ",
+                            "name1",
+                            "tname",
+                            "list",
+                            "any"),
+                        pyju_svec(6,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_any_type),
+                        pyju_emptysvec,
+                        0, 1, 6);
+
+    pyju_typemap_entry_type =
+        pyju_new_datatype(pyju_symbol("TypeMapEntry"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(10,
+                            "next",
+                            "sig",
+                            "simplesig",
+                            "guardsigs",
+                            "min_world",
+                            "max_world",
+                            "func",
+                            "isleafsig",
+                            "issimplesig",
+                            "va"),
+                        pyju_svec(10,
+                            pyju_any_type, // Union{TypeMapEntry, Nothing}
+                            pyju_type_type, // TupleType
+                            pyju_any_type, // TupleType
+                            pyju_any_type, // SimpleVector{TupleType}
+                            pyju_ulong_type, // UInt
+                            pyju_ulong_type, // UInt
+                            pyju_any_type, // Any
+                            pyju_bool_type,
+                            pyju_bool_type,
+                            pyju_bool_type),
+                        pyju_emptysvec,
+                        0, 1, 4);
+    const static uint32_t typemap_entry_constfields[1] = { 0x000003fe }; // (1<<1)|(1<<2)|(1<<3)|(1<<4)|(1<<5)|(1<<6)|(1<<7)|(1<<8)|(1<<9);
+    pyju_typemap_entry_type->name->constfields = typemap_entry_constfields;
+
+    pyju_function_type = pyju_new_abstracttype((PyjuValue_t*)pyju_symbol("Function"), core, pyju_any_type, pyju_emptysvec);
+    pyju_builtin_type  = pyju_new_abstracttype((PyjuValue_t*)pyju_symbol("Builtin"), core, pyju_function_type, pyju_emptysvec);
+    pyju_function_type->name->mt = NULL; // subtypes of Function have independent method tables
+    pyju_builtin_type->name->mt = NULL;  // so they don't share the Any type table
+
+    PyjuSvec_t *tv = pyju_svec2(tvar("T"), tvar("N"));
+    pyju_abstractarray_type = (PyjuUnionAll_t*)
+        pyju_new_abstracttype((PyjuValue_t*)pyju_symbol("AbstractArray"), core,
+                            pyju_any_type, tv)->name->wrapper;
+
+
+    tv = pyju_svec2(tvar("T"), tvar("N"));
+    pyju_densearray_type = (PyjuUnionAll_t*)
+        pyju_new_abstracttype((PyjuValue_t*)pyju_symbol("DenseArray"), core,
+                            (PyjuDataType_t*)pyju_apply_type((PyjuValue_t*)pyju_abstractarray_type, pyju_svec_data(tv), 2),
+                            tv)->name->wrapper;
+
+    tv = pyju_svec2(tvar("T"), tvar("N"));
+    pyju_array_type = (PyjuUnionAll_t*)
+        pyju_new_datatype(pyju_symbol("Array"), core,
+                        (PyjuDataType_t*)pyju_apply_type((PyjuValue_t*)pyju_densearray_type, pyju_svec_data(tv), 2),
+                        tv, pyju_emptysvec, pyju_emptysvec, pyju_emptysvec, 0, 1, 0)->name->wrapper;
+    pyju_array_typename = ((PyjuDataType_t*)pyju_unwrap_unionall((PyjuValue_t*)pyju_array_type))->name;
+    pyju_compute_field_offsets((PyjuDataType_t*)pyju_unwrap_unionall((PyjuValue_t*)pyju_array_type));
+
+    DEBUG_FUNC
+    pyju_array_any_type = pyju_apply_type2((PyjuValue_t*)pyju_array_type, (PyjuValue_t*)pyju_any_type, pyju_box_long(1));
+    DEBUG_FUNC
+    pyju_array_symbol_type = pyju_apply_type2((PyjuValue_t*)pyju_array_type, (PyjuValue_t*)pyju_symbol_type, pyju_box_long(1));
+    DEBUG_FUNC
+    pyju_array_uint8_type = pyju_apply_type2((PyjuValue_t*)pyju_array_type, (PyjuValue_t*)pyju_uint8_type, pyju_box_long(1));
+    DEBUG_FUNC
+    pyju_array_int32_type = pyju_apply_type2((PyjuValue_t*)pyju_array_type, (PyjuValue_t*)pyju_int32_type, pyju_box_long(1));
+    DEBUG_FUNC
+    pyju_array_uint64_type = pyju_apply_type2((PyjuValue_t*)pyju_array_type, (PyjuValue_t*)pyju_uint64_type, pyju_box_long(1));
+    DEBUG_FUNC
+    pyju_an_empty_vec_any = (PyjuValue_t*)pyju_alloc_vec_any(0); // used internally
+    DEBUG_FUNC
+    pyju_atomic_store_relaxed(&pyju_nonfunction_mt->leafcache, (PyjuArray_t*)pyju_an_empty_vec_any);
+    DEBUG_FUNC
+    pyju_atomic_store_relaxed(&pyju_type_type_mt->leafcache, (PyjuArray_t*)pyju_an_empty_vec_any);
     DEBUG_FUNC
 }
 

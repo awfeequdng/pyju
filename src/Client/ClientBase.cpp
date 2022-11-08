@@ -196,7 +196,8 @@ void ClientBase::runInteractive(std::function<int(std::string)> pyju_main_script
         highlight_callback = highlight;
 
     // ReplxxLineReader lr(*suggest, history_file, config().has("multiline"), query_extenders, query_delimiters, highlight_callback);
-    ReplxxLineReader lr(*suggest, history_file, true, query_extenders, query_delimiters, highlight_callback);
+    // not support multiline
+    ReplxxLineReader lr(*suggest, history_file, false, query_extenders, query_delimiters, highlight_callback);
 #else
     LineReader lr(history_file, config().has("multiline"), query_extenders, query_delimiters);
 #endif

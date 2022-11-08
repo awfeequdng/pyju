@@ -62,6 +62,17 @@
     XX(pyju_array_uint8_type) \
     XX(pyju_array_any_type) \
     XX(pyju_array_type) \
+    XX(pyju_abstractslot_type) \
+    XX(pyju_typedslot_type) \
+    XX(pyju_argument_type) \
+    XX(pyju_abstractstring_type) \
+    XX(pyju_typemap_level_type) \
+    XX(pyju_typemap_entry_type) \
+    XX(pyju_abstractarray_type) \
+    XX(pyju_densearray_type) \
+    XX(pyju_array_symbol_type) \
+    XX(pyju_array_int32_type) \
+    XX(pyju_array_uint64_type) \
     XX(pyju_datatype_type)
 
 

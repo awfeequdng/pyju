@@ -398,6 +398,7 @@ extern PYJU_DLLEXPORT size_t pyju_page_size;
 void pyju_init_uv(void);
 void pyju_gc_init(void);
 PyjuTask_t *pyju_init_root_task(PyjuPtls_t ptls, void *stack_lo, void *stack_hi);
+void pyju_init_int32_int64_cache(void);
 
 //--------------------------------------------------
 // congruential random number generator

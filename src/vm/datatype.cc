@@ -632,7 +632,22 @@ PYJU_DLLEXPORT PyjuDataType_t *pyju_new_datatype(
     return t;
 }
 
-
+PYJU_DLLEXPORT PyjuDataType_t *pyju_new_primitivetype(PyjuValue_t *name, PyjuModule_t *module,
+                                                 PyjuDataType_t *super,
+                                                 PyjuSvec_t *parameters, size_t nbits)
+{
+    PyjuDataType_t *bt = pyju_new_datatype((PyjuSym_t*)name, module, super, parameters,
+                                        pyju_emptysvec, pyju_emptysvec, pyju_emptysvec, 0, 0, 0);
+    uint32_t nbytes = (nbits + 7) / 8;
+    uint32_t alignm = next_power_of_two(nbytes);
+    if (alignm > MAX_ALIGN)
+        alignm = MAX_ALIGN;
+    bt->isbitstype = (parameters == pyju_emptysvec);
+    bt->size = nbytes;
+    bt->layout = pyju_get_layout(0, 0, alignm, 0, NULL, NULL);
+    bt->instance = NULL;
+    return bt;
+}
 // Determine if homogeneous tuple with fields of type t will have
 // a special alignment beyond normal Julia rules.
 // Return special alignment if one exists, 0 if normal alignment rules hold.
