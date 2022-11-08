@@ -234,9 +234,11 @@ PYJU_DLLEXPORT void pyju_init() {
 static NOINLINE void _finish_pyju_init(PyjuPtls_t ptls, PyjuTask_t *ct)
 {
     pyju_init_types();
+    pyju_global_roots_table = pyju_alloc_vec_any(16);
+    pyju_init_common_symbols();
 
-
-
+    // pyju_core_module = pyju_new_module(pyju_symbol("Core"));
+    // pyju_core_module->parent = pyju_core_module;
 }
 
 #ifdef __cplusplus

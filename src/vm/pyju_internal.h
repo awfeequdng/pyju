@@ -399,6 +399,7 @@ void pyju_init_uv(void);
 void pyju_gc_init(void);
 PyjuTask_t *pyju_init_root_task(PyjuPtls_t ptls, void *stack_lo, void *stack_hi);
 void pyju_init_int32_int64_cache(void);
+void pyju_init_common_symbols(void);
 
 //--------------------------------------------------
 // congruential random number generator
@@ -788,6 +789,15 @@ extern uv_mutex_t safepoint_lock;
 
 
 PYJU_DLLEXPORT int pyju_stored_inline(PyjuValue_t *el_type);
+
+
+extern PyjuArray_t *pyju_global_roots_table PYJU_GLOBALLY_ROOTED;
+
+// modules and global variables
+extern PYJU_DLLEXPORT PyjuModule_t *pyju_main_module PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLEXPORT PyjuModule_t *pyju_core_module PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLEXPORT PyjuModule_t *pyju_base_module PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLEXPORT PyjuModule_t *pyju_top_module PYJU_GLOBALLY_ROOTED;
 
 #ifdef __cplusplus
 } // extern "C"
