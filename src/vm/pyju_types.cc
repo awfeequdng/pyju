@@ -1931,6 +1931,447 @@ void pyju_init_types(void) PYJU_GC_DISABLED {
     DEBUG_FUNC
     pyju_atomic_store_relaxed(&pyju_type_type_mt->leafcache, (PyjuArray_t*)pyju_an_empty_vec_any);
     DEBUG_FUNC
+
+    pyju_expr_type =
+        pyju_new_datatype(pyju_symbol("Expr"), core,
+                        pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(2, "head", "args"),
+                        pyju_svec(2, pyju_symbol_type, pyju_array_any_type),
+                        pyju_emptysvec, 0, 1, 2);
+
+    pyju_module_type =
+        pyju_new_datatype(pyju_symbol("Module"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_emptysvec, pyju_emptysvec, pyju_emptysvec, 0, 1, 0);
+    pyju_module_type->instance = NULL;
+    pyju_compute_field_offsets(pyju_module_type);
+
+
+    PyjuValue_t *symornothing[2] = { (PyjuValue_t*)pyju_symbol_type, (PyjuValue_t*)pyju_void_type };
+    pyju_linenumbernode_type =
+        pyju_new_datatype(pyju_symbol("LineNumberNode"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(2, "line", "file"),
+                        pyju_svec(2, pyju_long_type, pyju_type_union(symornothing, 2)),
+                        pyju_emptysvec, 0, 0, 2);
+
+    pyju_lineinfonode_type =
+        pyju_new_datatype(pyju_symbol("LineInfoNode"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(5, "module", "method", "file", "line", "inlined_at"),
+                        pyju_svec(5, pyju_module_type, pyju_any_type, pyju_symbol_type, pyju_long_type, pyju_long_type),
+                        pyju_emptysvec, 0, 0, 5);
+
+    pyju_gotonode_type =
+        pyju_new_datatype(pyju_symbol("GotoNode"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(1, "label"),
+                        pyju_svec(1, pyju_long_type),
+                        pyju_emptysvec, 0, 0, 1);
+
+    pyju_gotoifnot_type =
+        pyju_new_datatype(pyju_symbol("GotoIfNot"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(2, "cond", "dest"),
+                        pyju_svec(2, pyju_any_type, pyju_long_type),
+                        pyju_emptysvec, 0, 0, 2);
+
+
+    pyju_returnnode_type =
+        pyju_new_datatype(pyju_symbol("ReturnNode"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(1, "val"),
+                        pyju_svec(1, pyju_any_type),
+                        pyju_emptysvec, 0, 0, 0);
+
+
+    pyju_pinode_type =
+        pyju_new_datatype(pyju_symbol("PiNode"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(2, "val", "typ"),
+                        pyju_svec(2, pyju_any_type, pyju_any_type),
+                        pyju_emptysvec, 0, 0, 2);
+
+    pyju_phinode_type =
+        pyju_new_datatype(pyju_symbol("PhiNode"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(2, "edges", "values"),
+                        pyju_svec(2, pyju_array_int32_type, pyju_array_any_type),
+                        pyju_emptysvec, 0, 0, 2);
+
+    pyju_phicnode_type =
+        pyju_new_datatype(pyju_symbol("PhiCNode"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(1, "values"),
+                        pyju_svec(1, pyju_array_any_type),
+                        pyju_emptysvec, 0, 0, 1);
+
+    pyju_upsilonnode_type =
+        pyju_new_datatype(pyju_symbol("UpsilonNode"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(1, "val"),
+                        pyju_svec(1, pyju_any_type),
+                        pyju_emptysvec, 0, 0, 0);
+
+    pyju_quotenode_type =
+        pyju_new_datatype(pyju_symbol("QuoteNode"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(1, "value"),
+                        pyju_svec(1, pyju_any_type),
+                        pyju_emptysvec, 0, 0, 1);
+
+    pyju_newvarnode_type =
+        pyju_new_datatype(pyju_symbol("NewvarNode"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(1, "slot"),
+                        pyju_svec(1, pyju_slotnumber_type),
+                        pyju_emptysvec, 0, 0, 1);
+
+    pyju_globalref_type =
+        pyju_new_datatype(pyju_symbol("GlobalRef"), core, pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(2, "mod", "name"),
+                        pyju_svec(2, pyju_module_type, pyju_symbol_type),
+                        pyju_emptysvec, 0, 0, 2);
+
+
+    pyju_code_info_type =
+        pyju_new_datatype(pyju_symbol("CodeInfo"), core,
+                        pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(20,
+                            "code",
+                            "codelocs",
+                            "ssavaluetypes",
+                            "ssaflags",
+                            "method_for_inference_limit_heuristics",
+                            "linetable",
+                            "slotnames",
+                            "slotflags",
+                            "slottypes",
+                            "rettype",
+                            "parent",
+                            "edges",
+                            "min_world",
+                            "max_world",
+                            "inferred",
+                            "inlineable",
+                            "propagate_inbounds",
+                            "pure",
+                            "constprop",
+                            "purity"),
+                        pyju_svec(20,
+                            pyju_array_any_type,
+                            pyju_array_int32_type,
+                            pyju_any_type,
+                            pyju_array_uint8_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_array_symbol_type,
+                            pyju_array_uint8_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_ulong_type,
+                            pyju_ulong_type,
+                            pyju_bool_type,
+                            pyju_bool_type,
+                            pyju_bool_type,
+                            pyju_bool_type,
+                            pyju_uint8_type,
+                            pyju_uint8_type),
+                        pyju_emptysvec,
+                        0, 1, 20);
+
+
+    pyju_method_type =
+        pyju_new_datatype(pyju_symbol("Method"), core,
+                        pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(29,
+                            "name",
+                            "module",
+                            "file",
+                            "line",
+                            "primary_world",
+                            "deleted_world", // !const
+                            "sig",
+                            "specializations", // !const
+                            "speckeyset", // !const
+                            "slot_syms",
+                            "external_mt",
+                            "source", // !const
+                            "unspecialized", // !const
+                            "generator", // !const
+                            "roots", // !const
+                            "root_blocks", // !const
+                            "nroots_sysimg",
+                            "ccallable", // !const
+                            "invokes", // !const
+                            "recursion_relation", // !const
+                            "nargs",
+                            "called",
+                            "nospecialize",
+                            "nkw",
+                            "isva",
+                            "pure",
+                            "is_for_opaque_closure",
+                            "constprop",
+                            "purity"),
+                        pyju_svec(29,
+                            pyju_symbol_type,
+                            pyju_module_type,
+                            pyju_symbol_type,
+                            pyju_int32_type,
+                            pyju_ulong_type,
+                            pyju_ulong_type,
+                            pyju_type_type,
+                            pyju_simplevector_type,
+                            pyju_array_type,
+                            pyju_string_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_any_type, // pyju_method_instance_type
+                            pyju_any_type,
+                            pyju_array_any_type,
+                            pyju_array_uint64_type,
+                            pyju_int32_type,
+                            pyju_simplevector_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_int32_type,
+                            pyju_int32_type,
+                            pyju_int32_type,
+                            pyju_int32_type,
+                            pyju_bool_type,
+                            pyju_bool_type,
+                            pyju_bool_type,
+                            pyju_uint8_type,
+                            pyju_uint8_type),
+                        pyju_emptysvec,
+                        0, 1, 10);
+    //const static uint32_t method_constfields[1] = { 0x03fc065f }; // (1<<0)|(1<<1)|(1<<2)|(1<<3)|(1<<4)|(1<<6)|(1<<9)|(1<<10)|(1<<18)|(1<<19)|(1<<20)|(1<<21)|(1<<22)|(1<<23)|(1<<24)|(1<<25);
+    //pyju_method_type->name->constfields = method_constfields;
+
+    pyju_method_instance_type =
+        pyju_new_datatype(pyju_symbol("MethodInstance"), core,
+                        pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(9,
+                            "def",
+                            "specTypes",
+                            "sparam_vals",
+                            "uninferred",
+                            "backedges",
+                            "callbacks",
+                            "cache",
+                            "inInference",
+                            "precompiled"),
+                        pyju_svec(9,
+                            pyju_new_struct(pyju_uniontype_type, pyju_method_type, pyju_module_type),
+                            pyju_any_type,
+                            pyju_simplevector_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_bool_type,
+                            pyju_bool_type),
+                        pyju_emptysvec,
+                        0, 1, 3);
+    //const static uint32_t method_instance_constfields[1] = { 0x00000007 }; // (1<<0)|(1<<1)|(1<<2);
+    //pyju_method_instance_type->name->constfields = method_instance_constfields;
+
+    pyju_code_instance_type =
+        pyju_new_datatype(pyju_symbol("CodeInstance"), core,
+                        pyju_any_type, pyju_emptysvec,
+                        pyju_perm_symsvec(15,
+                            "def",
+                            "next",
+                            "min_world",
+                            "max_world",
+                            "rettype",
+                            "rettype_const",
+                            "inferred",
+                            //"edges",
+                            //"absolute_max",
+	                        "ipo_purity_bits", "purity_bits",
+                            "argescapes",
+                            "isspecsig", "precompile", "invoke", "specptr", // function object decls
+                            "relocatability"),
+                        pyju_svec(15,
+                            pyju_method_instance_type,
+                            pyju_any_type,
+                            pyju_ulong_type,
+                            pyju_ulong_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            pyju_any_type,
+                            //pyju_any_type,
+                            //pyju_bool_type,
+                            pyju_uint32_type, pyju_uint32_type,
+                            pyju_any_type,
+                            pyju_bool_type,
+                            pyju_bool_type,
+                            pyju_any_type, pyju_any_type, // fptrs
+                            pyju_uint8_type),
+                        pyju_emptysvec,
+                        0, 1, 1);
+    pyju_svecset(pyju_code_instance_type->types, 1, pyju_code_instance_type);
+    const static uint32_t code_instance_constfields[1] = { 0x00000001 }; // (1<<1);
+    pyju_code_instance_type->name->constfields = code_instance_constfields;
+
+    pyju_const_type = pyju_new_datatype(pyju_symbol("Const"), core, pyju_any_type, pyju_emptysvec,
+                                       pyju_perm_symsvec(1, "val"),
+                                       pyju_svec1(pyju_any_type),
+                                       pyju_emptysvec, 0, 0, 1);
+
+    pyju_partial_struct_type = pyju_new_datatype(pyju_symbol("PartialStruct"), core, pyju_any_type, pyju_emptysvec,
+                                       pyju_perm_symsvec(2, "typ", "fields"),
+                                       pyju_svec2(pyju_any_type, pyju_array_any_type),
+                                       pyju_emptysvec, 0, 0, 2);
+
+    pyju_interconditional_type = pyju_new_datatype(pyju_symbol("InterConditional"), core, pyju_any_type, pyju_emptysvec,
+                                          pyju_perm_symsvec(3, "slot", "vtype", "elsetype"),
+                                          pyju_svec(3, pyju_long_type, pyju_any_type, pyju_any_type),
+                                          pyju_emptysvec, 0, 0, 3);
+
+    pyju_method_match_type = pyju_new_datatype(pyju_symbol("MethodMatch"), core, pyju_any_type, pyju_emptysvec,
+                                       pyju_perm_symsvec(4, "spec_types", "sparams", "method", "fully_covers"),
+                                       pyju_svec(4, pyju_type_type, pyju_simplevector_type, pyju_method_type, pyju_bool_type),
+                                       pyju_emptysvec, 0, 0, 4);
+
+    // all Kinds share the Type method table (not the nonfunction one)
+    pyju_unionall_type->name->mt = pyju_uniontype_type->name->mt = pyju_datatype_type->name->mt =
+        pyju_type_type_mt;
+
+    pyju_intrinsic_type = pyju_new_primitivetype((PyjuValue_t*)pyju_symbol("IntrinsicFunction"), core,
+                                             pyju_builtin_type, pyju_emptysvec, 32);
+
+    tv = pyju_svec1(tvar("T"));
+    pyju_ref_type = (PyjuUnionAll_t*)
+        pyju_new_abstracttype((PyjuValue_t*)pyju_symbol("Ref"), core, pyju_any_type, tv)->name->wrapper;
+
+    tv = pyju_svec1(tvar("T"));
+    pyju_pointer_type = (PyjuUnionAll_t*)
+        pyju_new_primitivetype((PyjuValue_t*)pyju_symbol("Ptr"), core,
+                             (PyjuDataType_t*)pyju_apply_type((PyjuValue_t*)pyju_ref_type, pyju_svec_data(tv), 1), tv,
+                             sizeof(void*)*8)->name->wrapper;
+    pyju_pointer_typename = ((PyjuDataType_t*)pyju_unwrap_unionall((PyjuValue_t*)pyju_pointer_type))->name;
+
+
+    // LLVMPtr{T, AS} where {T, AS}
+    tv = pyju_svec2(tvar("T"), tvar("AS"));
+    PyjuSvec_t*tv_base = pyju_svec1(tvar("T"));
+    pyju_llvmpointer_type = (PyjuUnionAll_t*)
+        pyju_new_primitivetype((PyjuValue_t*)pyju_symbol("LLVMPtr"), core,
+                             (PyjuDataType_t*)pyju_apply_type((PyjuValue_t*)pyju_ref_type, pyju_svec_data(tv_base), 1), tv,
+                             sizeof(void*)*8)->name->wrapper;
+    pyju_llvmpointer_typename = ((PyjuDataType_t*)pyju_unwrap_unionall((PyjuValue_t*)pyju_llvmpointer_type))->name;
+
+
+    // Type{T} where T<:Tuple
+    tttvar = pyju_new_typevar(pyju_symbol("T"),
+                            (PyjuValue_t*)pyju_bottom_type,
+                            (PyjuValue_t*)pyju_anytuple_type);
+    pyju_anytuple_type_type = (PyjuUnionAll_t*)pyju_new_struct(pyju_unionall_type,
+                                                          tttvar, (PyjuValue_t*)pyju_wrap_Type((PyjuValue_t*)tttvar));
+
+    PyjuTVar_t *ntval_var = pyju_new_typevar(pyju_symbol("T"), (PyjuValue_t*)pyju_bottom_type,
+                                          (PyjuValue_t*)pyju_anytuple_type);
+    tv = pyju_svec2(tvar("names"), ntval_var);
+    PyjuDataType_t *ntt = pyju_new_datatype(pyju_symbol("NamedTuple"), core, pyju_any_type, tv,
+                                         pyju_emptysvec, pyju_emptysvec, pyju_emptysvec, 0, 0, 0);
+    pyju_namedtuple_type = (PyjuUnionAll_t*)ntt->name->wrapper;
+    ((PyjuDataType_t*)pyju_unwrap_unionall((PyjuValue_t*)pyju_namedtuple_type))->layout = NULL;
+    pyju_namedtuple_typename = ntt->name;
+
+
+    pyju_task_type = (PyjuDataType_t*)
+        pyju_new_datatype(pyju_symbol("Task"),
+                        NULL,
+                        pyju_any_type,
+                        pyju_emptysvec,
+                        pyju_perm_symsvec(14,
+                                        "next",
+                                        "queue",
+                                        "storage",
+                                        "donenotify",
+                                        "result",
+                                        "logstate",
+                                        "code",
+                                        "rngState0",
+                                        "rngState1",
+                                        "rngState2",
+                                        "rngState3",
+                                        "_state",
+                                        "sticky",
+                                        "_isexception"),
+                        pyju_svec(14,
+                                pyju_any_type,
+                                pyju_any_type,
+                                pyju_any_type,
+                                pyju_any_type,
+                                pyju_any_type,
+                                pyju_any_type,
+                                pyju_any_type,
+                                pyju_uint64_type,
+                                pyju_uint64_type,
+                                pyju_uint64_type,
+                                pyju_uint64_type,
+                                pyju_uint8_type,
+                                pyju_bool_type,
+                                pyju_bool_type),
+                        pyju_emptysvec,
+                        0, 1, 6);
+    PyjuValue_t *listt = pyju_new_struct(pyju_uniontype_type, pyju_task_type, pyju_nothing_type);
+    pyju_svecset(pyju_task_type->types, 0, listt);
+    pyju_astaggedvalue(pyju_current_task)->header = (uintptr_t)pyju_task_type | pyju_astaggedvalue(pyju_current_task)->header;
+
+    PyjuValue_t *pointer_void = pyju_apply_type1((PyjuValue_t*)pyju_pointer_type, (PyjuValue_t*)pyju_nothing_type);
+
+    tv = pyju_svec2(tvar("A"), tvar("R"));
+    pyju_opaque_closure_type = (PyjuUnionAll_t*)pyju_new_datatype(pyju_symbol("OpaqueClosure"), core, pyju_function_type, tv,
+        pyju_perm_symsvec(5, "captures", "world", "source", "invoke", "specptr"),
+        pyju_svec(5, pyju_any_type, pyju_long_type, pyju_any_type, pointer_void, pointer_void),
+        pyju_emptysvec, 0, 0, 5)->name->wrapper;
+    pyju_opaque_closure_typename = ((PyjuDataType_t*)pyju_unwrap_unionall((PyjuValue_t*)pyju_opaque_closure_type))->name;
+    pyju_compute_field_offsets((PyjuDataType_t*)pyju_unwrap_unionall((PyjuValue_t*)pyju_opaque_closure_type));
+
+    pyju_partial_opaque_type = pyju_new_datatype(pyju_symbol("PartialOpaque"), core, pyju_any_type, pyju_emptysvec,
+        pyju_perm_symsvec(4, "typ", "env", "parent", "source"),
+        pyju_svec(4, pyju_type_type, pyju_any_type, pyju_method_instance_type, pyju_method_type),
+        pyju_emptysvec, 0, 0, 4);
+
+
+    // complete builtin type metadata
+    pyju_voidpointer_type = (PyjuDataType_t*)pointer_void;
+    pyju_uint8pointer_type = (PyjuDataType_t*)pyju_apply_type1((PyjuValue_t*)pyju_pointer_type, (PyjuValue_t*)pyju_uint8_type);
+    pyju_svecset(pyju_datatype_type->types, 5, pyju_voidpointer_type);
+    pyju_svecset(pyju_datatype_type->types, 6, pyju_int32_type);
+    pyju_svecset(pyju_datatype_type->types, 7, pyju_int32_type);
+    pyju_svecset(pyju_datatype_type->types, 8, pyju_uint8_type);
+    pyju_svecset(pyju_typename_type->types, 1, pyju_module_type);
+    pyju_svecset(pyju_typename_type->types, 3, pyju_voidpointer_type);
+    pyju_svecset(pyju_typename_type->types, 4, pyju_voidpointer_type);
+    pyju_svecset(pyju_typename_type->types, 5, pyju_type_type);
+    pyju_svecset(pyju_typename_type->types, 10, pyju_long_type);
+    pyju_svecset(pyju_typename_type->types, 11, pyju_int32_type);
+    pyju_svecset(pyju_typename_type->types, 12, pyju_uint8_type);
+    pyju_svecset(pyju_methtable_type->types, 4, pyju_long_type);
+    pyju_svecset(pyju_methtable_type->types, 6, pyju_module_type);
+    pyju_svecset(pyju_methtable_type->types, 7, pyju_array_any_type);
+    pyju_svecset(pyju_methtable_type->types, 8, pyju_long_type); // voidpointer
+    pyju_svecset(pyju_methtable_type->types, 9, pyju_long_type); // uint32_t plus alignment
+    pyju_svecset(pyju_methtable_type->types, 10, pyju_uint8_type);
+    pyju_svecset(pyju_methtable_type->types, 11, pyju_uint8_type);
+    pyju_svecset(pyju_method_type->types, 12, pyju_method_instance_type);
+    pyju_svecset(pyju_method_instance_type->types, 6, pyju_code_instance_type);
+    pyju_svecset(pyju_code_instance_type->types, 12, pyju_voidpointer_type);
+    pyju_svecset(pyju_code_instance_type->types, 13, pyju_voidpointer_type);
+
+    pyju_compute_field_offsets(pyju_datatype_type);
+    pyju_compute_field_offsets(pyju_typename_type);
+    pyju_compute_field_offsets(pyju_uniontype_type);
+    pyju_compute_field_offsets(pyju_tvar_type);
+    pyju_compute_field_offsets(pyju_methtable_type);
+    pyju_compute_field_offsets(pyju_module_type);
+    pyju_compute_field_offsets(pyju_method_instance_type);
+    pyju_compute_field_offsets(pyju_code_instance_type);
+    pyju_compute_field_offsets(pyju_unionall_type);
+    pyju_compute_field_offsets(pyju_simplevector_type);
+    pyju_compute_field_offsets(pyju_symbol_type);
+
+    // override the preferred layout for a couple types
+    pyju_lineinfonode_type->name->mayinlinealloc = 0; // FIXME: assumed to be a pointer by codegen
+    // It seems like we probably usually end up needing the box for kinds (used in an Any context)--but is that true?
+    pyju_uniontype_type->name->mayinlinealloc = 0;
+    pyju_unionall_type->name->mayinlinealloc = 0;
 }
 
 #ifdef __cplusplus

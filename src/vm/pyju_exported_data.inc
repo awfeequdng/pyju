@@ -15,7 +15,6 @@
     XX(pyju_emptytuple) \
     XX(pyju_an_empty_string) \
     XX(pyju_memory_exception) \
-    XX(pyju_namedtuple_typename) \
     XX(pyju_vecelement_typename) \
     XX(pyju_void_type) \
     XX(pyju_float32_type) \
@@ -73,6 +72,39 @@
     XX(pyju_array_symbol_type) \
     XX(pyju_array_int32_type) \
     XX(pyju_array_uint64_type) \
+    XX(pyju_expr_type) \
+    XX(pyju_linenumbernode_type) \
+    XX(pyju_lineinfonode_type) \
+    XX(pyju_gotonode_type) \
+    XX(pyju_gotoifnot_type) \
+    XX(pyju_returnnode_type) \
+    XX(pyju_pinode_type) \
+    XX(pyju_phinode_type) \
+    XX(pyju_phicnode_type) \
+    XX(pyju_upsilonnode_type) \
+    XX(pyju_quotenode_type) \
+    XX(pyju_newvarnode_type) \
+    XX(pyju_globalref_type) \
+    XX(pyju_code_info_type) \
+    XX(pyju_method_type) \
+    XX(pyju_method_instance_type) \
+    XX(pyju_code_instance_type) \
+    XX(pyju_const_type) \
+    XX(pyju_partial_struct_type) \
+    XX(pyju_interconditional_type) \
+    XX(pyju_method_match_type) \
+    XX(pyju_intrinsic_type) \
+    XX(pyju_ref_type) \
+    XX(pyju_pointer_type) \
+    XX(pyju_pointer_typename) \
+    XX(pyju_llvmpointer_type) \
+    XX(pyju_llvmpointer_typename) \
+    XX(pyju_anytuple_type_type) \
+    XX(pyju_namedtuple_type) \
+    XX(pyju_namedtuple_typename) \
+    XX(pyju_opaque_closure_type) \
+    XX(pyju_opaque_closure_typename) \
+    XX(pyju_partial_opaque_type) \
     XX(pyju_datatype_type)
 
 
