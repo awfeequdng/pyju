@@ -2,6 +2,10 @@
 
 // Pointers that are exposed through the public libjulia
 #define PYJU_EXPORTED_DATA_POINTERS(XX) \
+    XX(pyju_core_module) \
+    XX(pyju_base_module) \
+    XX(pyju_top_module) \
+    XX(pyju_main_module) \
     XX(pyju_undefref_exception) \
     XX(pyju_true) \
     XX(pyju_false) \
@@ -16,7 +20,6 @@
     XX(pyju_an_empty_string) \
     XX(pyju_memory_exception) \
     XX(pyju_vecelement_typename) \
-    XX(pyju_core_module) \
     XX(pyju_void_type) \
     XX(pyju_float32_type) \
     XX(pyju_voidpointer_type) \

@@ -793,11 +793,11 @@ PYJU_DLLEXPORT int pyju_stored_inline(PyjuValue_t *el_type);
 
 extern PyjuArray_t *pyju_global_roots_table PYJU_GLOBALLY_ROOTED;
 
-// modules and global variables
-extern PYJU_DLLEXPORT PyjuModule_t *pyju_main_module PYJU_GLOBALLY_ROOTED;
-extern PYJU_DLLEXPORT PyjuModule_t *pyju_core_module PYJU_GLOBALLY_ROOTED;
-extern PYJU_DLLEXPORT PyjuModule_t *pyju_base_module PYJU_GLOBALLY_ROOTED;
-extern PYJU_DLLEXPORT PyjuModule_t *pyju_top_module PYJU_GLOBALLY_ROOTED;
+
+//--------------------------------------------------
+// timers
+// Returns time in nanosec
+PYJU_DLLEXPORT uint64_t pyju_hrtime(void) PYJU_NOTSAFEPOINT;
 
 #ifdef __cplusplus
 } // extern "C"

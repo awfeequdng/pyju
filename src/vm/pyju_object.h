@@ -1766,6 +1766,34 @@ PyjuDataType_t *pyju_wrap_Type(PyjuValue_t *t);
 PYJU_DLLEXPORT PyjuDataType_t *pyju_new_primitivetype(PyjuValue_t *name, PyjuModule_t *module,
                                                  PyjuDataType_t *super,
                                                  PyjuSvec_t *parameters, size_t nbits);
+
+// modules and global variables
+extern PYJU_DLLEXPORT PyjuModule_t *pyju_main_module PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLEXPORT PyjuModule_t *pyju_core_module PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLEXPORT PyjuModule_t *pyju_base_module PYJU_GLOBALLY_ROOTED;
+extern PYJU_DLLEXPORT PyjuModule_t *pyju_top_module PYJU_GLOBALLY_ROOTED;
+PYJU_DLLEXPORT PyjuModule_t *pyju_new_module(PyjuSym_t *name);
+PYJU_DLLEXPORT void pyju_set_module_nospecialize(PyjuModule_t *self, int on);
+PYJU_DLLEXPORT void pyju_set_module_optlevel(PyjuModule_t *self, int lvl);
+PYJU_DLLEXPORT int pyju_get_module_optlevel(PyjuModule_t *m);
+PYJU_DLLEXPORT void pyju_set_module_compile(PyjuModule_t *self, int value);
+PYJU_DLLEXPORT int pyju_get_module_compile(PyjuModule_t *m);
+PYJU_DLLEXPORT void pyju_set_module_infer(PyjuModule_t *self, int value);
+PYJU_DLLEXPORT int pyju_get_module_infer(PyjuModule_t *m);
+PYJU_DLLEXPORT void pyju_set_module_max_methods(PyjuModule_t *self, int value);
+PYJU_DLLEXPORT int pyju_get_module_max_methods(PyjuModule_t *m);
+
+PYJU_DLLEXPORT void pyju_set_const(PyjuModule_t *m PYJU_ROOTING_ARGUMENT, PyjuSym_t *var, PyjuValue_t *val PYJU_ROOTED_ARGUMENT);
+PYJU_DLLEXPORT void pyju_module_using(PyjuModule_t *to, PyjuModule_t *from);
+PYJU_DLLEXPORT void pyju_module_export(PyjuModule_t *from, PyjuSym_t *s);
+
+// get binding for reading
+PYJU_DLLEXPORT PyjuBinding_t *pyju_get_binding(PyjuModule_t *m, PyjuSym_t *var);
+
+// get binding for assignment
+PYJU_DLLEXPORT void pyju_add_standard_imports(PyjuModule_t *m);
+PYJU_DLLEXPORT PyjuModule_t *pyju_base_relative_to(PyjuModule_t *m);
+
 #ifdef __cplusplus
 }
 #endif
