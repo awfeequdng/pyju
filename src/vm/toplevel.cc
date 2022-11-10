@@ -47,6 +47,25 @@ PYJU_DLLEXPORT PyjuModule_t *pyju_base_relative_to(PyjuModule_t *m)
     return pyju_top_module;
 }
 
+
+// create a new top-level module
+void pyju_init_main_module(void)
+{
+    assert(pyju_main_module == NULL);
+    pyju_main_module = pyju_new_module(pyju_symbol("Main"));
+    pyju_main_module->parent = pyju_main_module;
+    pyju_set_const(pyju_main_module, pyju_symbol("Core"),
+                 (PyjuValue_t*)pyju_core_module);
+    pyju_set_const(pyju_core_module, pyju_symbol("Main"),
+                 (PyjuValue_t*)pyju_main_module);
+}
+
+// static PyjuFunction_t *pyju_module_get_initializer(PyjuModule_t *m PYJU_PROPAGATES_ROOT)
+// {
+//     return (PyjuFunction_t*)pyju_get_global(m, pyju_symbol("__init__"));
+// }
+
+
 #ifdef __cplusplus
 }
 #endif

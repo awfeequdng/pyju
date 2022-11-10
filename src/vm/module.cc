@@ -208,7 +208,7 @@ PYJU_DLLEXPORT void pyju_set_const(PyjuModule_t *m PYJU_ROOTING_ARGUMENT, PyjuSy
     PyjuBinding_t *bp = pyju_get_binding_wr(m, var, 1);
     if (bp->value == NULL) {
         uint8_t constp = 0;
-        // if (jl_atomic_cmpswap(&bp->constp, &constp, 1)) {
+        // if (pyju_atomic_cmpswap(&bp->constp, &constp, 1)) {
         if (constp = bp->constp, bp->constp = 1, constp == 0) {
             PyjuValue_t *old = NULL;
             if (pyju_atomic_cmpswap(&bp->value, &old, val)) {

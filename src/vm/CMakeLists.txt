@@ -19,6 +19,7 @@ target_link_libraries(pyju_vm
     PUBLIC
     pyju_support
     ch_contrib::uv
+    ch_contrib::llvm
 )
 
 
