@@ -125,20 +125,20 @@
 // threading options ----------------------------------------------------------
 
 // controls for when threads sleep
-#define THREAD_SLEEP_THRESHOLD_NAME     "JULIA_THREAD_SLEEP_THRESHOLD"
+#define THREAD_SLEEP_THRESHOLD_NAME     "PYJU_THREAD_SLEEP_THRESHOLD"
 #define DEFAULT_THREAD_SLEEP_THRESHOLD  16*1000 // nanoseconds (16us)
 
 // defaults for # threads
-#define NUM_THREADS_NAME                "JULIA_NUM_THREADS"
-#ifndef JULIA_NUM_THREADS
-#  define JULIA_NUM_THREADS 1
+#define NUM_THREADS_NAME                "PYJU_NUM_THREADS"
+#ifndef PYJU_NUM_THREADS
+#  define PYJU_NUM_THREADS 1
 #endif
 
 // threadpools specification
-#define THREADPOOLS_NAME                "JULIA_THREADPOOLS"
+#define THREADPOOLS_NAME                "PYJU_THREADPOOLS"
 
 // affinitization behavior
-#define MACHINE_EXCLUSIVE_NAME          "JULIA_EXCLUSIVE"
+#define MACHINE_EXCLUSIVE_NAME          "PYJU_EXCLUSIVE"
 #define DEFAULT_MACHINE_EXCLUSIVE       0
 
 // partr -- parallel tasks runtime options ------------------------------------

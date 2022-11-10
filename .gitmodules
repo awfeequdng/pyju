@@ -89,3 +89,6 @@
 [submodule "contrib/libuv"]
 	path = contrib/libuv
 	url = https://github.com/libuv/libuv.git
+[submodule "contrib/julia_libuv"]
+	path = contrib/julia_libuv
+	url = https://github.com/JuliaLang/libuv.git

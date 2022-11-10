@@ -264,7 +264,7 @@ struct PyjuMethod_t {
     // method's type signature. redundant with TypeMapEntry->specTypes
     PyjuValue_t *sig;
 
-    // table of all pyju_method_instance_t specializations we have
+    // table of all PyjuMethodInstance_t specializations we have
     _Atomic(PyjuSvec_t*) specializations; // allocated as [hashable, ..., NULL, linear, ....]
     _Atomic(PyjuArray_t*) speckeyset; // index lookup by hash into specializations
 
@@ -1051,8 +1051,8 @@ struct PyjuTask_t {
     _Atomic(uint8_t) _state;
     uint8_t sticky; // record whether this Task can be migrated to a new thread
     _Atomic(uint8_t) _isexception; // set if `result` is an exception to throw or that we exited with
-    // multiqueue priority
-    uint16_t priority;
+    // multiqueue prio
+    uint16_t prio;
 
 // hidden state:
     // id of owning thread - does not need to be defined until the task runs
@@ -1082,7 +1082,7 @@ struct PyjuTask_t {
 
 PYJU_DLLEXPORT PyjuTask_t *pyju_new_task(PyjuFunction_t*, PyjuValue_t*, size_t);
 PYJU_DLLEXPORT void pyju_switchto(PyjuTask_t **pt);
-PYJU_DLLEXPORT int pyju_set_task_tid(PyjuTask_t *task, int16_t tid) PYJU_NOTSAFEPOINT;
+PYJU_DLLEXPORT int pyju_set_task_tid(PyjuTask_t *task, int tid) PYJU_NOTSAFEPOINT;
 PYJU_DLLEXPORT int pyju_set_task_threadpoolid(PyjuTask_t *task, int8_t tpid) PYJU_NOTSAFEPOINT;
 PYJU_DLLEXPORT void PYJU_NORETURN pyju_throw(PyjuValue_t *e PYJU_MAYBE_UNROOTED);
 PYJU_DLLEXPORT void PYJU_NORETURN pyju_rethrow(void);
@@ -1801,6 +1801,18 @@ void pyju_binding_deprecation_warning(PyjuModule_t *m, PyjuBinding_t *b);
 
 PYJU_DLLEXPORT size_t pyju_static_show(PYJU_STREAM *out, PyjuValue_t *v) PYJU_NOTSAFEPOINT;
 
+
+// calling into julia ---------------------------------------------------------
+PYJU_DLLEXPORT PyjuValue_t *pyju_apply_generic(PyjuValue_t *F, PyjuValue_t **args, uint32_t nargs);
+PYJU_DLLEXPORT PyjuValue_t *pyju_invoke(PyjuValue_t *F, PyjuValue_t **args, uint32_t nargs, PyjuMethodInstance_t *meth);
+PYJU_DLLEXPORT int32_t pyju_invoke_api(PyjuCodeInstance_t *linfo);
+
+STATIC_INLINE PyjuValue_t *pyju_apply(PyjuValue_t **args, uint32_t nargs)
+{
+    printf("not impl: pyju_apply");
+    return NULL;
+    // return pyju_apply_generic(args[0], &args[1], nargs - 1);
+}
 #ifdef __cplusplus
 }
 #endif

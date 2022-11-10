@@ -50,7 +50,7 @@ void pyju_init_tasks(void) PYJU_GC_DISABLED
 #endif
 }
 
-// a version of jl_current_task safe for unmanaged threads
+// a version of pyju_current_task safe for unmanaged threads
 PYJU_DLLEXPORT PyjuTask_t *pyju_get_current_task(void)
 {
     PyjuGcFrame_t **pgcstack = pyju_get_pgcstack();
@@ -62,8 +62,8 @@ PyjuTask_t *pyju_init_root_task(PyjuPtls_t ptls, void *stack_lo, void *stack_hi)
 {
     assert(ptls->root_task == NULL);
     // We need `gcstack` in `Task` to allocate Julia objects; *including* the `Task` type.
-    // However, to allocate a `Task` via `jl_gc_alloc` as done in `jl_init_root_task`,
-    // we need the `Task` type itself. We use stack-allocated "raw" `jl_task_t` struct to
+    // However, to allocate a `Task` via `pyju_gc_alloc` as done in `pyju_init_root_task`,
+    // we need the `Task` type itself. We use stack-allocated "raw" `PyjuTask_t` struct to
     // workaround this chicken-and-egg problem. Note that this relies on GC to be turned
     // off as GC fails because we don't/can't allocate the type tag.
 
@@ -128,6 +128,43 @@ PYJU_DLLEXPORT void pyju_throw(PyjuValue_t *e PYJU_MAYBE_UNROOTED)
 PYJU_DLLEXPORT void pyju_rethrow(void)
 {
     pyju_printf(PYJU_STDERR, "pyju_rethrow not impl\n");
+    abort();
+}
+
+
+void PYJU_NORETURN pyju_finish_task(PyjuTask_t *t)
+{
+    DEBUG_FUNC_STR("not impl")
+    // PyjuTask_t *ct = pyju_current_task;
+    // PYJU_PROBE_RT_FINISH_TASK(ct);
+    // PYJU_SIGATOMIC_BEGIN();
+    // if (pyju_atomic_load_relaxed(&t->_isexception))
+    //     pyju_atomic_store_release(&t->_state, PYJU_TASK_STATE_FAILED);
+    // else
+    //     pyju_atomic_store_release(&t->_state, PYJU_TASK_STATE_DONE);
+    // if (t->copy_stack) // early free of stkbuf
+    //     t->stkbuf = NULL;
+    // // ensure that state is cleared
+    // ct->ptls->in_finalizer = 0;
+    // ct->ptls->in_pure_callback = 0;
+    // ct->world_age = pyju_atomic_load_acquire(&pyju_world_counter);
+    // // let the runtime know this task is dead and find a new task to run
+    // pyju_function_t *done = pyju_atomic_load_relaxed(&task_done_hook_func);
+    // if (done == NULL) {
+    //     done = (pyju_function_t*)pyju_get_global(pyju_base_module, pyju_symbol("task_done_hook"));
+    //     if (done != NULL)
+    //         pyju_atomic_store_release(&task_done_hook_func, done);
+    // }
+    // if (done != NULL) {
+    //     pyju_value_t *args[2] = {done, (pyju_value_t*)t};
+    //     PYJU_TRY {
+    //         pyju_apply(args, 2);
+    //     }
+    //     PYJU_CATCH {
+    //         pyju_no_exc_handler(pyju_current_exception());
+    //     }
+    // }
+    // pyju_gc_debug_critical_error();
     abort();
 }
 

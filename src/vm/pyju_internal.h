@@ -398,8 +398,11 @@ extern PYJU_DLLEXPORT size_t pyju_page_size;
 void pyju_init_uv(void);
 void pyju_gc_init(void);
 PyjuTask_t *pyju_init_root_task(PyjuPtls_t ptls, void *stack_lo, void *stack_hi);
+void pyju_init_stack_limits(int ismaster, void **stack_hi, void **stack_lo);
 void pyju_init_int32_int64_cache(void);
 void pyju_init_common_symbols(void);
+PYJU_DLLEXPORT void *pyju_malloc_stack(size_t *bufsz, PyjuTask_t *owner) PYJU_NOTSAFEPOINT;
+void pyju_install_thread_signal_handler(PyjuPtls_t ptls);
 
 //--------------------------------------------------
 // congruential random number generator
@@ -802,6 +805,7 @@ PYJU_DLLEXPORT uint64_t pyju_hrtime(void) PYJU_NOTSAFEPOINT;
 void pyju_init_main_module(void);
 void pyju_init_box_caches(void);
 
+PYJU_DLLEXPORT size_t pyju_get_world_counter(void) PYJU_NOTSAFEPOINT;
 #ifdef __cplusplus
 } // extern "C"
 #endif

@@ -248,6 +248,22 @@ static NOINLINE void _finish_pyju_init(PyjuPtls_t ptls, PyjuTask_t *ct)
     pyju_init_main_module();
     post_boot_hooks();
 
+    if (pyju_base_module != NULL) {
+        // Do initialization needed before starting child threads
+        PyjuValue_t *f = pyju_get_global(pyju_base_module, pyju_symbol("__preinit_threads__"));
+        if (f) {
+            size_t last_age = ct->world_age;
+            ct->world_age = pyju_get_world_counter();
+            pyju_apply(&f, 1);
+            ct->world_age = last_age;
+        }
+    }
+    else {
+        // nthreads > 1 requires code in Base
+        pyju_n_threads = 1;
+    }
+
+    pyju_start_threads();
 }
 
 static PyjuValue_t *core(const char *name)

@@ -9,7 +9,7 @@
 #include "pyju.h"
 #include "pyju_internal.h"
 #include "pyju_assert.h"
-
+#include "threading.h"
 // Ref https://www.uclibc.org/docs/tls.pdf
 // For variant 1 PYJU_ELF_TLS_INIT_SIZE is the size of the thread control block (TCB)
 // For variant 2 PYJU_ELF_TLS_INIT_SIZE is 0
@@ -312,7 +312,7 @@ void pyju_init_threading(void)
 #endif
 
     // how many threads available, usable
-    pyju_n_threads = JULIA_NUM_THREADS;
+    pyju_n_threads = PYJU_NUM_THREADS;
     if (pyju_options.nthreads < 0) { // --threads=auto
         pyju_n_threads = pyju_cpu_threads();
     }
@@ -334,58 +334,58 @@ void pyju_init_threading(void)
 
 static uv_barrier_t thread_init_done;
 
-// void pyju_start_threads(void)
-// {
-//     int cpumasksize = uv_cpumask_size();
-//     char *cp;
-//     int i, exclusive;
-//     uv_thread_t uvtid;
-//     if (cpumasksize < pyju_n_threads) // also handles error case
-//         cpumasksize = pyju_n_threads;
-//     char *mask = (char*)alloca(cpumasksize);
+void pyju_start_threads(void)
+{
+    int cpumasksize = uv_cpumask_size();
+    char *cp;
+    int i, exclusive;
+    uv_thread_t uvtid;
+    if (cpumasksize < pyju_n_threads) // also handles error case
+        cpumasksize = pyju_n_threads;
+    char *mask = (char*)alloca(cpumasksize);
 
-//     // do we have exclusive use of the machine? default is no
-//     exclusive = DEFAULT_MACHINE_EXCLUSIVE;
-//     cp = getenv(MACHINE_EXCLUSIVE_NAME);
-//     if (cp && strcmp(cp, "0") != 0)
-//         exclusive = 1;
+    // do we have exclusive use of the machine? default is no
+    exclusive = DEFAULT_MACHINE_EXCLUSIVE;
+    cp = getenv(MACHINE_EXCLUSIVE_NAME);
+    if (cp && strcmp(cp, "0") != 0)
+        exclusive = 1;
 
-//     // exclusive use: affinitize threads, master thread on proc 0, rest
-//     // according to a 'compact' policy
-//     // non-exclusive: no affinity settings; let the kernel move threads about
-//     if (exclusive) {
-//         if (pyju_n_threads > pyju_cpu_threads()) {
-//             pyju_printf(PYJU_STDERR, "ERROR: Too many threads requested for %s option.\n", MACHINE_EXCLUSIVE_NAME);
-//             exit(1);
-//         }
-//         memset(mask, 0, cpumasksize);
-//         mask[0] = 1;
-//         uvtid = uv_thread_self();
-//         uv_thread_setaffinity(&uvtid, mask, NULL, cpumasksize);
-//         mask[0] = 0;
-//     }
+    // exclusive use: affinitize threads, master thread on proc 0, rest
+    // according to a 'compact' policy
+    // non-exclusive: no affinity settings; let the kernel move threads about
+    if (exclusive) {
+        if (pyju_n_threads > pyju_cpu_threads()) {
+            pyju_printf(PYJU_STDERR, "ERROR: Too many threads requested for %s option.\n", MACHINE_EXCLUSIVE_NAME);
+            exit(1);
+        }
+        memset(mask, 0, cpumasksize);
+        mask[0] = 1;
+        uvtid = uv_thread_self();
+        uv_thread_setaffinity(&uvtid, mask, NULL, cpumasksize);
+        mask[0] = 0;
+    }
 
-//     // The analyzer doesn't know pyju_n_threads doesn't change, help it
-//     size_t nthreads = pyju_n_threads;
+    // The analyzer doesn't know pyju_n_threads doesn't change, help it
+    size_t nthreads = pyju_n_threads;
 
-//     // create threads
-//     uv_barrier_init(&thread_init_done, nthreads);
+    // create threads
+    uv_barrier_init(&thread_init_done, nthreads);
 
-//     for (i = 1; i < nthreads; ++i) {
-//         PyjugThreadArg_t *t = (PyjugThreadArg_t*)malloc_s(sizeof(PyjugThreadArg_t)); // ownership will be passed to the thread
-//         t->tid = i;
-//         t->barrier = &thread_init_done;
-//         uv_thread_create(&uvtid, pyju_threadfun, t);
-//         if (exclusive) {
-//             mask[i] = 1;
-//             uv_thread_setaffinity(&uvtid, mask, NULL, cpumasksize);
-//             mask[i] = 0;
-//         }
-//         uv_thread_detach(&uvtid);
-//     }
+    for (i = 1; i < nthreads; ++i) {
+        PyjuThreadArg_t *t = (PyjuThreadArg_t*)malloc_s(sizeof(PyjuThreadArg_t)); // ownership will be passed to the thread
+        t->tid = i;
+        t->barrier = &thread_init_done;
+        uv_thread_create(&uvtid, pyju_threadfun, t);
+        if (exclusive) {
+            mask[i] = 1;
+            uv_thread_setaffinity(&uvtid, mask, NULL, cpumasksize);
+            mask[i] = 0;
+        }
+        uv_thread_detach(&uvtid);
+    }
 
-//     uv_barrier_wait(&thread_init_done);
-// }
+    uv_barrier_wait(&thread_init_done);
+}
 
 _Atomic(unsigned) _threadedregion; // HACK: keep track of whether to prioritize IO or threading
 

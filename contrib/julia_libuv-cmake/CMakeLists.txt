@@ -4,7 +4,7 @@
 # cmake_policy(SET CMP0057 NEW) # Enable IN_LIST operator
 # cmake_policy(SET CMP0064 NEW) # Support if (TEST) operator
 
-set(LIBRARY_DIR "${PROJECT_SOURCE_DIR}/contrib/libuv")
+set(LIBRARY_DIR "${PROJECT_SOURCE_DIR}/contrib/julia_libuv")
 
 # include(CMakePackageConfigHelpers)
 # include(CMakeDependentOption)
@@ -84,6 +84,7 @@ set(uv_sources
     ${LIBRARY_DIR}/src/fs-poll.c
     ${LIBRARY_DIR}/src/idna.c
     ${LIBRARY_DIR}/src/inet.c
+    ${LIBRARY_DIR}/src/loop-watcher.c
     ${LIBRARY_DIR}/src/random.c
     ${LIBRARY_DIR}/src/strscpy.c
     ${LIBRARY_DIR}/src/strtok.c
@@ -107,7 +108,7 @@ list(APPEND uv_sources
   ${LIBRARY_DIR}/src/unix/fs.c
   ${LIBRARY_DIR}/src/unix/getaddrinfo.c
   ${LIBRARY_DIR}/src/unix/getnameinfo.c
-  ${LIBRARY_DIR}/src/unix/loop-watcher.c
+  # ${LIBRARY_DIR}/src/unix/loop-watcher.c
   ${LIBRARY_DIR}/src/unix/loop.c
   ${LIBRARY_DIR}/src/unix/pipe.c
   ${LIBRARY_DIR}/src/unix/poll.c
@@ -162,14 +163,13 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   list(APPEND uv_defines _GNU_SOURCE _POSIX_C_SOURCE=200112)
   list(APPEND uv_libraries dl rt)
   list(APPEND uv_sources
-    ${LIBRARY_DIR}/src/unix/linux.c
-    # ${LIBRARY_DIR}/src/unix/linux-core.c
-    # ${LIBRARY_DIR}/src/unix/linux-inotify.c
-    # ${LIBRARY_DIR}/src/unix/linux-syscalls.c
+    ${LIBRARY_DIR}/src/unix/linux-core.c
+    ${LIBRARY_DIR}/src/unix/linux-inotify.c
+    ${LIBRARY_DIR}/src/unix/linux-syscalls.c
     ${LIBRARY_DIR}/src/unix/procfs-exepath.c
     ${LIBRARY_DIR}/src/unix/random-getrandom.c
     ${LIBRARY_DIR}/src/unix/random-sysctl-linux.c
-    # ${LIBRARY_DIR}/src/unix/epoll.c
+    ${LIBRARY_DIR}/src/unix/epoll.c
   )
 endif()
 
