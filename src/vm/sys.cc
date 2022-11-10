@@ -9,7 +9,7 @@
 #include <signal.h>
 #include <fcntl.h>
 
-#include "pyju_object.h"
+#include "pyju.h"
 #include "pyju_internal.h"
 #include "support/libsupport.h"
 #include "support/hashing.h"

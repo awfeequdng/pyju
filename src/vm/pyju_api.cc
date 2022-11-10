@@ -1,6 +1,6 @@
 #include "support/dtypes.h"
 #include "pyju_internal.h"
-#include "pyju_object.h"
+#include "pyju.h"
 
 #ifdef __cplusplus
 extern "C" {

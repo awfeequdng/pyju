@@ -1,6 +1,6 @@
 // This file is a part of Julia. License is MIT: https://julialang.org/license
 
-#include "pyju_object.h"
+#include "pyju.h"
 #include "pyju_internal.h"
 #include "threading.h"
 #include <sys/mman.h>

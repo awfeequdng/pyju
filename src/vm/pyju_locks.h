@@ -4,7 +4,7 @@
 #define PYJU_LOCKS_H
 
 #include "pyju_assert.h"
-#include "pyju_object.h"
+#include "pyju.h"
 
 #ifdef __cplusplus
 extern "C" {

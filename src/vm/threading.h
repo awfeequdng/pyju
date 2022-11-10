@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-#include "pyju_object.h"
+#include "pyju.h"
 #include <uv.h>
 
 #define PROFILE_PYJU_THREADING            0

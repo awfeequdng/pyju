@@ -1,5 +1,5 @@
 #pragma once
-#include "pyju_object.h"
+#include "pyju.h"
 #include "pyju_threads.h"
 #include "pyju_fasttls.h"
 #include "pyju_locks.h"
@@ -798,6 +798,9 @@ extern PyjuArray_t *pyju_global_roots_table PYJU_GLOBALLY_ROOTED;
 // timers
 // Returns time in nanosec
 PYJU_DLLEXPORT uint64_t pyju_hrtime(void) PYJU_NOTSAFEPOINT;
+
+void pyju_init_main_module(void);
+void pyju_init_box_caches(void);
 
 #ifdef __cplusplus
 } // extern "C"

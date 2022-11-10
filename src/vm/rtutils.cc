@@ -19,7 +19,7 @@
 #include <unistd.h>
 
 #include <ctype.h>
-#include "pyju_object.h"
+#include "pyju.h"
 #include "pyju_internal.h"
 #include "pyju_assert.h"
 
@@ -140,6 +140,12 @@ PYJU_DLLEXPORT void PYJU_NORETURN pyju_bounds_error_int(PyjuValue_t *v PYJU_MAYB
     pyju_throw(pyju_new_struct((PyjuDataType_t*)pyju_boundserror_type, v, t));
 }
 
+PYJU_DLLEXPORT size_t pyju_static_show(PYJU_STREAM *out, PyjuValue_t *v) PYJU_NOTSAFEPOINT
+{
+    printf("not impl: pyju_static_show\n");
+    return 0;
+    // return jl_static_show_x(out, v, 0);
+}
 
 #ifdef __cplusplus
 }

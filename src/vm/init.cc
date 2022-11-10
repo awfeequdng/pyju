@@ -1,4 +1,4 @@
-#include "pyju_object.h"
+#include "pyju.h"
 #include "pyju_internal.h"
 #include "pyju_assert.h"
 #include "threading.h"
@@ -231,6 +231,7 @@ PYJU_DLLEXPORT void pyju_init() {
     pyju_printf(PYJU_STDOUT, "pyju_init finished\n");
 }
 
+static void post_boot_hooks(void);
 static NOINLINE void _finish_pyju_init(PyjuPtls_t ptls, PyjuTask_t *ct)
 {
     pyju_init_types();
@@ -242,6 +243,90 @@ static NOINLINE void _finish_pyju_init(PyjuPtls_t ptls, PyjuTask_t *ct)
 
     pyju_type_typename->mt->module = pyju_core_module;
     pyju_top_module = pyju_core_module;
+    // pyju_init_intrinsic_functions();
+    // pyju_init_primitives();
+    pyju_init_main_module();
+    post_boot_hooks();
+
+}
+
+static PyjuValue_t *core(const char *name)
+{
+    return pyju_get_global(pyju_core_module, pyju_symbol(name));
+}
+
+// fetch references to things defined in boot.jl
+static void post_boot_hooks(void)
+{
+    DEBUG_FUNC
+    pyju_char_type    = (PyjuDataType_t*)core("Char");
+    DEBUG_FUNC
+    pyju_int8_type    = (PyjuDataType_t*)core("Int8");
+    pyju_int16_type   = (PyjuDataType_t*)core("Int16");
+    pyju_uint16_type  = (PyjuDataType_t*)core("UInt16");
+    pyju_float16_type = (PyjuDataType_t*)core("Float16");
+    pyju_float32_type = (PyjuDataType_t*)core("Float32");
+    pyju_float64_type = (PyjuDataType_t*)core("Float64");
+    pyju_floatingpoint_type = (PyjuDataType_t*)core("AbstractFloat");
+    pyju_number_type  = (PyjuDataType_t*)core("Number");
+    pyju_signed_type  = (PyjuDataType_t*)core("Signed");
+    PyjuDataType_t *pyju_unsigned_type = (PyjuDataType_t*)core("Unsigned");
+    PyjuDataType_t *pyju_integer_type = (PyjuDataType_t*)core("Integer");
+
+    pyju_bool_type->super = pyju_integer_type;
+    pyju_uint8_type->super = pyju_unsigned_type;
+    pyju_int32_type->super = pyju_signed_type;
+    pyju_int64_type->super = pyju_signed_type;
+    pyju_uint32_type->super = pyju_unsigned_type;
+    pyju_uint64_type->super = pyju_unsigned_type;
+
+    printf("not impl: post_boot_hooks\n");
+//     pyju_errorexception_type = (PyjuDataType_t*)core("ErrorException");
+//     DEBUG_FUNC
+//     pyju_stackovf_exception  = pyju_new_struct_uninit((PyjuDataType_t*)core("StackOverflowError"));
+//     DEBUG_FUNC
+//     pyju_diverror_exception  = pyju_new_struct_uninit((PyjuDataType_t*)core("DivideError"));
+//     pyju_undefref_exception  = pyju_new_struct_uninit((PyjuDataType_t*)core("UndefRefError"));
+//     pyju_undefvarerror_type  = (PyjuDataType_t*)core("UndefVarError");
+//     pyju_atomicerror_type    = (PyjuDataType_t*)core("ConcurrencyViolationError");
+//     pyju_interrupt_exception = pyju_new_struct_uninit((PyjuDataType_t*)core("InterruptException"));
+//     pyju_boundserror_type    = (PyjuDataType_t*)core("BoundsError");
+//     pyju_memory_exception    = pyju_new_struct_uninit((PyjuDataType_t*)core("OutOfMemoryError"));
+//     pyju_readonlymemory_exception = pyju_new_struct_uninit((PyjuDataType_t*)core("ReadOnlyMemoryError"));
+//     pyju_typeerror_type      = (PyjuDataType_t*)core("TypeError");
+// #ifdef SEGV_EXCEPTION
+//     pyju_segv_exception      = pyju_new_struct_uninit((PyjuDataType_t*)core("SegmentationFault"));
+// #endif
+//     pyju_argumenterror_type  = (PyjuDataType_t*)core("ArgumentError");
+//     pyju_methoderror_type    = (PyjuDataType_t*)core("MethodError");
+//     pyju_loaderror_type      = (PyjuDataType_t*)core("LoadError");
+//     pyju_initerror_type      = (PyjuDataType_t*)core("InitError");
+//     pyju_pair_type           = core("Pair");
+
+//     pyju_weakref_type = (PyjuDataType_t*)core("WeakRef");
+//     pyju_vecelement_typename = ((PyjuDataType_t*)pyju_unwrap_unionall(core("VecElement")))->name;
+
+//     pyju_init_box_caches();
+
+//     // set module field of primitive types
+//     int i;
+//     void **table = pyju_core_module->bindings.table;
+//     for (i = 1; i < pyju_core_module->bindings.size; i += 2) {
+//         if (table[i] != HT_NOTFOUND) {
+//             PyjuBinding_t *b = (PyjuBinding_t*)table[i];
+//             PyjuValue_t *v = pyju_atomic_load_relaxed(&b->value);
+//             if (v) {
+//                 if (pyju_is_unionall(v))
+//                     v = pyju_unwrap_unionall(v);
+//                 if (pyju_is_datatype(v)) {
+//                     PyjuDataType_t *tt = (PyjuDataType_t*)v;
+//                     tt->name->module = pyju_core_module;
+//                     if (tt->name->mt)
+//                         tt->name->mt->module = pyju_core_module;
+//                 }
+//             }
+//         }
+//     }
 }
 
 #ifdef __cplusplus

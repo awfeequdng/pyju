@@ -3,9 +3,11 @@
 /*
   modules and top-level bindings
 */
-#include "pyju_object.h"
+#include "pyju.h"
+#include "pyju_atomics.h"
 #include "pyju_internal.h"
 #include "pyju_assert.h"
+#include "pyju_threads.h"
 #include "support/ptrhash.h"
 
 #ifdef __cplusplus
@@ -591,6 +593,180 @@ PYJU_DLLEXPORT void pyju_module_export(PyjuModule_t *from, PyjuSym_t *s)
     PYJU_UNLOCK(&from->lock);
 }
 
+PYJU_DLLEXPORT int pyju_boundp(PyjuModule_t *m, PyjuSym_t *var)
+{
+    PyjuBinding_t *b = pyju_get_binding(m, var);
+    return b && (b->value != NULL);
+}
+
+PYJU_DLLEXPORT int pyju_defines_or_exports_p(PyjuModule_t *m, PyjuSym_t *var)
+{
+    PYJU_LOCK(&m->lock);
+    PyjuBinding_t *b = (PyjuBinding_t*)ptrhash_get(&m->bindings, var);
+    PYJU_UNLOCK(&m->lock);
+    return b != HT_NOTFOUND && (b->exportp || b->owner==m);
+}
+
+PYJU_DLLEXPORT int pyju_module_exports_p(PyjuModule_t *m, PyjuSym_t *var)
+{
+    PYJU_LOCK(&m->lock);
+    PyjuBinding_t *b = _pyju_get_module_binding(m, var);
+    PYJU_UNLOCK(&m->lock);
+    return b != HT_NOTFOUND && b->exportp;
+}
+
+PYJU_DLLEXPORT int pyju_binding_resolved_p(PyjuModule_t *m, PyjuSym_t *var)
+{
+    PYJU_LOCK(&m->lock);
+    PyjuBinding_t *b = _pyju_get_module_binding(m, var);
+    PYJU_UNLOCK(&m->lock);
+    return b != HT_NOTFOUND && b->owner != NULL;
+}
+
+PYJU_DLLEXPORT PyjuBinding_t *pyju_get_module_binding(PyjuModule_t *m PYJU_PROPAGATES_ROOT, PyjuSym_t *var)
+{
+    PYJU_LOCK(&m->lock);
+    PyjuBinding_t *b = _pyju_get_module_binding(m, var);
+    PYJU_UNLOCK(&m->lock);
+    return b == HT_NOTFOUND ? NULL : b;
+}
+
+static PyjuBinding_t *pyju_get_dep_message_binding(PyjuModule_t *m, PyjuBinding_t *deprecated_binding);
+
+PYJU_DLLEXPORT PyjuValue_t *pyju_get_global(PyjuModule_t *m, PyjuSym_t *var)
+{
+    PyjuBinding_t *b = pyju_get_binding(m, var);
+    if (b == NULL) return NULL;
+    if (b->deprecated) pyju_binding_deprecation_warning(m, b);
+    return b->value;
+}
+
+PYJU_DLLEXPORT void pyju_set_global(PyjuModule_t *m PYJU_ROOTING_ARGUMENT, PyjuSym_t *var, PyjuValue_t *val PYJU_ROOTED_ARGUMENT)
+{
+    PYJU_TYPECHK(pyju_set_global, module, (PyjuValue_t*)m);
+    PYJU_TYPECHK(pyju_set_global, symbol, (PyjuValue_t*)var);
+    PyjuBinding_t *bp = pyju_get_binding_wr(m, var, 1);
+    pyju_checked_assignment(bp, val);
+}
+
+
+extern const char *pyju_filename;
+extern int pyju_lineno;
+
+static char const dep_message_prefix[] = "_dep_message_";
+
+static PyjuBinding_t *pyju_get_dep_message_binding(PyjuModule_t *m, PyjuBinding_t *deprecated_binding)
+{
+    size_t prefix_len = strlen(dep_message_prefix);
+    size_t name_len = strlen(pyju_symbol_name(deprecated_binding->name));
+    char *dep_binding_name = (char*)alloca(prefix_len+name_len+1);
+    memcpy(dep_binding_name, dep_message_prefix, prefix_len);
+    memcpy(dep_binding_name + prefix_len, pyju_symbol_name(deprecated_binding->name), name_len);
+    dep_binding_name[prefix_len+name_len] = '\0';
+    return pyju_get_binding(m, pyju_symbol(dep_binding_name));
+}
+
+void pyju_binding_deprecation_warning(PyjuModule_t *m, PyjuBinding_t *b)
+{
+    // Only print a warning for deprecated == 1 (renamed).
+    // For deprecated == 2 (moved to a package) the binding is to a function
+    // that throws an error, so we don't want to print a warning too.
+    if (b->deprecated == 1 && pyju_options.depwarn) {
+        if (pyju_options.depwarn != PYJU_OPTIONS_DEPWARN_ERROR)
+            pyju_printf(PYJU_STDERR, "WARNING: ");
+        PyjuBinding_t *dep_message_binding = NULL;
+        if (b->owner) {
+            pyju_printf(PYJU_STDERR, "%s.%s is deprecated",
+                      pyju_symbol_name(b->owner->name), pyju_symbol_name(b->name));
+            dep_message_binding = pyju_get_dep_message_binding(b->owner, b);
+        }
+        else {
+            pyju_printf(PYJU_STDERR, "%s is deprecated", pyju_symbol_name(b->name));
+        }
+
+        if (dep_message_binding && dep_message_binding->value) {
+            if (pyju_isa(dep_message_binding->value, (PyjuValue_t*)pyju_string_type)) {
+                pyju_uv_puts(PYJU_STDERR, pyju_string_data(dep_message_binding->value),
+                    pyju_string_len(dep_message_binding->value));
+            }
+            else {
+                pyju_static_show(PYJU_STDERR, dep_message_binding->value);
+            }
+        }
+        else {
+            PyjuValue_t *v = b->value;
+            if (v) {
+                if (pyju_is_type(v) || pyju_is_module(v)) {
+                    pyju_printf(PYJU_STDERR, ", use ");
+                    pyju_static_show(PYJU_STDERR, v);
+                    pyju_printf(PYJU_STDERR, " instead.");
+                }
+                else {
+                    // TODO: not impl
+                    pyju_printf(PYJU_STDERR, "not impl pyju_gf_mtable\n");
+                    // PyjuMethTable_t *mt = pyju_gf_mtable(v);
+                    // if (mt != NULL && (mt->defs != jl_nothing ||
+                    //                    jl_isa(v, (jl_value_t*)jl_builtin_type))) {
+                    //     jl_printf(JL_STDERR, ", use ");
+                    //     if (mt->module != jl_core_module) {
+                    //         jl_static_show(JL_STDERR, (jl_value_t*)mt->module);
+                    //         jl_printf(JL_STDERR, ".");
+                    //     }
+                    //     jl_printf(JL_STDERR, "%s", jl_symbol_name(mt->name));
+                    //     jl_printf(JL_STDERR, " instead.");
+                    // }
+                }
+            }
+        }
+        pyju_printf(PYJU_STDERR, "\n");
+
+        if (pyju_options.depwarn != PYJU_OPTIONS_DEPWARN_ERROR) {
+            if (pyju_lineno == 0) {
+                pyju_printf(PYJU_STDERR, " in module %s\n", pyju_symbol_name(m->name));
+            }
+            else {
+                pyju_printf(PYJU_STDERR, "  likely near %s:%d\n", pyju_filename, pyju_lineno);
+            }
+        }
+
+        if (pyju_options.depwarn == PYJU_OPTIONS_DEPWARN_ERROR) {
+            if (b->owner)
+                pyju_errorf("deprecated binding: %s.%s",
+                          pyju_symbol_name(b->owner->name),
+                          pyju_symbol_name(b->name));
+            else
+                pyju_errorf("deprecated binding: %s", pyju_symbol_name(b->name));
+        }
+    }
+}
+
+PYJU_DLLEXPORT void pyju_checked_assignment(PyjuBinding_t *b, PyjuValue_t *rhs)
+{
+    PyjuValue_t *old_ty = NULL;
+    if (!pyju_atomic_cmpswap_relaxed(&b->ty, &old_ty, (PyjuValue_t*)pyju_any_type) && !pyju_isa(rhs, old_ty)) {
+        pyju_errorf("cannot assign an incompatible value to the global %s.",
+                  pyju_symbol_name(b->name));
+    }
+    if (b->constp) {
+        PyjuValue_t *old = NULL;
+        if (pyju_atomic_cmpswap(&b->value, &old, rhs)) {
+            pyju_gc_wb_binding(b, rhs);
+            return;
+        }
+        if (pyju_egal(rhs, old))
+            return;
+        if (pyju_typeof(rhs) != pyju_typeof(old) || pyju_is_type(rhs) || pyju_is_module(rhs)) {
+#ifndef __clang_gcanalyzer__
+            pyju_errorf("invalid redefinition of constant %s",
+                      pyju_symbol_name(b->name));
+#endif
+        }
+        pyju_safe_printf("WARNING: redefinition of constant %s. This may fail, cause incorrect answers, or produce other errors.\n",
+                       pyju_symbol_name(b->name));
+    }
+    pyju_atomic_store_relaxed(&b->value, rhs);
+    pyju_gc_wb_binding(b, rhs);
+}
 
 #ifdef __cplusplus
 }

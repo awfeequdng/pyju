@@ -17,7 +17,7 @@
 #include <unistd.h>
 #endif
 #include <ctype.h>
-#include "pyju_object.h"
+#include "pyju.h"
 #include "pyju_internal.h"
 // #include "builtin_proto.h"
 // #include "intrinsics.h"

@@ -760,8 +760,8 @@ PYJU_DLLEXPORT void pyju_gc_safepoint(void);
 // get a pointer to the data in a datatype
 #define pyju_data_ptr(v)  ((PyjuValue_t**)((char*)v + PYJU_TV_SIZE))
 
-#define pyju_string_data(s) ((char*)s + PYJU_TV_SIZE + sizeof(void*))
-#define pyju_string_len(s)  (*(size_t*)((char*)s + PYJU_TV_SIZE))
+#define pyju_string_data(s) ((char*)(PyjuValue_t*)s + PYJU_TV_SIZE + sizeof(void*))
+#define pyju_string_len(s)  (*(size_t*)((char*)(PyjuValue_t*)s + PYJU_TV_SIZE))
 // constants and type objects -------------------------------------------------
 
 // kinds
@@ -1347,6 +1347,7 @@ STATIC_INLINE PyjuValue_t *pyju_field_type_concrete(PyjuDataType_t *st PYJU_PROP
 #define pyju_is_immutable(t)   (!((PyjuDataType_t*)t)->name->mutabl)
 #define pyju_is_immutable_datatype(t) (pyju_is_datatype(t) && (!((PyjuDataType_t*)t)->name->mutabl))
 #define pyju_is_uniontype(v)   pyju_typeis(v, pyju_uniontype_type)
+#define pyju_is_module(v)      pyju_typeis(v, pyju_module_type)
 
 #define pyju_is_typevar(v)     pyju_typeis(v, pyju_tvar_type)
 #define pyju_is_unionall(v)    pyju_typeis(v, pyju_unionall_type)
@@ -1772,6 +1773,7 @@ extern PYJU_DLLEXPORT PyjuModule_t *pyju_main_module PYJU_GLOBALLY_ROOTED;
 extern PYJU_DLLEXPORT PyjuModule_t *pyju_core_module PYJU_GLOBALLY_ROOTED;
 extern PYJU_DLLEXPORT PyjuModule_t *pyju_base_module PYJU_GLOBALLY_ROOTED;
 extern PYJU_DLLEXPORT PyjuModule_t *pyju_top_module PYJU_GLOBALLY_ROOTED;
+
 PYJU_DLLEXPORT PyjuModule_t *pyju_new_module(PyjuSym_t *name);
 PYJU_DLLEXPORT void pyju_set_module_nospecialize(PyjuModule_t *self, int on);
 PYJU_DLLEXPORT void pyju_set_module_optlevel(PyjuModule_t *self, int lvl);
@@ -1782,6 +1784,7 @@ PYJU_DLLEXPORT void pyju_set_module_infer(PyjuModule_t *self, int value);
 PYJU_DLLEXPORT int pyju_get_module_infer(PyjuModule_t *m);
 PYJU_DLLEXPORT void pyju_set_module_max_methods(PyjuModule_t *self, int value);
 PYJU_DLLEXPORT int pyju_get_module_max_methods(PyjuModule_t *m);
+PYJU_DLLEXPORT PyjuValue_t *pyju_get_global(PyjuModule_t *m, PyjuSym_t *var);
 
 PYJU_DLLEXPORT void pyju_set_const(PyjuModule_t *m PYJU_ROOTING_ARGUMENT, PyjuSym_t *var, PyjuValue_t *val PYJU_ROOTED_ARGUMENT);
 PYJU_DLLEXPORT void pyju_module_using(PyjuModule_t *to, PyjuModule_t *from);
@@ -1793,6 +1796,10 @@ PYJU_DLLEXPORT PyjuBinding_t *pyju_get_binding(PyjuModule_t *m, PyjuSym_t *var);
 // get binding for assignment
 PYJU_DLLEXPORT void pyju_add_standard_imports(PyjuModule_t *m);
 PYJU_DLLEXPORT PyjuModule_t *pyju_base_relative_to(PyjuModule_t *m);
+PYJU_DLLEXPORT void pyju_checked_assignment(PyjuBinding_t *b, PyjuValue_t *rhs);
+void pyju_binding_deprecation_warning(PyjuModule_t *m, PyjuBinding_t *b);
+
+PYJU_DLLEXPORT size_t pyju_static_show(PYJU_STREAM *out, PyjuValue_t *v) PYJU_NOTSAFEPOINT;
 
 #ifdef __cplusplus
 }

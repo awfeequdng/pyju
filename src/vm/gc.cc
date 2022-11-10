@@ -1,7 +1,7 @@
 #include "gc.h"
 #include "pyju_gcext.h"
 #include "pyju_assert.h"
-#include "pyju_object.h"
+#include "pyju.h"
 #include "pyju_threads.h"
 #include "support/dtypes.h"
 #include <cstdint>

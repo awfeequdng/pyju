@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <inttypes.h>
-#include "pyju_object.h"
+#include "pyju.h"
 #include "pyju_internal.h"
 #include "threading.h"
 #include "pyju_assert.h"

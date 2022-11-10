@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-#include "pyju_object.h"
+#include "pyju.h"
 #include "pyju_internal.h"
 #include "pyju_assert.h"
 

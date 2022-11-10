@@ -3,7 +3,7 @@
 #include <limits.h>
 #include <errno.h>
 
-#include "pyju_object.h"
+#include "pyju.h"
 #include "pyju_internal.h"
 
 #include <unistd.h>

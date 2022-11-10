@@ -6,7 +6,7 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include "pyju_object.h"
+#include "pyju.h"
 #include "pyju_internal.h"
 #include "pyju_assert.h"
 

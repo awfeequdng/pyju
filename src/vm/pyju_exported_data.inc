@@ -109,6 +109,22 @@
     XX(pyju_opaque_closure_type) \
     XX(pyju_opaque_closure_typename) \
     XX(pyju_partial_opaque_type) \
+    XX(pyju_float16_type) \
+    XX(pyju_floatingpoint_type) \
+    XX(pyju_number_type) \
+    XX(pyju_signed_type) \
+    XX(pyju_errorexception_type) \
+    XX(pyju_stackovf_exception) \
+    XX(pyju_diverror_exception) \
+    XX(pyju_undefvarerror_type) \
+    XX(pyju_atomicerror_type) \
+    XX(pyju_interrupt_exception) \
+    XX(pyju_readonlymemory_exception) \
+    XX(pyju_typeerror_type) \
+    XX(pyju_methoderror_type) \
+    XX(pyju_loaderror_type) \
+    XX(pyju_initerror_type) \
+    XX(pyju_weakref_type) \
     XX(pyju_datatype_type)
 
 

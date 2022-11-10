@@ -13,7 +13,7 @@
 #include <string.h>
 #include <strings.h>
 #include <inttypes.h>
-#include "pyju_object.h"
+#include "pyju.h"
 #include "pyju_threads.h"
 #include "pyju_internal.h"
 #include "threading.h"
