@@ -244,6 +244,7 @@ static int multiq_check_empty(void)
 // (used only by the main thread)
 void pyju_init_threadinginfra(void)
 {
+    DEBUG_FUNC_STR("pyju_init_threadinginfra")
     /* initialize the synchronization trees pool and the multiqueue */
     multiq_init();
 
@@ -284,6 +285,7 @@ void pyju_threadfun(void *arg)
     PyjuTask_t *ct = pyju_init_root_task(ptls, stack_lo, stack_hi);
     PYJU_GC_PROMISE_ROOTED(ct);
     pyju_install_thread_signal_handler(ptls);
+    printf("pyju_threadfun tid = %d\n", targ->tid);
 
     // wait for all threads
     pyju_gc_state_set(ptls, PYJU_GC_STATE_SAFE, 0);

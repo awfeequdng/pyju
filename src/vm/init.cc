@@ -234,6 +234,7 @@ PYJU_DLLEXPORT void pyju_init() {
 static void post_boot_hooks(void);
 static NOINLINE void _finish_pyju_init(PyjuPtls_t ptls, PyjuTask_t *ct)
 {
+    pyju_init_threadinginfra();
     pyju_init_types();
     pyju_global_roots_table = pyju_alloc_vec_any(16);
     pyju_init_common_symbols();
@@ -262,8 +263,10 @@ static NOINLINE void _finish_pyju_init(PyjuPtls_t ptls, PyjuTask_t *ct)
         // nthreads > 1 requires code in Base
         pyju_n_threads = 1;
     }
+    DEBUG_FUNC_INT(pyju_n_threads)
 
-    pyju_start_threads();
+    // pyju_start_threads();
+    pyju_gc_enable(1);
 }
 
 static PyjuValue_t *core(const char *name)
@@ -298,9 +301,7 @@ static void post_boot_hooks(void)
 
     printf("not impl: post_boot_hooks\n");
 //     pyju_errorexception_type = (PyjuDataType_t*)core("ErrorException");
-//     DEBUG_FUNC
 //     pyju_stackovf_exception  = pyju_new_struct_uninit((PyjuDataType_t*)core("StackOverflowError"));
-//     DEBUG_FUNC
 //     pyju_diverror_exception  = pyju_new_struct_uninit((PyjuDataType_t*)core("DivideError"));
 //     pyju_undefref_exception  = pyju_new_struct_uninit((PyjuDataType_t*)core("UndefRefError"));
 //     pyju_undefvarerror_type  = (PyjuDataType_t*)core("UndefVarError");

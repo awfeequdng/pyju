@@ -131,7 +131,7 @@
 // defaults for # threads
 #define NUM_THREADS_NAME                "PYJU_NUM_THREADS"
 #ifndef PYJU_NUM_THREADS
-#  define PYJU_NUM_THREADS 1
+#  define PYJU_NUM_THREADS 2
 #endif
 
 // threadpools specification

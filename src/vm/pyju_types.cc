@@ -924,7 +924,6 @@ static int within_typevar(PyjuValue_t *t, PyjuValue_t *vlb, PyjuValue_t *vub)
 
 static void check_datatype_parameters(PyjuTypeName_t *tn, PyjuValue_t **params, size_t np)
 {
-    DEBUG_FUNC
     PyjuValue_t *wrapper = tn->wrapper;
     PyjuValue_t **bounds;
     PYJU_GC_PUSHARGS(bounds, np*2);
@@ -1069,7 +1068,6 @@ PyjuValue_t *normalize_unionalls(PyjuValue_t *t)
 static PyjuValue_t *inst_datatype_inner(PyjuDataType_t *dt, PyjuSvec_t *p, PyjuValue_t **iparams, size_t ntp,
                                        pyju_typestack_t *stack, PyjuTypeEnv_t *env)
 {
-    DEBUG_FUNC
     pyju_typestack_t top;
     PyjuTypeName_t *tn = dt->name;
     int istuple = (tn == pyju_tuple_typename);
@@ -1079,7 +1077,6 @@ static PyjuValue_t *inst_datatype_inner(PyjuDataType_t *dt, PyjuSvec_t *p, PyjuV
         for (i = 0; i < ntp; i++)
             iparams[i] = normalize_unionalls(iparams[i]);
     }
-    DEBUG_FUNC
 
     // check type cache, if applicable
     int cacheable = 1;
@@ -1095,52 +1092,39 @@ static PyjuValue_t *inst_datatype_inner(PyjuDataType_t *dt, PyjuSvec_t *p, PyjuV
             if (pyju_has_free_typevars(iparams[i]))
                 cacheable = 0;
     }
-    DEBUG_FUNC
     if (cacheable) {
-        DEBUG_FUNC
         size_t i;
         for (i = 0; i < ntp; i++) {
-        DEBUG_FUNC
             PyjuValue_t *pi = iparams[i];
             if (pi == pyju_bottom_type)
                 continue;
             if (pyju_is_datatype(pi))
                 continue;
-        DEBUG_FUNC
             if (pyju_is_vararg(pi)) {
-        DEBUG_FUNC
                 pi = pyju_unwrap_vararg(pi);
                 if (pyju_has_free_typevars(pi))
                     continue;
             }
-        DEBUG_FUNC
             // normalize types equal to wrappers (prepare for wrapper_id)
             PyjuValue_t *tw = extract_wrapper(pi);
-        DEBUG_FUNC
             if (tw && tw != pi && (tn != pyju_type_typename || pyju_typeof(pi) == pyju_typeof(tw)) &&
                     pyju_types_equal(pi, tw)) {
-        DEBUG_FUNC
                 // This would require some special handling, but is never used at
                 // the moment.
                 assert(!pyju_is_vararg(iparams[i]));
                 iparams[i] = tw;
-        DEBUG_FUNC
                 if (p) pyju_gc_wb(p, tw);
             }
         }
-        DEBUG_FUNC
         PyjuValue_t *lkup = (PyjuValue_t*)lookup_type(tn, iparams, ntp);
         if (lkup != NULL)
             return lkup;
     }
-        DEBUG_FUNC
     PyjuValue_t *stack_lkup = lookup_type_stack(stack, dt, ntp, iparams);
     if (stack_lkup)
         return stack_lkup;
 
-        DEBUG_FUNC
     if (!istuple) {
-        DEBUG_FUNC
         // check parameters against bounds in type definition
         check_datatype_parameters(tn, iparams, ntp);
     }
@@ -1513,49 +1497,36 @@ PYJU_DLLEXPORT PyjuTupleType_t *pyju_apply_tuple_type(PyjuSvec_t *params)
 static PyjuValue_t *inst_datatype_env(PyjuValue_t *dt, PyjuSvec_t *p, PyjuValue_t **iparams, size_t ntp,
                                      pyju_typestack_t *stack, PyjuTypeEnv_t *env, int c)
 {
-    DEBUG_FUNC
     if (pyju_is_datatype(dt))
         return inst_datatype_inner((PyjuDataType_t*)dt, p, iparams, ntp, stack, env);
-    DEBUG_FUNC
     assert(pyju_is_unionall(dt));
-    DEBUG_FUNC
     PyjuUnionAll_t *ua = (PyjuUnionAll_t*)dt;
-    DEBUG_FUNC
     PyjuTypeEnv_t e = { ua->var, iparams[c], env };
-    DEBUG_FUNC
     return inst_datatype_env(ua->body, p, iparams, ntp, stack, &e, c + 1);
 }
 
 PyjuValue_t *pyju_apply_type(PyjuValue_t *tc, PyjuValue_t **params, size_t n)
 {
-    DEBUG_FUNC
     if (tc == (PyjuValue_t*)pyju_anytuple_type)
         return (PyjuValue_t*)pyju_apply_tuple_type_v(params, n);
     if (tc == (PyjuValue_t*)pyju_uniontype_type)
         return (PyjuValue_t*)pyju_type_union(params, n);
     size_t i;
-    DEBUG_FUNC
     if (n > 1) {
-        DEBUG_FUNC
         // detect common case of applying a wrapper, where we know that all parameters will
         // end up as direct parameters of a certain datatype, which can be optimized.
         PyjuValue_t *u = pyju_unwrap_unionall(tc);
         if (pyju_is_datatype(u) && n == pyju_nparams((PyjuDataType_t*)u) &&
             ((PyjuDataType_t*)u)->name->wrapper == tc) {
-            DEBUG_FUNC
             return inst_datatype_env(tc, NULL, params, n, NULL, NULL, 0);
         }
-        DEBUG_FUNC
     }
-    DEBUG_FUNC
     PYJU_GC_PUSH1(&tc);
     PyjuValue_t *tc0 = tc;
     for (i=0; i < n; i++) {
-        DEBUG_FUNC
         if (!pyju_is_unionall(tc0))
             pyju_error("too many parameters for type");
         PyjuValue_t *pi = params[i];
-        DEBUG_FUNC
 
         tc0 = ((PyjuUnionAll_t*)tc0)->body;
         // doing a substitution can cause later UnionAlls to be dropped,
@@ -1565,12 +1536,10 @@ PyjuValue_t *pyju_apply_type(PyjuValue_t *tc, PyjuValue_t **params, size_t n)
         // S = Tuple{Vararg{T,N}} where T<:NTuple{N} where N
         // S{0,Int}
         if (!pyju_is_unionall(tc)) continue;
-        DEBUG_FUNC
 
         PyjuUnionAll_t *ua = (PyjuUnionAll_t*)tc;
         if (!pyju_has_free_typevars(ua->var->lb) && !pyju_has_free_typevars(ua->var->ub) &&
             !within_typevar(pi, ua->var->lb, ua->var->ub)) {
-            DEBUG_FUNC
             PyjuDataType_t *inner = (PyjuDataType_t*)pyju_unwrap_unionall(tc);
             int iswrapper = 0;
             if (pyju_is_datatype(inner)) {
@@ -1588,10 +1557,8 @@ PyjuValue_t *pyju_apply_type(PyjuValue_t *tc, PyjuValue_t **params, size_t n)
                 pyju_type_error_rt(pyju_is_datatype(inner) ? pyju_symbol_name(inner->name->name) : "Type",
                                  pyju_symbol_name(ua->var->name), (PyjuValue_t*)ua->var, pi);
         }
-        DEBUG_FUNC
         tc = pyju_instantiate_unionall(ua, pi);
     }
-    DEBUG_FUNC
     PYJU_GC_POP();
     return tc;
 }
@@ -1914,23 +1881,14 @@ void pyju_init_types(void) PYJU_GC_DISABLED {
     pyju_array_typename = ((PyjuDataType_t*)pyju_unwrap_unionall((PyjuValue_t*)pyju_array_type))->name;
     pyju_compute_field_offsets((PyjuDataType_t*)pyju_unwrap_unionall((PyjuValue_t*)pyju_array_type));
 
-    DEBUG_FUNC
     pyju_array_any_type = pyju_apply_type2((PyjuValue_t*)pyju_array_type, (PyjuValue_t*)pyju_any_type, pyju_box_long(1));
-    DEBUG_FUNC
     pyju_array_symbol_type = pyju_apply_type2((PyjuValue_t*)pyju_array_type, (PyjuValue_t*)pyju_symbol_type, pyju_box_long(1));
-    DEBUG_FUNC
     pyju_array_uint8_type = pyju_apply_type2((PyjuValue_t*)pyju_array_type, (PyjuValue_t*)pyju_uint8_type, pyju_box_long(1));
-    DEBUG_FUNC
     pyju_array_int32_type = pyju_apply_type2((PyjuValue_t*)pyju_array_type, (PyjuValue_t*)pyju_int32_type, pyju_box_long(1));
-    DEBUG_FUNC
     pyju_array_uint64_type = pyju_apply_type2((PyjuValue_t*)pyju_array_type, (PyjuValue_t*)pyju_uint64_type, pyju_box_long(1));
-    DEBUG_FUNC
     pyju_an_empty_vec_any = (PyjuValue_t*)pyju_alloc_vec_any(0); // used internally
-    DEBUG_FUNC
     pyju_atomic_store_relaxed(&pyju_nonfunction_mt->leafcache, (PyjuArray_t*)pyju_an_empty_vec_any);
-    DEBUG_FUNC
     pyju_atomic_store_relaxed(&pyju_type_type_mt->leafcache, (PyjuArray_t*)pyju_an_empty_vec_any);
-    DEBUG_FUNC
 
     pyju_expr_type =
         pyju_new_datatype(pyju_symbol("Expr"), core,

@@ -18,8 +18,8 @@
             __FILE__, __FUNCTION__, __LINE__);
 
 #define DEBUG_FUNC_STR(str) \
-    printf("file: %s, func: %s, line: %d, %s -----------------------------------------\n",\
-           __FILE__, __FUNCTION__, __LINE__, str);
+    printf("func: %s, line: %d, %s -----------------------------------------\n",\
+           __FUNCTION__, __LINE__, str);
 
 #define DEBUG_FUNC_INT(i) \
     printf("func: %s, line: %d, %d -----------------------------------------\n",\
