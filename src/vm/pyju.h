@@ -1813,6 +1813,9 @@ STATIC_INLINE PyjuValue_t *pyju_apply(PyjuValue_t **args, uint32_t nargs)
     return NULL;
     // return pyju_apply_generic(args[0], &args[1], nargs - 1);
 }
+
+PYJU_DLLEXPORT int pyju_generating_output(void) PYJU_NOTSAFEPOINT;
+
 #ifdef __cplusplus
 }
 #endif

@@ -236,6 +236,8 @@ static NOINLINE void _finish_pyju_init(PyjuPtls_t ptls, PyjuTask_t *ct)
 {
     pyju_init_threadinginfra();
     pyju_init_types();
+    pyju_init_codegen();
+
     pyju_global_roots_table = pyju_alloc_vec_any(16);
     pyju_init_common_symbols();
 

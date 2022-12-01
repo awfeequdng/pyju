@@ -123,6 +123,10 @@ extern PyjuMethTable_t *pyju_type_type_mt PYJU_GLOBALLY_ROOTED;
 extern PyjuMethTable_t *pyju_nonfunction_mt PYJU_GLOBALLY_ROOTED;
 extern PYJU_DLLEXPORT _Atomic(size_t) pyju_world_counter;
 
+
+void register_eh_frames(uint8_t *Addr, size_t Size);
+void deregister_eh_frames(uint8_t *Addr, size_t Size);
+
 STATIC_INLINE void *pyju_get_frame_addr(void)
 {
 #ifdef __GNUC__
@@ -805,7 +809,11 @@ PYJU_DLLEXPORT uint64_t pyju_hrtime(void) PYJU_NOTSAFEPOINT;
 void pyju_init_main_module(void);
 void pyju_init_box_caches(void);
 
+// codegen
+PYJU_DLLEXPORT void pyju_init_codegen(void);
+
 PYJU_DLLEXPORT size_t pyju_get_world_counter(void) PYJU_NOTSAFEPOINT;
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

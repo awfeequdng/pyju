@@ -117,34 +117,6 @@ void pyju_dump_emitted_mi_name_impl(void *s)
     dump_emitted_mi_name_stream = (PYJU_STREAM*)s;
 }
 
-
-extern "C" {
-
-// #include "builtin_proto.h"
-
-extern void __stack_chk_fail();
-
-#ifdef _OS_WINDOWS_
-#if defined(_CPU_X86_64_)
-#if defined(_COMPILER_GCC_)
-extern void ___chkstk_ms(void);
-#else
-extern void __chkstk(void);
-#endif
-#else
-#if defined(_COMPILER_GCC_)
-#undef _alloca
-extern void _alloca(void);
-#else
-extern void _chkstk(void);
-#endif
-#endif
-//void *force_chkstk(void) {
-//    return alloca(40960);
-//}
-#endif
-} // extern "C"
-
 // for image reloading
 bool imaging_mode = false;
 
@@ -153,7 +125,35 @@ static LLVMContext &pyju_LLVMContext = *(new LLVMContext());
 TargetMachine *pyju_TargetMachine;
 static DataLayout &pyju_data_layout = *(new DataLayout(""));
 
+class pyju_codectx_t;
+struct PyjuVariable {
+public:
+    StringLiteral name;
+    bool isconst;
+    Type *(*_type)(LLVMContext &C);
+
+    PyjuVariable(const PyjuVariable&) = delete;
+    PyjuVariable(const PyjuVariable&&) = delete;
+    GlobalVariable *realize(Module *m) {
+        if (GlobalValue *V = m->getNamedValue(name))
+            return cast<GlobalVariable>(V);
+        return new GlobalVariable(*m, _type(m->getContext()),
+                isconst, GlobalVariable::ExternalLinkage,
+                NULL, name);
+    }
+    GlobalVariable *realize(pyju_codectx_t &ctx);
+};
+
+extern "C" void pyju_init_llvm(void) {
+
+}
+
 extern "C" PYJU_DLLEXPORT void pyju_init_codegen_impl(void)
 {
+    pyju_init_llvm();
+}
 
+extern "C" PYJU_DLLEXPORT void pyju_init_codegen(void)
+{
+    pyju_init_codegen_impl();
 }
