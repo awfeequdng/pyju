@@ -129,3 +129,5 @@ private:
 };
 
 extern PyjuOJIT *jl_ExecutionEngine;
+
+Pass *createDemoteFloat16Pass();

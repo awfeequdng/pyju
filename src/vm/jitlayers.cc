@@ -51,6 +51,17 @@ void pyju_jit_globals(std::map<void *, GlobalVariable*> &globals)
     }
 }
 
+CodeGenOpt::Level CodeGenOptLevelFor(int optlevel)
+{
+#ifdef DISABLE_OPT
+    return CodeGenOpt::None;
+#else
+    return optlevel < 2 ? CodeGenOpt::None :
+        optlevel == 2 ? CodeGenOpt::Default :
+        CodeGenOpt::Aggressive;
+#endif
+}
+
 static auto countBasicBlocks(const Function &F)
 {
     return std::distance(F.begin(), F.end());
@@ -197,6 +208,53 @@ public:
         return MemMgr->notifyObjectLoaded(RTDyld, Obj);
     }
 };
+
+// void registerRTDyldJITObject(const object::ObjectFile &Object,
+//                              const RuntimeDyld::LoadedObjectInfo &L,
+//                              const std::shared_ptr<RTDyldMemoryManager> &MemMgr)
+// {
+//     auto SavedObject = L.getObjectForDebug(Object).takeBinary();
+//     // If the debug object is unavailable, save (a copy of) the original object
+//     // for our backtraces.
+//     // This copy seems unfortunate, but there doesn't seem to be a way to take
+//     // ownership of the original buffer.
+//     if (!SavedObject.first) {
+//         auto NewBuffer =
+//             MemoryBuffer::getMemBufferCopy(Object.getData(), Object.getFileName());
+//         auto NewObj =
+//             cantFail(object::ObjectFile::createObjectFile(NewBuffer->getMemBufferRef()));
+//         SavedObject = std::make_pair(std::move(NewObj), std::move(NewBuffer));
+//     }
+//     const object::ObjectFile *DebugObj = SavedObject.first.release();
+//     SavedObject.second.release();
+
+//     StringMap<object::SectionRef> loadedSections;
+//     // Use the original Object, not the DebugObject, as this is used for the
+//     // RuntimeDyld::LoadedObjectInfo lookup.
+//     for (const object::SectionRef &lSection : Object.sections()) {
+//         auto sName = lSection.getName();
+//         if (sName) {
+//             bool inserted = loadedSections.insert(std::make_pair(*sName, lSection)).second;
+//             assert(inserted);
+//             (void)inserted;
+//         }
+//     }
+//     auto getLoadAddress = [loadedSections = std::move(loadedSections),
+//                            &L](const StringRef &sName) -> uint64_t {
+//         auto search = loadedSections.find(sName);
+//         if (search == loadedSections.end())
+//             return 0;
+//         return L.getSectionLoadAddress(search->second);
+//     };
+
+//     pyju_register_jit_object(*DebugObj, getLoadAddress,
+// #if defined(_OS_WINDOWS_) && defined(_CPU_X86_64_)
+//         [MemMgr](void *p) { return lookupWriteAddressFor(MemMgr.get(), p); }
+// #else
+//         nullptr
+// #endif
+//     );
+// }
 
 PyjuOJIT::PyjuOJIT(TargetMachine &tm, LLVMContext *ctx)
   : TM(tm),
