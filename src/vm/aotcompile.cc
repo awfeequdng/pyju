@@ -397,3 +397,39 @@ void addOptimizationPasses(legacy::PassManagerBase *PM, int opt_level,
 // #endif
 }
 
+// An LLVM module pass that just runs all julia passes in order. Useful for
+// debugging
+template <int OptLevel>
+class PyjuPipeline : public Pass {
+public:
+    static char ID;
+    PyjuPipeline() : Pass(PT_PassManager, ID) {}
+
+    struct TPMAdaptor : PassManagerBase {
+        PMTopLevelManager *TPM;
+        TPMAdaptor(PMTopLevelManager *tpm) : TPM(tpm) {}
+        void add(Pass *p) override {
+            TPM->schedulePass(p);
+        }
+    };
+    void preparePassManager(PMStack &stack) override {
+        // pyju_init_llvm();
+        PMTopLevelManager *tpm = stack.top()->getTopLevelManager();
+        TPMAdaptor adaptor(tpm);
+        addTargetPasses(&adaptor, pyju_TargetMachine);
+        addOptimizationPasses(&adaptor, OptLevel);
+        addMachinePasses(&adaptor, pyju_TargetMachine, OptLevel);
+
+    }
+    Pass *createPrinterPass(raw_ostream &O, const std::string &Banner) const override {
+        return createPrintModulePass(O, Banner);
+    }
+};
+template<> char PyjuPipeline<0>::ID = 0;
+template<> char PyjuPipeline<2>::ID = 0;
+template<> char PyjuPipeline<3>::ID = 0;
+
+static RegisterPass<PyjuPipeline<0>> X("pyjuO0", "run the entire pyju pipiline (at -O0", false, false);
+static RegisterPass<PyjuPipeline<2>> Y("pyjuO2", "run the entire pyju pipiline (at -O2", false, false);
+static RegisterPass<PyjuPipeline<3>> Z("pyjuO3", "run the entire pyju pipiline (at -O3", false, false);
+

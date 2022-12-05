@@ -20,6 +20,9 @@
 using namespace llvm;
 
 extern TargetMachine *pyju_TargetMachine;
+void addTargetPasses(legacy::PassManagerBase *PM, TargetMachine *TM);
+void addOptimizationPasses(legacy::PassManagerBase *PM, int opt_level, bool lower_intrinsics=true, bool dump_native=false);
+void addMachinePasses(legacy::PassManagerBase *PM, TargetMachine *TM, int optlevel);
 
 void pyju_jit_init();
 
