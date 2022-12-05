@@ -433,3 +433,8 @@ static RegisterPass<PyjuPipeline<0>> X("pyjuO0", "run the entire pyju pipiline (
 static RegisterPass<PyjuPipeline<2>> Y("pyjuO2", "run the entire pyju pipiline (at -O2", false, false);
 static RegisterPass<PyjuPipeline<3>> Z("pyjuO3", "run the entire pyju pipiline (at -O3", false, false);
 
+extern "C" PYJU_DLLEXPORT
+void pyju_add_optimization_passes_impl(LLVMPassManagerRef PM, int opt_level, int lower_intrinsics) {
+    addOptimizationPasses(unwrap(PM), opt_level, lower_intrinsics);
+}
+
