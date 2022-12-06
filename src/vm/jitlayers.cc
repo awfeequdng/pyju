@@ -2,7 +2,25 @@
 #include <memory>
 #include "pyju_internal.h"
 
+#ifdef PYJU_USE_JITLINK
+# if PYJU_LLVM_VERSION >= 140000
+#  include <llvm/ExecutionEngine/Orc/DebuggerSupportPlugin.h>
+# endif
+# include <llvm/ExecutionEngine/JITLink/EHFrameSupport.h>
+# include <llvm/ExecutionEngine/JITLink/JITLinkMemoryManager.h>
+#else
+# include <llvm/ExecutionEngine/SectionMemoryManager.h>
+#endif
+#include <llvm/IR/Mangler.h>
+#include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
+#include <llvm/Support/DynamicLibrary.h>
 #include <llvm/Support/SmallVectorMemoryBuffer.h>
+#include <llvm/Target/TargetMachine.h>
+#if JL_LLVM_VERSION >= 140000
+#include <llvm/MC/TargetRegistry.h>
+#else
+#include <llvm/Support/TargetRegistry.h>
+#endif
 
 #include "codegen_shared.h"
 
@@ -260,6 +278,8 @@ void registerRTDyldJITObject(const object::ObjectFile &Object,
     pyju_register_jit_object(*DebugObj, getLoadAddress, nullptr);
 }
 
+
+
 PyjuOJIT::PyjuOJIT(TargetMachine &tm, LLVMContext *ctx)
   : TM(tm),
     DL(tm.createDataLayout()),
@@ -272,7 +292,7 @@ PyjuOJIT::PyjuOJIT(TargetMachine &tm, LLVMContext *ctx)
 #endif
     GlobalJD(ES.createBareJITDylib("PyjuGlobals")),
     JD(ES.createBareJITDylib("PyjuOJIT")),
-#ifdef JL_USE_JITLINK
+#ifdef PYJU_USE_JITLINK
     // TODO: Port our memory management optimisations to JITLink instead of using the
     // default InProcessMemoryManager.
 # if JL_LLVM_VERSION < 140000
@@ -292,7 +312,7 @@ PyjuOJIT::PyjuOJIT(TargetMachine &tm, LLVMContext *ctx)
 #endif
     CompileLayer(ES, ObjectLayer, std::make_unique<CompilerT>(this))
 {
-#ifdef JL_USE_JITLINK
+#ifdef PYJU_USE_JITLINK
 # if defined(_OS_DARWIN_) && defined(LLVM_SHLIB)
     // When dynamically linking against LLVM, use our custom EH frame registration code
     // also used with RTDyld to inform both our and the libc copy of libunwind.
@@ -312,4 +332,238 @@ PyjuOJIT::PyjuOJIT(TargetMachine &tm, LLVMContext *ctx)
             registerRTDyldJITObject(Object, LO, MemMgr);
         });
 #endif
+    for (int i = 0; i < 4; i++) {
+        TMs[i] = TM.getTarget().createTargetMachine(TM.getTargetTriple().getTriple(), TM.getTargetCPU(),
+                TM.getTargetFeatureString(), TM.Options, Reloc::Static, TM.getCodeModel(),
+                CodeGenOptLevelFor(i), true);
+    }
+    addPassesForOptLevel(PM0, *TMs[0], ObjStream, Ctx, 0);
+    addPassesForOptLevel(PM1, *TMs[1], ObjStream, Ctx, 1);
+    addPassesForOptLevel(PM2, *TMs[2], ObjStream, Ctx, 2);
+    addPassesForOptLevel(PM3, *TMs[3], ObjStream, Ctx, 3);
+
+    // Make sure SectionMemoryManager::getSymbolAddressInProcess can resolve
+    // symbols in the program as well. The nullptr argument to the function
+    // tells DynamicLibrary to load the program, not a library.
+    std::string ErrorStr;
+    if (sys::DynamicLibrary::LoadLibraryPermanently(nullptr, &ErrorStr))
+        report_fatal_error(llvm::Twine("FATAL: unable to dlopen self\n") + ErrorStr);
+    GlobalJD.addGenerator(
+      cantFail(orc::DynamicLibrarySearchGenerator::GetForCurrentProcess(
+        DL.getGlobalPrefix())));
+    // Resolve non-lock free atomic functions in the libatomic1 library.
+    // This is the library that provides support for c11/c++11 atomic operations.
+    const char *const libatomic = "libatomic.so.1";
+
+    if (libatomic) {
+        printf("not impl load dynamic library\n");
+        // static void *atomic_hdl = pyju_load_dynamic_library(libatomic, PYJU_RTLD_LOCAL, 0);
+        // if (atomic_hdl != NULL) {
+        //     GlobalJD.addGenerator(
+        //       cantFail(orc::DynamicLibrarySearchGenerator::Load(
+        //           libatomic,
+        //           DL.getGlobalPrefix(),
+        //           [&](const orc::SymbolStringPtr &S) {
+        //                 const char *const atomic_prefix = "__atomic_";
+        //                 return (*S).startswith(atomic_prefix);
+        //           })));
+        // }
+    }
+    JD.addToLinkOrder(GlobalJD, orc::JITDylibLookupFlags::MatchExportedSymbolsOnly);
+
+    orc::SymbolAliasMap jl_crt = {
+        { mangle("__gnu_h2f_ieee"), { mangle("julia__gnu_h2f_ieee"), JITSymbolFlags::Exported } },
+        { mangle("__extendhfsf2"),  { mangle("julia__gnu_h2f_ieee"), JITSymbolFlags::Exported } },
+        { mangle("__gnu_f2h_ieee"), { mangle("julia__gnu_f2h_ieee"), JITSymbolFlags::Exported } },
+        { mangle("__truncsfhf2"),   { mangle("julia__gnu_f2h_ieee"), JITSymbolFlags::Exported } },
+        { mangle("__truncdfhf2"),   { mangle("julia__truncdfhf2"),   JITSymbolFlags::Exported } }
+    };
+    cantFail(GlobalJD.define(orc::symbolAliases(jl_crt)));
+
 }
+
+orc::SymbolStringPtr PyjuOJIT::mangle(StringRef Name)
+{
+    std::string MangleName = getMangledName(Name);
+    return ES.intern(MangleName);
+}
+
+void PyjuOJIT::addGlobalMapping(StringRef Name, uint64_t Addr)
+{
+    cantFail(JD.define(orc::absoluteSymbols({{mangle(Name), JITEvaluatedSymbol::fromPointer((void*)Addr)}})));
+}
+
+
+void PyjuOJIT::addModule(std::unique_ptr<Module> M)
+{
+    PYJU_TIMING(LLVM_MODULE_FINISH);
+    std::vector<std::string> NewExports;
+    for (auto &F : M->global_values()) {
+        if (!F.isDeclaration() && F.getLinkage() == GlobalValue::ExternalLinkage) {
+            NewExports.push_back(getMangledName(F.getName()));
+        }
+    }
+#if !defined(JL_NDEBUG) && !defined(PYJU_USE_JITLINK)
+    // validate the relocations for M (not implemented for the JITLink memory manager yet)
+    for (Module::global_object_iterator I = M->global_objects().begin(), E = M->global_objects().end(); I != E; ) {
+        GlobalObject *F = &*I;
+        ++I;
+        if (F->isDeclaration()) {
+            if (F->use_empty())
+                F->eraseFromParent();
+            else if (!((isa<Function>(F) && isIntrinsicFunction(cast<Function>(F))) ||
+                       findUnmangledSymbol(F->getName()) ||
+                       SectionMemoryManager::getSymbolAddressInProcess(
+                           getMangledName(F->getName())))) {
+                llvm::errs() << "FATAL ERROR: "
+                             << "Symbol \"" << F->getName().str() << "\""
+                             << "not found";
+                abort();
+            }
+        }
+    }
+#endif
+    // TODO: what is the performance characteristics of this?
+    cantFail(CompileLayer.add(JD, orc::ThreadSafeModule(std::move(M), TSCtx)));
+    // force eager compilation (for now), due to memory management specifics
+    // (can't handle compilation recursion)
+    for (auto Name : NewExports)
+        cantFail(ES.lookup({&JD}, Name));
+
+}
+
+PYJU_JITSymbol PyjuOJIT::findSymbol(StringRef Name, bool ExportedSymbolsOnly)
+{
+    orc::JITDylib* SearchOrders[2] = {&GlobalJD, &JD};
+    ArrayRef<orc::JITDylib*> SearchOrder = makeArrayRef(&SearchOrders[ExportedSymbolsOnly ? 0 : 1], ExportedSymbolsOnly ? 2 : 1);
+    auto Sym = ES.lookup(SearchOrder, Name);
+    if (Sym)
+        return *Sym;
+    return Sym.takeError();
+}
+
+PYJU_JITSymbol PyjuOJIT::findUnmangledSymbol(StringRef Name)
+{
+    return findSymbol(getMangledName(Name), true);
+}
+
+uint64_t PyjuOJIT::getGlobalValueAddress(StringRef Name)
+{
+    auto addr = findSymbol(getMangledName(Name), false);
+    if (!addr) {
+        consumeError(addr.takeError());
+        return 0;
+    }
+    return cantFail(addr.getAddress());
+}
+
+uint64_t PyjuOJIT::getFunctionAddress(StringRef Name)
+{
+    auto addr = findSymbol(getMangledName(Name), false);
+    if (!addr) {
+        consumeError(addr.takeError());
+        return 0;
+    }
+    return cantFail(addr.getAddress());
+}
+
+
+static int globalUniqueGeneratedNames;
+// StringRef PyjuOJIT::getFunctionAtAddress(uint64_t Addr, PyjuCodeInstance_t *codeinst)
+// {
+//     std::string *fname = &ReverseLocalSymbolTable[(void*)(uintptr_t)Addr];
+//     if (fname->empty()) {
+//         std::string string_fname;
+//         raw_string_ostream stream_fname(string_fname);
+//         // try to pick an appropriate name that describes it
+//         auto invoke = pyju_atomic_load_relaxed(&codeinst->invoke);
+//         if (Addr == (uintptr_t)invoke) {
+//             stream_fname << "jsysw_";
+//         }
+//         else if (invoke == pyju_fptr_args_addr) {
+//             stream_fname << "jsys1_";
+//         }
+//         else if (invoke == pyju_fptr_sparam_addr) {
+//             stream_fname << "jsys3_";
+//         }
+//         else {
+//             stream_fname << "jlsys_";
+//         }
+//         const char* unadorned_name = pyju_symbol_name(codeinst->def->def.method->name);
+//         stream_fname << unadorned_name << "_" << globalUniqueGeneratedNames++;
+//         *fname = std::move(stream_fname.str()); // store to ReverseLocalSymbolTable
+//         addGlobalMapping(*fname, Addr);
+//     }
+//     return *fname;
+// }
+
+
+#ifdef PYJU_USE_JITLINK
+# if JL_LLVM_VERSION < 140000
+#  warning "JIT debugging (GDB integration) not available on LLVM < 14.0 (for JITLink)"
+void PyjuOJIT::enableJITDebuggingSupport() {}
+# else
+extern "C" orc::shared::CWrapperFunctionResult
+llvm_orc_registerJITLoaderGDBAllocAction(const char *Data, size_t Size);
+
+void PyjuOJIT::enableJITDebuggingSupport()
+{
+    // We do not use GDBJITDebugInfoRegistrationPlugin::Create, as the runtime name
+    // lookup is unnecessarily involved/fragile for our in-process JIT use case
+    // (with the llvm_orc_registerJITLoaderGDBAllocAction symbol being in either
+    // libjulia-codegen or yet another shared library for LLVM depending on the build
+    // flags, etc.).
+    const auto Addr = ExecutorAddr::fromPtr(&llvm_orc_registerJITLoaderGDBAllocAction);
+    ObjectLayer.addPlugin(std::make_unique<orc::GDBJITDebugInfoRegistrationPlugin>(Addr));
+}
+# endif
+#else
+void PyjuOJIT::enableJITDebuggingSupport()
+{
+    RegisterJITEventListener(JITEventListener::createGDBRegistrationListener());
+}
+
+void PyjuOJIT::RegisterJITEventListener(JITEventListener *L)
+{
+    if (!L)
+        return;
+    this->ObjectLayer.registerJITEventListener(*L);
+}
+#endif
+
+const DataLayout& PyjuOJIT::getDataLayout() const
+{
+    return DL;
+}
+
+const Triple& PyjuOJIT::getTargetTriple() const
+{
+    return TM.getTargetTriple();
+}
+
+std::string PyjuOJIT::getMangledName(StringRef Name)
+{
+    SmallString<128> FullName;
+    Mangler::getNameWithPrefix(FullName, Name, DL);
+    return FullName.str().str();
+}
+
+std::string PyjuOJIT::getMangledName(const GlobalValue *GV)
+{
+    return getMangledName(GV->getName());
+}
+
+#ifdef PYJU_USE_JITLINK
+size_t PyjuOJIT::getTotalBytes() const
+{
+    // TODO: Implement in future custom JITLink memory manager.
+    return 0;
+}
+#else
+size_t getRTDyldMemoryManagerTotalBytes(RTDyldMemoryManager *mm);
+
+size_t PyjuOJIT::getTotalBytes() const
+{
+    return getRTDyldMemoryManagerTotalBytes(MemMgr.get());
+}
+#endif

@@ -135,3 +135,8 @@ private:
 extern PyjuOJIT *pyju_ExecutionEngine;
 
 Pass *createDemoteFloat16Pass();
+// Whether the Function is an llvm or julia intrinsic.
+static inline bool isIntrinsicFunction(Function *F)
+{
+    return F->isIntrinsic() || F->getName().startswith("julia.");
+}

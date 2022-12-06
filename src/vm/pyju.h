@@ -1841,6 +1841,22 @@ typedef struct {
     PyjuValue_t *generic_context;
 } pyju_cgparams_t;
 
+// external libraries
+enum PYJU_RTLD_CONSTANT {
+     PYJU_RTLD_LOCAL=1U,
+     PYJU_RTLD_GLOBAL=2U,
+     PYJU_RTLD_LAZY=4U,
+     PYJU_RTLD_NOW=8U,
+     /* Linux/glibc and MacOS X: */
+     PYJU_RTLD_NODELETE=16U,
+     PYJU_RTLD_NOLOAD=32U,
+     /* Linux/glibc: */
+     PYJU_RTLD_DEEPBIND=64U,
+     /* MacOS X 10.5+: */
+     PYJU_RTLD_FIRST=128U
+};
+#define PYJU_RTLD_DEFAULT (PYJU_RTLD_LAZY | PYJU_RTLD_DEEPBIND)
+
 #ifdef __cplusplus
 }
 #endif
