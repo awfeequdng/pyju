@@ -567,3 +567,229 @@ size_t PyjuOJIT::getTotalBytes() const
     return getRTDyldMemoryManagerTotalBytes(MemMgr.get());
 }
 #endif
+
+// destructively move the contents of src into dest
+// this assumes that the targets of the two modules are the same
+// including the DataLayout and ModuleFlags (for example)
+// and that there is no module-level assembly
+// Comdat is also removed, since the JIT doesn't need it
+void pyju_merge_module(Module *dest, std::unique_ptr<Module> src)
+{
+    assert(dest != src.get());
+    for (Module::global_iterator I = src->global_begin(), E = src->global_end(); I != E;) {
+        GlobalVariable *sG = &*I;
+        GlobalVariable *dG = cast_or_null<GlobalVariable>(dest->getNamedValue(sG->getName()));
+        ++I;
+        // Replace a declaration with the definition:
+        if (dG) {
+            if (sG->isDeclaration()) {
+                sG->replaceAllUsesWith(dG);
+                sG->eraseFromParent();
+                continue;
+            }
+            //// If we start using llvm.used, we need to enable and test this
+            //else if (!dG->isDeclaration() && dG->hasAppendingLinkage() && sG->hasAppendingLinkage()) {
+            //    auto *dCA = cast<ConstantArray>(dG->getInitializer());
+            //    auto *sCA = cast<ConstantArray>(sG->getInitializer());
+            //    SmallVector<Constant *, 16> Init;
+            //    for (auto &Op : dCA->operands())
+            //        Init.push_back(cast_or_null<Constant>(Op));
+            //    for (auto &Op : sCA->operands())
+            //        Init.push_back(cast_or_null<Constant>(Op));
+            //    Type *Int8PtrTy = Type::getInt8PtrTy(dest.getContext());
+            //    ArrayType *ATy = ArrayType::get(Int8PtrTy, Init.size());
+            //    GlobalVariable *GV = new GlobalVariable(dest, ATy, dG->isConstant(),
+            //            GlobalValue::AppendingLinkage, ConstantArray::get(ATy, Init), "",
+            //            dG->getThreadLocalMode(), dG->getType()->getAddressSpace());
+            //    GV->copyAttributesFrom(dG);
+            //    sG->replaceAllUsesWith(GV);
+            //    dG->replaceAllUsesWith(GV);
+            //    GV->takeName(sG);
+            //    sG->eraseFromParent();
+            //    dG->eraseFromParent();
+            //    continue;
+            //}
+            else {
+                assert(dG->isDeclaration() || dG->getInitializer() == sG->getInitializer());
+                dG->replaceAllUsesWith(sG);
+                dG->eraseFromParent();
+            }
+        }
+        // Reparent the global variable:
+        sG->removeFromParent();
+        dest->getGlobalList().push_back(sG);
+        // Comdat is owned by the Module
+        sG->setComdat(nullptr);
+    }
+
+    for (Module::iterator I = src->begin(), E = src->end(); I != E;) {
+        Function *sG = &*I;
+        Function *dG = cast_or_null<Function>(dest->getNamedValue(sG->getName()));
+        ++I;
+        // Replace a declaration with the definition:
+        if (dG) {
+            if (sG->isDeclaration()) {
+                sG->replaceAllUsesWith(dG);
+                sG->eraseFromParent();
+                continue;
+            }
+            else {
+                assert(dG->isDeclaration());
+                dG->replaceAllUsesWith(sG);
+                dG->eraseFromParent();
+            }
+        }
+        // Reparent the global variable:
+        sG->removeFromParent();
+        dest->getFunctionList().push_back(sG);
+        // Comdat is owned by the Module
+        sG->setComdat(nullptr);
+    }
+
+    for (Module::alias_iterator I = src->alias_begin(), E = src->alias_end(); I != E;) {
+        GlobalAlias *sG = &*I;
+        GlobalAlias *dG = cast_or_null<GlobalAlias>(dest->getNamedValue(sG->getName()));
+        ++I;
+        if (dG) {
+            if (!dG->isDeclaration()) { // aliases are always definitions, so this test is reversed from the above two
+                sG->replaceAllUsesWith(dG);
+                sG->eraseFromParent();
+                continue;
+            }
+            else {
+                dG->replaceAllUsesWith(sG);
+                dG->eraseFromParent();
+            }
+        }
+        sG->removeFromParent();
+        dest->getAliasList().push_back(sG);
+    }
+
+    // metadata nodes need to be explicitly merged not just copied
+    // so there are special passes here for each known type of metadata
+    NamedMDNode *sNMD = src->getNamedMetadata("llvm.dbg.cu");
+    if (sNMD) {
+        NamedMDNode *dNMD = dest->getOrInsertNamedMetadata("llvm.dbg.cu");
+        for (NamedMDNode::op_iterator I = sNMD->op_begin(), E = sNMD->op_end(); I != E; ++I) {
+            dNMD->addOperand(*I);
+        }
+    }
+}
+
+// optimize memory by turning long strings into memoized copies, instead of
+// making a copy per object file of output.
+void pyju_jit_share_data(Module &M)
+{
+    std::vector<GlobalVariable*> erase;
+    for (auto &GV : M.globals()) {
+        if (!GV.hasInitializer() || !GV.isConstant())
+            continue;
+        ConstantDataSequential *CDS = dyn_cast<ConstantDataSequential>(GV.getInitializer());
+        if (CDS == nullptr)
+            continue;
+        StringRef data = CDS->getRawDataValues();
+        if (data.size() > 16) { // only for long strings: keep short ones as values
+            Type *T_size = Type::getIntNTy(GV.getContext(), sizeof(void*) * 8);
+            Constant *v = ConstantExpr::getIntToPtr(
+                ConstantInt::get(T_size, (uintptr_t)data.data()),
+                GV.getType());
+            GV.replaceAllUsesWith(v);
+            erase.push_back(&GV);
+        }
+    }
+    for (auto GV : erase)
+        GV->eraseFromParent();
+}
+
+static void pyju_add_to_ee(std::unique_ptr<Module> m)
+{
+    pyju_jit_share_data(*m);
+    assert(pyju_ExecutionEngine);
+    pyju_ExecutionEngine->addModule(std::move(m));
+}
+
+static int pyju_add_to_ee(
+        std::unique_ptr<Module> &M,
+        StringMap<std::unique_ptr<Module>*> &NewExports,
+        DenseMap<Module*, int> &Queued,
+        std::vector<std::vector<std::unique_ptr<Module>*>> &ToMerge,
+        int depth)
+{
+    // DAG-sort (post-dominator) the compile to compute the minimum
+    // merge-module sets for linkage
+    if (!M)
+        return 0;
+    // First check and record if it's on the stack somewhere
+    {
+        auto &Cycle = Queued[M.get()];
+        if (Cycle)
+            return Cycle;
+        ToMerge.push_back({});
+        Cycle = depth;
+    }
+    int MergeUp = depth;
+    // Compute the cycle-id
+    for (auto &F : M->global_objects()) {
+        if (F.isDeclaration() && F.getLinkage() == GlobalValue::ExternalLinkage) {
+            auto Callee = NewExports.find(F.getName());
+            if (Callee != NewExports.end()) {
+                auto &CM = Callee->second;
+                int Down = pyju_add_to_ee(*CM, NewExports, Queued, ToMerge, depth + 1);
+                assert(Down <= depth);
+                if (Down && Down < MergeUp)
+                    MergeUp = Down;
+            }
+        }
+    }
+    if (MergeUp == depth) {
+        // Not in a cycle (or at the top of it)
+        Queued.erase(M.get());
+        for (auto &CM : ToMerge.at(depth - 1)) {
+            assert(Queued.find(CM->get())->second == depth);
+            Queued.erase(CM->get());
+            pyju_merge_module(M.get(), std::move(*CM));
+        }
+        pyju_add_to_ee(std::move(M));
+        MergeUp = 0;
+    }
+    else {
+        // Add our frame(s) to the top of the cycle
+        Queued[M.get()] = MergeUp;
+        auto &Top = ToMerge.at(MergeUp - 1);
+        Top.push_back(&M);
+        for (auto &CM : ToMerge.at(depth - 1)) {
+            assert(Queued.find(CM->get())->second == depth);
+            Queued[CM->get()] = MergeUp;
+            Top.push_back(CM);
+        }
+    }
+    ToMerge.pop_back();
+    return MergeUp;
+}
+
+static void pyju_add_to_ee(std::unique_ptr<Module> &M, StringMap<std::unique_ptr<Module>*> &NewExports)
+{
+    DenseMap<Module*, int> Queued;
+    std::vector<std::vector<std::unique_ptr<Module>*>> ToMerge;
+    pyju_add_to_ee(M, NewExports, Queued, ToMerge, 1);
+    assert(!M);
+}
+
+static uint64_t getAddressForFunction(StringRef fname)
+{
+    auto addr = pyju_ExecutionEngine->getFunctionAddress(fname);
+    assert(addr);
+    return addr;
+}
+
+// helper function for adding a DLLImport (dlsym) address to the execution engine
+void add_named_global(StringRef name, void *addr)
+{
+    pyju_ExecutionEngine->addGlobalMapping(name, (uint64_t)(uintptr_t)addr);
+}
+
+extern "C" PYJU_DLLEXPORT
+size_t pyju_jit_total_bytes_impl(void)
+{
+    return pyju_ExecutionEngine->getTotalBytes();
+}
