@@ -60,7 +60,7 @@ struct PyjuValue_t;
 
 // the following macro is
 // used to indicate which types below are subtypes of PyjuValue_t
-#define PYJU_DATA_TYPE PyjuValue_t __pyju_value_;
+#define PYJU_DATA_TYPE PyjuValue_t pyju_value_;
 
 
 struct PyjuTaggedValueBits_t {
@@ -1815,6 +1815,31 @@ STATIC_INLINE PyjuValue_t *pyju_apply(PyjuValue_t **args, uint32_t nargs)
 }
 
 PYJU_DLLEXPORT int pyju_generating_output(void) PYJU_NOTSAFEPOINT;
+
+
+
+// codegen interface ----------------------------------------------------------
+// The root propagation here doesn't have to be literal, but callers should
+// ensure that the return value outlives the MethodInstance
+typedef PyjuValue_t *(*pyju_codeinstance_lookup_t)(PyjuMethodInstance_t *mi PYJU_PROPAGATES_ROOT,
+    size_t min_world, size_t max_world);
+typedef struct {
+    int track_allocations;  // can we track allocations?
+    int code_coverage;      // can we measure coverage?
+    int prefer_specsig;     // are specialized function signatures preferred?
+
+    // controls the emission of debug-info. mirrors the clang options
+    int gnu_pubnames;       // can we emit the gnu pubnames debuginfo
+    int debug_info_kind; // Enum for line-table-only, line-directives-only,
+                            // limited, standalone
+
+    // Cache access. Default: jl_rettype_inferred.
+    pyju_codeinstance_lookup_t lookup;
+
+    // If not `nothing`, rewrite all generic calls to call
+    // generic_context(f, args...) instead of f(args...).
+    PyjuValue_t *generic_context;
+} pyju_cgparams_t;
 
 #ifdef __cplusplus
 }

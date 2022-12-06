@@ -814,6 +814,17 @@ PYJU_DLLEXPORT void pyju_init_codegen(void);
 
 PYJU_DLLEXPORT size_t pyju_get_world_counter(void) PYJU_NOTSAFEPOINT;
 
+
+// Function metadata arising from debug info lookup of instruction pointer
+typedef struct {
+    char *func_name;
+    char *file_name;
+    int line;
+    PyjuMethodInstance_t *linfo;
+    int fromC;
+    int inlined;
+} pyju_frame_t;
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

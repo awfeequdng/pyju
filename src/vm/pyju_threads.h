@@ -56,7 +56,7 @@ struct PyjuStackContext_t {
      defined(_CPU_ARM_) || defined(_CPU_PPC64_))
 #define PYJU_HAVE_ASM
 #endif
-
+#define PYJU_HAVE_UNW_CONTEXT // optimistically?
 #endif
 
 #if (!defined(PYJU_HAVE_UNW_CONTEXT) && defined(PYJU_HAVE_ASM)) || defined(PYJU_HAVE_SIGALTSTACK)

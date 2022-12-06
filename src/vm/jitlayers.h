@@ -13,6 +13,7 @@
 // #include "llvm/IR/LLVMContext.h"
 // #include "llvm/IR/Type.h"
 #include "llvm/Target/TargetMachine.h"
+#include "debug-register.h"
 
 #include "pyju_assert.h"
 #include "pyju.h"
@@ -93,9 +94,9 @@ public:
     const Triple& getTargetTriple() const;
     size_t getTotalBytes() const;
 
-    // JITDebugInfoRegistry &getDebugInfoRegistry() JL_NOTSAFEPOINT {
-    //     return DebugRegistry;
-    // }
+    JITDebugInfoRegistry &getDebugInfoRegistry() PYJU_NOTSAFEPOINT {
+        return DebugRegistry;
+    }
 private:
     std::string getMangledName(StringRef Name);
     std::string getMangledName(const GlobalValue *GV);
@@ -120,7 +121,7 @@ private:
     orc::JITDylib &GlobalJD;
     orc::JITDylib &JD;
 
-    // JITDebugInfoRegistry DebugRegistry;
+    JITDebugInfoRegistry DebugRegistry;
 
 #ifndef JL_USE_JITLINK
     std::shared_ptr<RTDyldMemoryManager> MemMgr;
@@ -131,6 +132,6 @@ private:
     DenseMap<void*, std::string> ReverseLocalSymbolTable;
 };
 
-extern PyjuOJIT *jl_ExecutionEngine;
+extern PyjuOJIT *pyju_ExecutionEngine;
 
 Pass *createDemoteFloat16Pass();

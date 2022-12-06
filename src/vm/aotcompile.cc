@@ -5,10 +5,12 @@
 #include "pyju_assert.h"
 
 // target support
+#include <cstddef>
 #include <llvm/ADT/Triple.h>
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/Analysis/TargetTransformInfo.h>
 #include <llvm/IR/DataLayout.h>
+#include <vector>
 #if JL_LLVM_VERSION >= 140000
 #include <llvm/MC/TargetRegistry.h>
 #else
@@ -139,6 +141,19 @@ LLVMContext* pyju_get_llvm_context_impl(void *native_code)
         return NULL;
 }
 
+static void emit_offset_table(Module &m, std::vector<GlobalValue*> &vars, StringRef name, Type *T_psize) {
+    assert(!vars.empty());
+    size_t nvar = vars.size();
+    std::vector<Constant*> addrs(nvar);
+    for (size_t i = 0; i < nvar; i++) {
+        Constant *var = vars[i];
+        addrs[i] = ConstantExpr::getBitCast(var, T_psize);
+    }
+    ArrayType *T_array = ArrayType::get(T_psize, nvar);
+    new GlobalVariable(m, T_array, false, llvm::GlobalVariable::ExternalLinkage,
+            ConstantArray::get(T_array, addrs), name);
+}
+
 static bool is_safe_char(unsigned char c)
 {
     return ('0' <= c && c <= '9') ||
@@ -151,6 +166,54 @@ static bool is_safe_char(unsigned char c)
 static const char hexchars[16] = {
     '0', '1', '2', '3', '4', '5', '6', '7',
     '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+
+static const char *const common_names[256] = {
+//  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x00
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x10
+    "SP", "NOT", "DQT", "YY", 0, "REM", "AND", "SQT", // 0x20
+      "LPR", "RPR", "MUL", "SUM", 0, "SUB", "DOT", "DIV", // 0x28
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "COL", 0, "LT", "EQ", "GT", "QQ", // 0x30
+    "AT", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x40
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "LBR", "RDV", "RBR", "POW", 0, // 0x50
+    "TIC", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0x60
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "LCR", "OR", "RCR", "TLD", "DEL", // 0x70
+    0 }; // remainder is filled with zeros, though are also all safe characters
+
+
+// reversibly removes special characters from the name of GlobalObjects,
+// which might cause them to be treated special by LLVM or the system linker
+// the only non-identifier characters we allow to appear are '.' and '$',
+// and all of UTF-8 above code-point 128 (except 255)
+// most are given "friendly" abbreviations
+// the remaining few will print as hex
+// e.g. mangles "llvm.a≠a$a!a##" as "llvmDOT.a≠a$aNOT.aYY.YY."
+static void makeSafeName(GlobalObject &G)
+{
+    StringRef Name = G.getName();
+    SmallVector<char, 32> SafeName;
+    for (unsigned char c : Name.bytes()) {
+        if (is_safe_char(c)) {
+            SafeName.push_back(c);
+        }
+        else {
+            if (common_names[c]) {
+                SafeName.push_back(common_names[c][0]);
+                SafeName.push_back(common_names[c][1]);
+                if (common_names[c][2])
+                    SafeName.push_back(common_names[c][2]);
+            }
+            else {
+                SafeName.push_back(hexchars[(c >> 4) & 0xF]);
+                SafeName.push_back(hexchars[c & 0xF]);
+            }
+            SafeName.push_back('.');
+        }
+    }
+    if (SafeName.size() != Name.size())
+        G.setName(StringRef(SafeName.data(), SafeName.size()));
+}
 
 void addTargetPasses(legacy::PassManagerBase *PM, TargetMachine *TM)
 {

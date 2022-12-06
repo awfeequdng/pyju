@@ -23,6 +23,8 @@ void pyju_dump_llvm_opt_impl(void *s)
     dump_llvm_opt_stream = (PYJU_STREAM*)s;
 }
 
+PyjuOJIT *pyju_ExecutionEngine;
+
 static void pyju_add_to_ee(std::unique_ptr<Module> m);
 static void pyju_add_to_ee(std::unique_ptr<Module> &M, StringMap<std::unique_ptr<Module>*> &NewExports);
 static uint64_t getAddressForFunction(StringRef fname);
@@ -49,6 +51,14 @@ void pyju_jit_globals(std::map<void *, GlobalVariable*> &globals)
     for (auto &global : globals) {
         pyju_link_global(global.second, global.first);
     }
+}
+static void addPassesForOptLevel(legacy::PassManager &PM, TargetMachine &TM, raw_svector_ostream &ObjStream, MCContext *Ctx, int optlevel)
+{
+    addTargetPasses(&PM, &TM);
+    addOptimizationPasses(&PM, optlevel);
+    addMachinePasses(&PM, &TM, optlevel);
+    if (TM.addPassesToEmitMC(PM, Ctx, ObjStream))
+        llvm_unreachable("Target does not support MC emission.");
 }
 
 CodeGenOpt::Level CodeGenOptLevelFor(int optlevel)
@@ -209,52 +219,46 @@ public:
     }
 };
 
-// void registerRTDyldJITObject(const object::ObjectFile &Object,
-//                              const RuntimeDyld::LoadedObjectInfo &L,
-//                              const std::shared_ptr<RTDyldMemoryManager> &MemMgr)
-// {
-//     auto SavedObject = L.getObjectForDebug(Object).takeBinary();
-//     // If the debug object is unavailable, save (a copy of) the original object
-//     // for our backtraces.
-//     // This copy seems unfortunate, but there doesn't seem to be a way to take
-//     // ownership of the original buffer.
-//     if (!SavedObject.first) {
-//         auto NewBuffer =
-//             MemoryBuffer::getMemBufferCopy(Object.getData(), Object.getFileName());
-//         auto NewObj =
-//             cantFail(object::ObjectFile::createObjectFile(NewBuffer->getMemBufferRef()));
-//         SavedObject = std::make_pair(std::move(NewObj), std::move(NewBuffer));
-//     }
-//     const object::ObjectFile *DebugObj = SavedObject.first.release();
-//     SavedObject.second.release();
+void registerRTDyldJITObject(const object::ObjectFile &Object,
+                             const RuntimeDyld::LoadedObjectInfo &L,
+                             const std::shared_ptr<RTDyldMemoryManager> &MemMgr)
+{
+    auto SavedObject = L.getObjectForDebug(Object).takeBinary();
+    // If the debug object is unavailable, save (a copy of) the original object
+    // for our backtraces.
+    // This copy seems unfortunate, but there doesn't seem to be a way to take
+    // ownership of the original buffer.
+    if (!SavedObject.first) {
+        auto NewBuffer =
+            MemoryBuffer::getMemBufferCopy(Object.getData(), Object.getFileName());
+        auto NewObj =
+            cantFail(object::ObjectFile::createObjectFile(NewBuffer->getMemBufferRef()));
+        SavedObject = std::make_pair(std::move(NewObj), std::move(NewBuffer));
+    }
+    const object::ObjectFile *DebugObj = SavedObject.first.release();
+    SavedObject.second.release();
 
-//     StringMap<object::SectionRef> loadedSections;
-//     // Use the original Object, not the DebugObject, as this is used for the
-//     // RuntimeDyld::LoadedObjectInfo lookup.
-//     for (const object::SectionRef &lSection : Object.sections()) {
-//         auto sName = lSection.getName();
-//         if (sName) {
-//             bool inserted = loadedSections.insert(std::make_pair(*sName, lSection)).second;
-//             assert(inserted);
-//             (void)inserted;
-//         }
-//     }
-//     auto getLoadAddress = [loadedSections = std::move(loadedSections),
-//                            &L](const StringRef &sName) -> uint64_t {
-//         auto search = loadedSections.find(sName);
-//         if (search == loadedSections.end())
-//             return 0;
-//         return L.getSectionLoadAddress(search->second);
-//     };
+    StringMap<object::SectionRef> loadedSections;
+    // Use the original Object, not the DebugObject, as this is used for the
+    // RuntimeDyld::LoadedObjectInfo lookup.
+    for (const object::SectionRef &lSection : Object.sections()) {
+        auto sName = lSection.getName();
+        if (sName) {
+            bool inserted = loadedSections.insert(std::make_pair(*sName, lSection)).second;
+            assert(inserted);
+            (void)inserted;
+        }
+    }
+    auto getLoadAddress = [loadedSections = std::move(loadedSections),
+                           &L](const StringRef &sName) -> uint64_t {
+        auto search = loadedSections.find(sName);
+        if (search == loadedSections.end())
+            return 0;
+        return L.getSectionLoadAddress(search->second);
+    };
 
-//     pyju_register_jit_object(*DebugObj, getLoadAddress,
-// #if defined(_OS_WINDOWS_) && defined(_CPU_X86_64_)
-//         [MemMgr](void *p) { return lookupWriteAddressFor(MemMgr.get(), p); }
-// #else
-//         nullptr
-// #endif
-//     );
-// }
+    pyju_register_jit_object(*DebugObj, getLoadAddress, nullptr);
+}
 
 PyjuOJIT::PyjuOJIT(TargetMachine &tm, LLVMContext *ctx)
   : TM(tm),
@@ -288,5 +292,24 @@ PyjuOJIT::PyjuOJIT(TargetMachine &tm, LLVMContext *ctx)
 #endif
     CompileLayer(ES, ObjectLayer, std::make_unique<CompilerT>(this))
 {
+#ifdef JL_USE_JITLINK
+# if defined(_OS_DARWIN_) && defined(LLVM_SHLIB)
+    // When dynamically linking against LLVM, use our custom EH frame registration code
+    // also used with RTDyld to inform both our and the libc copy of libunwind.
+    auto ehRegistrar = std::make_unique<JLEHFrameRegistrar>();
+# else
+    auto ehRegistrar = std::make_unique<jitlink::InProcessEHFrameRegistrar>();
+# endif
+    ObjectLayer.addPlugin(std::make_unique<EHFrameRegistrationPlugin>(
+        ES, std::move(ehRegistrar)));
 
+    ObjectLayer.addPlugin(std::make_unique<JLDebuginfoPlugin>());
+#else
+    ObjectLayer.setNotifyLoaded(
+        [this](orc::MaterializationResponsibility &MR,
+               const object::ObjectFile &Object,
+               const RuntimeDyld::LoadedObjectInfo &LO) {
+            registerRTDyldJITObject(Object, LO, MemMgr);
+        });
+#endif
 }
