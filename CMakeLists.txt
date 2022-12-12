@@ -186,6 +186,10 @@ target_link_libraries(pyju
     pyju_vm
 )
 
+# test
+add_subdirectory(test/llvm/HowToUseJIT)
+add_subdirectory(test/llvm/HowToUseLLJIT)
+
 include (configure_config.cmake)
 
 

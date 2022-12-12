@@ -50,6 +50,7 @@ set (REQUIRED_LLVM_LIBRARIES
     LLVMBitstreamReader
     LLVMMCParser
     LLVMMC
+    LLVMMCJIT
     LLVMOrcJIT
     LLVMBinaryFormat
     LLVMDebugInfoCodeView
