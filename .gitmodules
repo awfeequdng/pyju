@@ -92,3 +92,6 @@
 [submodule "contrib/julia_libuv"]
 	path = contrib/julia_libuv
 	url = https://github.com/JuliaLang/libuv.git
+[submodule "contrib/libunwind_std"]
+	path = contrib/libunwind_std
+	url = https://github.com/libunwind/libunwind.git

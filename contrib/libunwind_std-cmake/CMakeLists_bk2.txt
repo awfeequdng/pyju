@@ -1,0 +1,190 @@
+include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
+
+set(LIBUNWIND_SOURCE_DIR "${PROJECT_SOURCE_DIR}/contrib/libunwind_std")
+
+
+set(PKG_MAJOR "1")
+set(PKG_MINOR "6")
+set(PKG_EXTRA "-rc1")
+set(PACKAGE_STRING "libunwind")
+set(PACKAGE_BUGREPORT "")
+
+set(TARGET_AMD64 1)
+set(arch x86_64)
+add_definitions(-D__x86_64__)
+add_definitions(-D__amd64__)
+add_definitions(-D__linux__)
+
+
+# Windows builds will only support remote unwind
+add_definitions(-DUNW_REMOTE_ONLY)
+# add_definitions(-D__EXTENSIONS__)
+add_definitions(-DHAVE_CONFIG_H)
+# add_definitions(-D_GNU_SOURCE)
+add_definitions(-DNDEBUG)
+
+# Disable security warnings
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
+# Our posix abstraction layer will provide these headers
+set(HAVE_ELF_H 1)
+set(HAVE_ENDIAN_H 1)
+
+set(CMAKE_VERBOSE_MAKEFILEON ON)
+
+configure_file(${LIBUNWIND_SOURCE_DIR}/include/config.h.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/include/config.h)
+configure_file(${LIBUNWIND_SOURCE_DIR}/include/libunwind-common.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/libunwind-common.h)
+configure_file(${LIBUNWIND_SOURCE_DIR}/include/libunwind.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/libunwind.h)
+configure_file(${LIBUNWIND_SOURCE_DIR}/include/tdep/libunwind_i.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/tdep/libunwind_i.h)
+
+set(UNWIND_SOURCES
+    ${LIBUNWIND_SOURCE_DIR}/src/os-linux.c
+    ${LIBUNWIND_SOURCE_DIR}/src/elf64.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/Gfind_proc_info-lsb.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/global.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/Lexpr.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/Lfde.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/Gexpr.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/Gfind_unwind_table.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/Lparser.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/Gpe.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/Lfind_unwind_table.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/Gparser.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/Gfde.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/Lpe.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dwarf/Lfind_proc_info-lsb.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Lset_reg.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gput_dynamic_unwind_info.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Ldestroy_addr_space.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gget_reg.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Lput_dynamic_unwind_info.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/dyn-register.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/backtrace.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Lset_cache_size.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Lget_reg.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gset_fpreg.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Lget_accessors.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/dyn-cancel.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gget_accessors.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gset_cache_size.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gdyn-remote.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Lget_proc_name.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Lset_caching_policy.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/flush_cache.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Ldyn-extract.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gget_proc_info_by_ip.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/mempool.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gset_caching_policy.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Lget_fpreg.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gget_proc_name.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gget_fpreg.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gset_reg.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gdestroy_addr_space.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gfind_dynamic_proc_info.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Lfind_dynamic_proc_info.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/init.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Lget_proc_info_by_ip.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/dyn-info-list.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Gdyn-extract.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/strerror.c
+    ${LIBUNWIND_SOURCE_DIR}/src/mi/Lset_fpreg.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_access_reg.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_elf.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_access_mem.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_get_dyn_info_list_addr.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_access_fpreg.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_create.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_accessors.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_reg_offset.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_put_unwind_info.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_get_proc_name.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_destroy.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_find_proc_info.c
+    ${LIBUNWIND_SOURCE_DIR}/src/ptrace/_UPT_resume.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/longjmp.S
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Gtrace.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/is_fpreg.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Lstash_frame.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Gstash_frame.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Ginit.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Linit.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/siglongjmp.S
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Gresume.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Lcreate_addr_space.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Gcreate_addr_space.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Lget_save_loc.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Lstep.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Gget_save_loc.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Gstep.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Lresume.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Lregs.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Linit_remote.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Los-linux.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Greg_states_iterate.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Lapply_reg_state.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Ginit_local.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Ltrace.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Ginit_remote.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/getcontext.S
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/regname.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Lget_proc_info.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Gregs.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Gapply_reg_state.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Gos-linux.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Linit_local.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Lglobal.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Gget_proc_info.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/setcontext.S
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Lreg_states_iterate.c
+    ${LIBUNWIND_SOURCE_DIR}/src/x86_64/Gglobal.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UCD_corefile_elf.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UCD_elf_map_image.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UCD_destroy.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UPT_elf.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UCD_get_threadinfo_prstatus.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UPT_get_dyn_info_list_addr.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UPT_access_fpreg.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UCD_access_mem.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UPT_put_unwind_info.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UCD_create.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UCD_access_reg_linux.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UCD_get_proc_name.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UCD_find_proc_info.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UPT_resume.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UCD_get_mapinfo_linux.c
+    ${LIBUNWIND_SOURCE_DIR}/src/coredump/_UCD_accessors.c
+    ${LIBUNWIND_SOURCE_DIR}/src/dl-iterate-phdr.c
+    ${LIBUNWIND_SOURCE_DIR}/src/setjmp/longjmp.c
+    ${LIBUNWIND_SOURCE_DIR}/src/setjmp/siglongjmp.c
+)
+
+set_source_files_properties(${UNWIND_SOURCES} PROPERTIES COMPILE_FLAGS "-std=c99")
+
+
+add_library(unwind
+  OBJECT
+  ${UNWIND_SOURCES}
+)
+
+set_target_properties(unwind PROPERTIES FOLDER "contrib/libunwind_std-cmake")
+
+
+target_include_directories(unwind SYSTEM BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+target_include_directories(unwind SYSTEM BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include/tdep>)
+
+# files for cross os compilation
+target_include_directories(unwind SYSTEM BEFORE PUBLIC $<BUILD_INTERFACE:${LIBUNWIND_SOURCE_DIR}/include/win>)
+target_include_directories(unwind SYSTEM BEFORE PUBLIC $<BUILD_INTERFACE:${LIBUNWIND_SOURCE_DIR}/include>)
+target_include_directories(unwind SYSTEM BEFORE PUBLIC $<BUILD_INTERFACE:${LIBUNWIND_SOURCE_DIR}/src>)
+target_include_directories(unwind SYSTEM BEFORE PUBLIC $<BUILD_INTERFACE:${LIBUNWIND_SOURCE_DIR}/include/tdep>)
+# target_compile_definitions(unwind PRIVATE -D_LIBUNWIND_NO_HEAP=1 -D_DEBUG -D_LIBUNWIND_IS_NATIVE_ONLY)
+# target_compile_options(unwind PRIVATE -fno-exceptions -funwind-tables -fno-sanitize=all $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++ -fno-rtti>)
+
+
+install(
+    TARGETS unwind
+    EXPORT global
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
