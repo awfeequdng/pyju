@@ -189,6 +189,7 @@ target_link_libraries(pyju
 # test
 add_subdirectory(test/llvm/HowToUseJIT)
 add_subdirectory(test/llvm/HowToUseLLJIT)
+add_subdirectory(test/llvm/OrcV2Example)
 
 include (configure_config.cmake)
 

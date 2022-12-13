@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
 
     auto lljit = ExitOnErr(orc::LLJITBuilder().create());
     auto M = createModule();
+    errs() << *(M.getModuleUnlocked()) << "\n";
     ExitOnErr(lljit->addIRModule(std::move(M)));
     auto sym = ExitOnErr(lljit->lookup("add"));
     int (*add)(int) = (int(*)(int))sym.getAddress();

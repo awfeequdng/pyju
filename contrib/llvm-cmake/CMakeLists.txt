@@ -56,6 +56,7 @@ set (REQUIRED_LLVM_LIBRARIES
     LLVMDebugInfoCodeView
     LLVMSupport
     LLVMDemangle
+    LLVMIRReader
 )
 
 #function(llvm_libs_all REQUIRED_LLVM_LIBRARIES)
