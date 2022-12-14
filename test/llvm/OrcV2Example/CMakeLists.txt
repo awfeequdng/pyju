@@ -1,3 +1,5 @@
 
 add_subdirectory(LLJITDumpObjects)
 add_subdirectory(LLJITWithCustomObjectLinkerLayer)
+add_subdirectory(LLJITWithObjectLinkingLayerPlugin)
+add_subdirectory(LLJITWithInitializers)

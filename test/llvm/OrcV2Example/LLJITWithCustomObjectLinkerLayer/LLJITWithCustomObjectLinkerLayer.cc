@@ -34,8 +34,11 @@ int main() {
         .setJITTargetMachineBuilder(JTMB)
         // .setObjectLinkingLayerCreator(CreateObjectLinkingLayer)
         // .setObjectLinkingLayerCreator([](ExecutionSession &ES,const Triple &TT) {
-        //     return std::make_unique<ObjectLinkingLayer>(ES, std::unique_ptr<jitlink::InProcessMemoryManager>());
+        //     return std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<jitlink::InProcessMemoryManager>());
         // })
+        .setObjectLinkingLayerCreator([](ExecutionSession &ES, const Triple &TT) {
+            return std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<jitlink::InProcessMemoryManager>());
+        })
         .create());
 
     ExitOnErr(lljit->addIRModule(std::move(module)));

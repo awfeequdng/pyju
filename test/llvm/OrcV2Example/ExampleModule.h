@@ -25,13 +25,16 @@ inline Error createSMDiagnosticError(SMDiagnostic &Diag) {
     return make_error<StringError>(msg, inconvertibleErrorCode());
 }
 
-inline Expected<ThreadSafeModule> createModule() {
+inline Expected<ThreadSafeModule> createModule(StringRef input_ir = "") {
     StringRef ir = R"(
         define i32 @add(i32 %x) {
             %r = add i32 1, %x
             ret i32 %r
         }
     )";
+    if (!input_ir.empty()) {
+        ir = input_ir;
+    }
     // LLVMContext
     auto ctx = std::make_unique<LLVMContext>();
     SMDiagnostic Err;

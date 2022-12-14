@@ -52,6 +52,7 @@ set (REQUIRED_LLVM_LIBRARIES
     LLVMMC
     LLVMMCJIT
     LLVMOrcJIT
+    LLVMJITLink
     LLVMBinaryFormat
     LLVMDebugInfoCodeView
     LLVMSupport
