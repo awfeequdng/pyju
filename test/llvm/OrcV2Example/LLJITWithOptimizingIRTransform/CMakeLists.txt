@@ -1,0 +1,7 @@
+add_executable(LLJITWithOptimizingIRTransform
+LLJITWithOptimizingIRTransform.cc
+)
+
+target_link_libraries(LLJITWithOptimizingIRTransform
+ch_contrib::llvm
+)
