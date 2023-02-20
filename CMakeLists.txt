@@ -163,6 +163,8 @@ target_link_libraries(pyju_core
     ch_contrib::cpuid
     ch_contrib::llvm
     ch_contrib::utf8proc
+    ch_contrib::gtest_all
+    ch_contrib::gbenchmark_all
 )
 
 if (OS_LINUX)

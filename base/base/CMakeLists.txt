@@ -72,7 +72,3 @@ target_link_libraries (base
         ch_contrib::llvm
         ch_contrib::utf8proc
 )
-
-if (ENABLE_TESTS)
-    add_subdirectory (tests)
-endif ()
