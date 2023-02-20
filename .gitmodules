@@ -95,3 +95,9 @@
 [submodule "contrib/libunwind_std"]
 	path = contrib/libunwind_std
 	url = https://github.com/libunwind/libunwind.git
+[submodule "contrib/googletest"]
+	path = contrib/googletest
+	url = https://github.com/google/googletest
+[submodule "contrib/google-benchmark"]
+	path = contrib/google-benchmark
+	url = https://github.com/google/benchmark

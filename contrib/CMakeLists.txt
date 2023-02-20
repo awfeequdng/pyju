@@ -38,6 +38,10 @@ set_property(DIRECTORY PROPERTY EXCLUDE_FROM_ALL 1)
 # 该错误为什么会发生还没定位
 include_directories(${PROJECT_SOURCE_DIR}/contrib/poco/Foundation/include)
 
+if (ENABLE_TESTS)
+    add_contrib (googletest-cmake googletest)
+endif()
+
 add_contrib (jemalloc-cmake jemalloc)
 add_contrib (boringssl-cmake boringssl)
 add_contrib (poco-cmake poco)
@@ -67,4 +71,6 @@ add_contrib (utf8proc-cmake utf8proc)
 # add_contrib (libuv-cmake libuv)
 # use julia_libuv-cmake
 add_contrib (julia_libuv-cmake libuv)
+
+add_contrib (google-benchmark-cmake google-benchmark)
 

@@ -191,6 +191,17 @@ add_subdirectory(test/llvm/HowToUseJIT)
 add_subdirectory(test/llvm/HowToUseLLJIT)
 add_subdirectory(test/llvm/OrcV2Example)
 
+option(ENABLE_TESTS "Provide unit_test_dbms target with Google.Test unit tests" ON)
+option(ENABLE_BENCHMARKS "Build all benchmark programs in 'benchmarks' subdirectories" OFF)
+
+if (ENABLE_TESTS)
+    message (STATUS "Unit tests are enabled")
+else()
+    message(STATUS "Unit tests are disabled")
+endif ()
+
+enable_testing() # Enable for tests without binary
+
 include (configure_config.cmake)
 
 
