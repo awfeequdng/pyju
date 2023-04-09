@@ -192,6 +192,7 @@ target_link_libraries(pyju
 add_subdirectory(test/llvm/HowToUseJIT)
 add_subdirectory(test/llvm/HowToUseLLJIT)
 add_subdirectory(test/llvm/OrcV2Example)
+add_subdirectory(test/cpp_hpc)
 
 option(ENABLE_TESTS "Provide unit_test_dbms target with Google.Test unit tests" ON)
 option(ENABLE_BENCHMARKS "Build all benchmark programs in 'benchmarks' subdirectories" OFF)
