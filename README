@@ -1,0 +1,4 @@
+# pyju说明
+pyju是一个类似于python和julia的解释器。
+- 我们借鉴了python的语法，后台实现我们借鉴了julia的逻辑，采用jit的方式来对脚本进行编译执行。
+- 同时我们在实现过程中还参考了carbon这个工程，以及lpython这个工程。借鉴lpython主要实现python的语法解析成ast，借鉴carbon主要是借鉴其中使用flex和bison来对词法和语法进行解析
